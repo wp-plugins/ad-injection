@@ -4,13 +4,15 @@ Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-w
 Tags: ad injection, advert injection, advert, ad, injection, adsense, advertising, affiliate, inject, injection, insert, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, free
 Requires at least: 3.0.0
 Tested up to: 3.0.2
-Stable tag: TODO subservsion tag
+Stable tag: 0.8.3
 
 Injects any kind of advert into existing WordPress posts. Can restrict who sees the ads by post age, visitor referrer, IP address. Cache compatible.
 
 == Description ==
 
 It injects any kind of advert (e.g. Google AdSense, Amazon Associates, ClickBank, TradeDoubler, etc) into the existing content of your WordPress posts and pages. You can control the number of adverts based on the post length, and it can restrict who sees adverts by post age, visitor referrer and IP address. And the dynamic restrictions (by IP and referrer) work with WP Super Cache!
+
+Note: This version (0.8.3) has a bug whereby when you upgrade to the next version your ad code will be lost. Please back up your ad code before you upgrade. I am working on a fix, but unfortunately the data loss will occur if you have already installed 0.8.3. I hope to have submitted a fix later today (7th December 2010).
 
 = Automatic advert injection =
 
