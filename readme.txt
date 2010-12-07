@@ -1,10 +1,10 @@
 === Ad Injection ===
 Contributors: reviewmylife
 Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
-Tags: ad injection, advert injection, advert, ad, injection, adsense, advertising, affiliate, inject, injection, insert, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, free, wp super cache
+Tags: ad injection, advert injection, advert, ad, injection, adsense, advertising, affiliate, inject, injection, insert, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, free
 Requires at least: 3.0.0
 Tested up to: 3.0.2
-Stable tag: TODO
+Stable tag: 0.8.4
 
 Injects any kind of advert into existing WordPress posts. Can restrict who sees the ads by post age, visitor referrer, IP address. Cache compatible.
 
@@ -158,12 +158,15 @@ For more information visit [reviewmylife](http://www.reviewmylife.co.uk/blog/201
 == Changelog ==
 
 = 0.8.4 =
-* Readme.txt tweaks
+* Fix deletion of ad code and config file that happens during automatic update.
 
 = 0.8.3 =
 * First public release
 
 == Upgrade Notice ==
+
+= 0.8.4 =
+If you have already configured your ad code then this update will delete the ads. Sorry - this update fixes that bug. Before upgrading please save your ads. All other settings will be carried over.
 
 = 0.8.3 =
 First public release.

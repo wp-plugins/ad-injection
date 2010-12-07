@@ -42,12 +42,15 @@ case 'Save all settings':
 
 	$raw_ad_code_random = stripslashes($_POST['ad_code_random_1']);
 	write_ad_to_file($raw_ad_code_random, ADINJ_AD_PATH.'/'.ADINJ_AD_RANDOM_FILE);
+	$options['ad_code_random_1'] = $raw_ad_code_random;
 	
 	$raw_ad_code_top = stripslashes($_POST['ad_code_top_1']);
 	write_ad_to_file($raw_ad_code_top, ADINJ_AD_PATH.'/'.ADINJ_AD_TOP_FILE);
+	$options['ad_code_top_1'] = $raw_ad_code_top;
 	
 	$raw_ad_code_bottom = stripslashes($_POST['ad_code_bottom_1']);
 	write_ad_to_file($raw_ad_code_bottom, ADINJ_AD_PATH.'/'.ADINJ_AD_BOTTOM_FILE);
+	$options['ad_code_bottom_1'] = $raw_ad_code_bottom;
 	
 	$ad_referrers = stripslashes($_POST['ad_referrers']); // TODO do i need strip slashes?
 	$options['ad_referrers'] = $ad_referrers;
@@ -123,6 +126,9 @@ function adinj_options_page(){
 		// Upgraded via FTP without being deactivated/reactivated
 		adinj_activate_hook();
 		$options = adinj_options(1);
+	}
+	if (!file_exists(ADINJ_CONFIG_FILE)){
+		adinj_write_config_file();
 	}
 	
 	echo '<div class="wrap">';
@@ -547,6 +553,7 @@ function adinj_debug_information(){
 			}
 			echo "$key";
 			echo "</td><td>";
+			$value = htmlentities($value);
 			echo "$value";
 			echo "</td><td>";
 			echo $default_options[$key];
@@ -613,22 +620,39 @@ function adinj_compatibility_checks() {
 
 function adinj_activate_hook() {
 	$stored_options = adinj_options();
-	$default_options = adinj_default_options();
-	if($stored_options === false){
+	$pending_options = adinj_default_options();
+	if(empty($stored_options)){
 		// Save defaults to DB below.
 		if (!is_plugin_active('wp-super-cache/wp-cache.php')){
-			$stored_options['ad_insertion_mode'] = 'direct_dynamic';
+			$pending_options['ad_insertion_mode'] = 'direct_dynamic';
 		}
 	} else {
 		// Upgrade options if necessary. Use default as a baseline,
 		// and then overwrite default with the saved ones.
-		foreach ($default_options as $key => $value){
+		foreach ($pending_options as $key => $value){
 			if (array_key_exists($key, $stored_options)){
-				$default_options[$key] = $stored_options[$key];
+				$pending_options[$key] = $stored_options[$key];
 			}
 		}
 	}
-	update_option('adinj_options', $default_options);
+	update_option('adinj_options', $pending_options);
+	
+	// Restore data after automatic upgrade
+	$random_file = ADINJ_AD_PATH.'/'.ADINJ_AD_RANDOM_FILE;
+	if (!file_exists($random_file) && !empty($pending_options['ad_code_random_1'])){
+		write_ad_to_file($pending_options['ad_code_random_1'], $random_file);
+	}
+	$top_file = ADINJ_AD_PATH.'/'.ADINJ_AD_TOP_FILE;
+	if (!file_exists($top_file) && !empty($pending_options['ad_code_top_1'])){
+		write_ad_to_file($pending_options['ad_code_top_1'], $top_file);
+	}
+	$bottom_file = ADINJ_AD_PATH.'/'.ADINJ_AD_BOTTOM_FILE;
+	if (!file_exists($bottom_file) && !empty($pending_options['ad_code_bottom_1'])){
+		write_ad_to_file($pending_options['ad_code_bottom_1'], $bottom_file);
+	}
+	if (!file_exists(ADINJ_CONFIG_FILE)){
+		adinj_write_config_file();
+	}
 }
 
 // If the options in the database are out of sync with our default options
@@ -677,6 +701,9 @@ function adinj_default_options(){
 			'ad_referrers' => '.google., .bing., .yahoo., .ask., search?, search., /search/',
 			'blocked_ips' => '',
 			'ad_insertion_mode' => 'mfunc',
+			'ad_code_random_1' => '',
+			'ad_code_top_1' => '',
+			'ad_code_bottom_1' => '',
 			'ui_random_hide' => 'false',
 			'ui_topad_hide' => 'false',
 			'ui_bottomad_hide' => 'false',
@@ -816,7 +843,7 @@ function adinj_docs(){
 <h4><a name="336x280"></a>336x280 large rectangle</h4>
 
 <p><textarea onclick="javascript:this.focus();this.select();" style="min-height:50px;" cols="80" rows="4">&lt;div style=&quot;background-color:#ccccff; width:336px; height:280px;&quot;&gt;
-&lt;h5&gt;TEST ADVERT 336x280 - &lt;a href=&quot;http://www.reviewmylife.co.uk/&quot;&gt;www.reviewmylife.co.uk&lt;/a&gt;&lt;&lt;/h5&gt;
+&lt;h5&gt;TEST ADVERT 336x280 - &lt;a href=&quot;http://www.reviewmylife.co.uk/&quot;&gt;www.reviewmylife.co.uk&lt;/a&gt;&lt;/h5&gt;
 &lt;/div&gt;</textarea></p>
 
 <div style="background-color:#ccccff; width:336px; height:280px;">
@@ -849,9 +876,8 @@ function adinj_init_hook() {
 	}
 }
 
+// init
 add_action('init', 'adinj_init_hook');
-// Install / activate
-register_activation_hook( __FILE__, 'adinj_activate_hook' );
 // Config links
 add_action('admin_menu', 'adinj_admin_menu_hook');
 add_filter('plugin_action_links', 'adinj_options_link_hook', 10, 2); // digits = priority, num args
