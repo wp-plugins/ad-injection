@@ -1,10 +1,10 @@
 === Ad Injection ===
 Contributors: reviewmylife
 Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
-Tags: ad injection, advert injection, advert, ad, injection, adsense, advertising, affiliate, inject, injection, insert, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, free
+Tags: ad injection, advert injection, advert, ad, injection, adsense, advertising, affiliate, inject, injection, insert, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, free, wp super cache
 Requires at least: 3.0.0
 Tested up to: 3.0.2
-Stable tag: 0.8.3
+Stable tag: TODO
 
 Injects any kind of advert into existing WordPress posts. Can restrict who sees the ads by post age, visitor referrer, IP address. Cache compatible.
 
@@ -58,9 +58,10 @@ This section describes how to install the plugin and get it working.
 
 1. Upload the ad-injection folder to the '/wp-content/plugins/' directory. The plugin must be in a folder called 'ad-injection'. So the main plugin file will be at /wp-content/plugins/ad-injection/ad-injection.php
 2. Activate the plugin through the 'Plugins' menu in WordPress.
-3. Configure your ads. Make sure you select the option to say which ad injection mode to use. You need to say whether you are using WP Super Cache (or compatible) or not. Dynamic features (referrer and IP ad filtering) will only work with either 1) WP Super Cache (or compatible) or 2) no caching plugin. 
-4. Tick the box right at the top to enable your ads.
-5. If you are using a caching plugin you may need to clear the cache to see your ads immediately.
+3. Configure your ads. Carefully go through all the sections to setup your ad placements. 
+4. Make sure you select the option to say which ad injection mode to use. You need to say whether you are using WP Super Cache (or compatible) or not. Dynamic features (referrer and IP ad filtering) will only work with either 1) WP Super Cache (or compatible) or 2) no caching plugin. 
+5. Tick the box right at the top to enable your ads.
+6. If you are using a caching plugin you may need to clear the cache to see your ads immediately.
 
 == Frequently Asked Questions ==
 
@@ -133,6 +134,11 @@ If you are using WP Super Cache.
 2. Are your WP Super Cache settings correct? It must be in 'Legacy' mode.
 3. If you are using WP Minify as well then turn off the HTML minification as this strips out the mfunc tags that Ad Injection uses to check if the adverts should be inserted.
 
+If you are using WP Minify
+
+1. Turn off the HTML minification mode if you are also using WP Super Cache. HTML minification strips out the mfunc tags that Ad Injection needs to inject its ads.
+2. If you use the 'Place Minified JavaScript in footer' then try turning it off.
+
 If you are getting errors when using the plugin check the following.
 
 1. Is there an 'ads' directory in the plugin directory? The path will probably be: '/wp-content/plugins/ad-injection/ads/'. If not create the ads directory and make sure it is writeable by the plugin (chmod 0755 will do, chmod 0750 is better).
@@ -150,6 +156,9 @@ For more information visit [reviewmylife](http://www.reviewmylife.co.uk/blog/201
 3. Can choose to show the ads only to search engine visitors, or define IP addresses that ads aren't shown to.
 
 == Changelog ==
+
+= 0.8.4 =
+* Readme.txt tweaks
 
 = 0.8.3 =
 * First public release
