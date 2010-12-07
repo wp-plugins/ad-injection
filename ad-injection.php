@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Inserts any advert into your blog. Options to exclude by post age, visitor IP, and visitor referrer. Works with WP Super Cache.
-Version: 0.8.4
+Version: 0.8.5
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/blog/
 License: GPLv2
@@ -516,7 +516,8 @@ function adinj_num_rand_ads_to_insert($content_length){
 	} else if (is_home()){
 		$max_num_rand_ads_to_insert = $options['max_num_of_ads_home_page'] - $adinj_total_rand_ads_used;
 	} else {
-		die('Something badly wrong in num_rand_ads_to_insert');
+		return 0;
+		//TODO Bug reported: 'Something badly wrong in num_rand_ads_to_insert');
 	}
 	if ($max_num_rand_ads_to_insert <= 0) {
 		return 0;

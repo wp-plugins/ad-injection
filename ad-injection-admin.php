@@ -162,6 +162,10 @@ function adinj_options_page(){
 			
 			<h4><font color="red">Be careful!</font></h4>
 			<p>Make sure that the ad settings and positioning you define are in compliance with your ad provider's terms of service!</p>
+		
+			<h4><font color="red">Beta version!</font></h4>
+			<p>This plugin has only just been released - please bare with me if there are any bugs. I'm actively listening to your feedback and fixing them.</p>
+			<p>Appologies to any 0.8.3 users whose ad code was deleted during the upgrade to 0.8.4. I think I have fixed this problem now.</p>
 		</div>
 		</div>	
 		</div>
