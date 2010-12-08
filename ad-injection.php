@@ -128,8 +128,7 @@ function adinj_get_mfunc_code($adfile){
 ";
 }
 
-function adinj_ad_code_eval($adcode, $prefix){
-	$adcode = adinj_add_tags($adcode, $prefix);
+function adinj_ad_code_eval($adcode){
 	if (stripos($adcode, '<?php') !== false){
 		return adinj_eval_php($adcode);
 	}
@@ -196,8 +195,9 @@ function adinj_ad_code_random(){
 		$adcode = adinj_get_mfunc_code(ADINJ_AD_RANDOM_FILE);
 	} else {
 		$adcode = $options['ad_code_random_1'];
+		$adcode = adinj_add_tags($adcode, 'rnd_');
 	}
-	return adinj_ad_code_eval($adcode, 'rnd_');
+	return adinj_ad_code_eval($adcode);
 }
 
 function adinj_ad_code_top(){
@@ -209,8 +209,9 @@ function adinj_ad_code_top(){
 		$adcode = adinj_get_mfunc_code(ADINJ_AD_TOP_FILE);
 	} else {
 		$adcode = $options['ad_code_top_1'];
+		$adcode = adinj_add_tags($adcode, 'top_');
 	}
-	return adinj_ad_code_eval($adcode, 'top_');
+	return adinj_ad_code_eval($adcode);
 }
 
 function adinj_ad_code_bottom(){
@@ -222,8 +223,9 @@ function adinj_ad_code_bottom(){
 		$adcode = adinj_get_mfunc_code(ADINJ_AD_BOTTOM_FILE);
 	} else {
 		$adcode = $options['ad_code_bottom_1'];
+		$adcode = adinj_add_tags($adcode, 'bottom_');
 	}
-	return adinj_ad_code_eval($adcode, 'bottom_');
+	return adinj_ad_code_eval($adcode);
 }
 
 function read_ad_from_file($ad_path){

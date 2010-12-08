@@ -1,15 +1,42 @@
 <?php
 /*
 Part of the Ad Injection plugin for WordPress
-http://www.reviewmylife.co.uk/blog/
+http://www.reviewmylife.co.uk/
 */
 
 include_once('ad-injection-config.php');
 
 //////////////////////////////////////////////////////////////////////////////
 
+if (!function_exists('adshow_functions_exist')){
+// Used to downgrade fatal errors to printed errors to make debugging easier
+// and so that a problem doesn't disable the whole website. 
+function adshow_functions_exist(){
+	if (!adshow_functions_exist_impl('adinj_config_add_tags_rnd')){ return false; }
+	if (!adshow_functions_exist_impl('adinj_config_add_tags_top')){ return false; }
+	if (!adshow_functions_exist_impl('adinj_config_add_tags_bottom')){ return false; }
+	if (!adshow_functions_exist_impl('adinj_config_sevisitors_only')){ return false; }
+	if (!adshow_functions_exist_impl('adinj_config_search_engine_referrers')){ return false; }
+	if (!adshow_functions_exist_impl('adinj_config_blocked_ips')){ return false; }
+	if (!adshow_functions_exist_impl('adinj_config_debug_mode')){ return false; }
+	return true;
+}
+function adshow_functions_exist_impl($function){
+	if (!function_exists($function)){
+		echo "<b>".__FILE__." Error: $function does not exist.</b>";
+		return false;
+	}
+	return true;
+}
+}
+
 if (!function_exists('adshow_display_ad_file')){
 function adshow_display_ad_file($adfile){
+	if (!adshow_functions_exist()){ return false; }
+
+	if (adinj_config_debug_mode()){
+		echo "<!--ADINJ DEBUG: adshow_display_ad_file($adfile)-->";
+	}
 	$ad_path = dirname(__FILE__).'/ads/'.$adfile;
 	adshow_display_ad_full_path($ad_path);
 }
@@ -17,6 +44,8 @@ function adshow_display_ad_file($adfile){
 
 if (!function_exists('adshow_display_ad_full_path')){
 function adshow_display_ad_full_path($ad_path){
+	if (!adshow_functions_exist()){ return false; }
+
 	$showads = adshow_show_adverts();
 	if ($showads !== true){
 		if (adinj_config_debug_mode()){
@@ -46,6 +75,8 @@ function adshow_display_ad_full_path($ad_path){
 
 if (!function_exists('adshow_fromasearchengine')){
 function adshow_fromasearchengine(){
+	if (!adshow_functions_exist()){ return false; }
+
 	$referrer = $_SERVER['HTTP_REFERER'];
 	$searchengines = adinj_config_search_engine_referrers();
 	foreach ($searchengines as $se) {
@@ -61,6 +92,8 @@ function adshow_fromasearchengine(){
 
 if (!function_exists('adshow_blocked_ip')){
 function adshow_blocked_ip(){
+	if (!adshow_functions_exist()){ return false; }
+
 	$visitorIP = $_SERVER['REMOTE_ADDR'];
 	return in_array($visitorIP, adinj_config_blocked_ips());
 }
@@ -68,6 +101,8 @@ function adshow_blocked_ip(){
 
 if (!function_exists('adshow_show_adverts')){
 function adshow_show_adverts(){
+	if (!adshow_functions_exist()){ return false; }
+
 	if (adshow_blocked_ip()) return "blockedip";
 	if (adinj_config_sevisitors_only()){
 		if (!adshow_fromasearchengine()) return "referrer";

@@ -4,7 +4,7 @@ Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-w
 Tags: ad injection, advert injection, advert, ad, injection, adsense, advertising, affiliate, inject, injection, insert, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, free
 Requires at least: 3.0.0
 Tested up to: 3.0.2
-Stable tag: 0.8.6
+Stable tag: 0.8.7
 
 Injects any kind of advert into existing WordPress posts. Can restrict who sees the ads by post age, visitor referrer, IP address. Cache compatible.
 
@@ -157,6 +157,9 @@ For more information visit [reviewmylife](http://www.reviewmylife.co.uk/blog/201
 
 == Changelog ==
 
+= 0.8.7 =
+More fault tolerant mfunc support.
+
 = 0.8.6 =
 Fix problems relating to over strict chmod usage. 
 Add save message. 
@@ -173,6 +176,9 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 * First public release
 
 == Upgrade Notice ==
+
+= 0.8.7 =
+More fault tolerant mfunc support.
 
 = 0.8.6 =
 Fix problems relating to over strict chmod usage. And add save message.
