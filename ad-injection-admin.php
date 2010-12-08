@@ -239,7 +239,7 @@ function adinj_options_page(){
 	
 	<table border="0" cellspacing="5">
 	<tr><td style="vertical-align: top">
-	<textarea name="ad_code_random_1" rows="10" cols="60"><?php echo read_ad_from_file(ADINJ_AD_PATH.'/'.ADINJ_AD_RANDOM_FILE); ?></textarea>
+	<textarea name="ad_code_random_1" rows="10" cols="60"><?php echo $options['ad_code_random_1']; ?></textarea>
 	</td><td style="vertical-align: top">
 	<?php adinj_add_alignment_options('rnd_'); ?>
 	</td></tr>
@@ -372,7 +372,7 @@ function adinj_options_page(){
 	
 	<table border="0">
 	<tr><td>
-	<textarea name="ad_code_top_1" rows="10" cols="60"><?php echo read_ad_from_file(ADINJ_AD_PATH.'/'.ADINJ_AD_TOP_FILE); ?></textarea>
+	<textarea name="ad_code_top_1" rows="10" cols="60"><?php echo $options['ad_code_top_1']; ?></textarea>
 	</td><td style="vertical-align: top">
 	<?php adinj_add_alignment_options('top_'); ?>
 	</td></tr>
@@ -397,7 +397,7 @@ function adinj_options_page(){
 	
 	<table border="0">
 	<tr><td>
-	<textarea name="ad_code_bottom_1" rows="10" cols="60"><?php echo read_ad_from_file(ADINJ_AD_PATH.'/'.ADINJ_AD_BOTTOM_FILE); ?></textarea>
+	<textarea name="ad_code_bottom_1" rows="10" cols="60"><?php echo $options['ad_code_bottom_1']; ?></textarea>
 	</td><td style="vertical-align: top">
 	<?php adinj_add_alignment_options('bottom_'); ?>
 	</td></tr>
