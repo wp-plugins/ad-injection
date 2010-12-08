@@ -3,9 +3,9 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Inserts any advert into your blog. Options to exclude by post age, visitor IP, and visitor referrer. Works with WP Super Cache.
-Version: 0.8.5
+Version: 0.8.6
 Author: reviewmylife
-Author URI: http://www.reviewmylife.co.uk/blog/
+Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
 */
 
@@ -120,21 +120,16 @@ function adinj_addsevjs_hook(){
 	wp_enqueue_script('adinj_sev', WP_PLUGIN_URL.'/ad-injection/adinj-sev.js', NULL, NULL, true);
 }
 
-function adinj_ad_code_eval($adfile){
-	$options = adinj_options();
-	if ($options['ad_insertion_mode'] == 'mfunc'){
-		$adcode = "\n
+function adinj_get_mfunc_code($adfile){
+	return "\n
 <!--mfunc adshow_display_ad_file('$adfile') -->
 <?php adshow_display_ad_file('$adfile'); ?>
 <!--/mfunc-->
 ";
-	} else {
-		$adcode = read_ad_from_file(ADINJ_AD_PATH.'/'.$adfile);
-		$prefix = 'rnd_';
-		if ($adfile == ADINJ_AD_TOP_FILE) $prefix = 'top_';
-		if ($adfile == ADINJ_AD_BOTTOM_FILE) $prefix = 'bottom_';
-		$adcode = adinj_add_tags($adcode, $prefix);
-	}
+}
+
+function adinj_ad_code_eval($adcode, $prefix){
+	$adcode = adinj_add_tags($adcode, $prefix);
 	if (stripos($adcode, '<?php') !== false){
 		return adinj_eval_php($adcode);
 	}
@@ -195,19 +190,40 @@ function adinj_add_tags($adcode, $prefix, $func=NULL){
 }
 
 function adinj_ad_code_random(){
-	return adinj_ad_code_eval(ADINJ_AD_RANDOM_FILE);
+	$options = adinj_options();
+	$adcode = "";
+	if ($options['ad_insertion_mode'] == 'mfunc'){
+		$adcode = adinj_get_mfunc_code(ADINJ_AD_RANDOM_FILE);
+	} else {
+		$adcode = $options['ad_code_random_1'];
+	}
+	return adinj_ad_code_eval($adcode, 'rnd_');
 }
 
 function adinj_ad_code_top(){
 	global $adinj_total_all_ads_used;
 	++$adinj_total_all_ads_used;
-	return adinj_ad_code_eval(ADINJ_AD_TOP_FILE);
+	$options = adinj_options();
+	$adcode = "";
+	if ($options['ad_insertion_mode'] == 'mfunc'){
+		$adcode = adinj_get_mfunc_code(ADINJ_AD_TOP_FILE);
+	} else {
+		$adcode = $options['ad_code_top_1'];
+	}
+	return adinj_ad_code_eval($adcode, 'top_');
 }
 
 function adinj_ad_code_bottom(){
 	global $adinj_total_all_ads_used;
 	++$adinj_total_all_ads_used;
-	return adinj_ad_code_eval(ADINJ_AD_BOTTOM_FILE);
+	$options = adinj_options();
+	$adcode = "";
+	if ($options['ad_insertion_mode'] == 'mfunc'){
+		$adcode = adinj_get_mfunc_code(ADINJ_AD_BOTTOM_FILE);
+	} else {
+		$adcode = $options['ad_code_bottom_1'];
+	}
+	return adinj_ad_code_eval($adcode, 'bottom_');
 }
 
 function read_ad_from_file($ad_path){
