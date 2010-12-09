@@ -3,8 +3,8 @@ Contributors: reviewmylife
 Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Tags: ad injection, advert injection, advert, ad, injection, adsense, advertising, affiliate, inject, injection, insert, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, free
 Requires at least: 3.0.0
-Tested up to: 3.0.2
-Stable tag: 0.8.8
+Tested up to: 3.0.3
+Stable tag: 0.8.9
 
 Injects any kind of advert into existing WordPress posts. Can restrict who sees the ads by post age, visitor referrer, IP address. Cache compatible.
 
@@ -157,6 +157,10 @@ For more information visit [reviewmylife](http://www.reviewmylife.co.uk/blog/201
 
 == Changelog ==
 
+= 0.8.9 =
+Prevent config file being lost by bulk automatic update.
+Error messages from adshow.php are hidden in HTML now rather than being visible to everyone.
+
 = 0.8.8 =
 Try to make sure ads don't appear on archive pages, 404s or search results, in case theme is working in a non-standard way. Reduce dependency on files.
 
@@ -179,6 +183,9 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 * First public release
 
 == Upgrade Notice ==
+
+= 0.8.9 =
+Upgrade to this version by going to the plugins tab and upgrading the individual plugin. If you upgrade from the bulk updator the mfunc config file will be lost and you would have to go to 'Save all settings' to re-generate it. This version attempts to solve the bulk update problem.
 
 = 0.8.8 =
 Try to make sure ads don't appear on archive pages, 404s or search results, in case theme is working in a non-standard way. Reduce dependency on files.

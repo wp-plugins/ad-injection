@@ -4,7 +4,14 @@ Part of the Ad Injection plugin for WordPress
 http://www.reviewmylife.co.uk/
 */
 
-include_once('ad-injection-config.php');
+$adinj_dir = dirname(__FILE__);
+if (file_exists($adinj_dir.'/ad-injection-config.php')){
+	include_once($adinj_dir.'/ad-injection-config.php');
+} else if (file_exists($adinj_dir.'/../../ad-injection-config.php')) {
+	include_once($adinj_dir.'/../../ad-injection-config.php');
+} else {
+	echo '<!--ADINJ DEBUG: ad-injection-config.php could not be found. Re-save your settings to re-generate it.-->';
+}
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -23,7 +30,7 @@ function adshow_functions_exist(){
 }
 function adshow_functions_exist_impl($function){
 	if (!function_exists($function)){
-		echo "<b>".__FILE__." Error: $function does not exist.</b>";
+		echo "<!--ADINJ DEBUG:".__FILE__." Error: $function does not exist. Might be because config file is missing. Re-save settings to fix. -->";
 		return false;
 	}
 	return true;
@@ -66,7 +73,7 @@ function adshow_display_ad_full_path($ad_path){
 			echo adshow_eval_php($ad);
 		}
 	} else {
-		echo "ADINJ WARNING: file does not exist: $ad_path";
+		echo "<!--ADINJ DEBUG: file does not exist: $ad_path-->";
 	}
 }
 }

@@ -116,6 +116,11 @@ $bottom_func
 CONFIG;
 	
 	adinj_write_file(ADINJ_CONFIG_FILE, $config, 0640);
+	// We write the second config file to the WP_CONTENT_DIR directory
+	// so that it will persist after bulk plugin upgrades. In a later update
+	// I'll get rid of the duplicate. This is the same directory that
+	// WP Super Cache uses for its config file.
+	adinj_write_file(ADINJ_CONFIG_FILE2, $config, 0640);
 
 }
 
