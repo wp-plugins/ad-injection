@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Inserts any advert into your blog. Options to exclude by post age, visitor IP, and visitor referrer. Works with WP Super Cache.
-Version: 0.8.9
+Version: 0.9.0
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -81,17 +81,18 @@ function adinj_option($option){
 //$cookie_domain = COOKIE_DOMAIN; // TODO test
 //var adinj_cookie_domain = "$cookie_domain"; //JS line. TODO test
 function adinj_print_referrers_hook(){
-	if (adinj_ads_completely_disabled_from_page()) return;
+	// TODO can re-enable this check once the widget ads are factored in.
+	//if (adinj_ads_completely_disabled_from_page()) return;
 	if (adinj_ticked('sevisitors_only')){
 		$referrer_list = adinj_quote_list('ad_referrers');
 	echo <<<SCRIPT
 <script type="text/javascript">
+// Ad Injection plugin
 var adinj_referrers = new Array($referrer_list);
 adinj_searchenginevisitor();
 </script>
 
 SCRIPT;
-// TODO add comment to script // Ad Injection plugin
 	}
 }
 
@@ -116,7 +117,9 @@ function adinj_quote_list($option){
 }
 
 function adinj_addsevjs_hook(){
-	if (adinj_ads_completely_disabled_from_page()) return;
+	// TODO can re-enable this check once the widget ads are factored in.
+	//if (adinj_ads_completely_disabled_from_page()) return;
+	if (!adinj_ticked('sevisitors_only')) return;
 	// Put the search engine detection / cookie setting script in the footer
 	wp_enqueue_script('adinj_sev', WP_PLUGIN_URL.'/ad-injection/adinj-sev.js', NULL, NULL, true);
 }
@@ -340,7 +343,8 @@ function adinj_ads_completely_disabled_from_page($content=NULL){
 	if ((is_home() && adinj_ticked('exclude_home')) ||
 	(is_page() && adinj_ticked('exclude_page')) ||
 	(is_single() && adinj_ticked('exclude_single')) ||
-	(is_archive() || is_search() || is_404())){
+	(is_archive() && adinj_ticked('exclude_archive')) || 
+		is_search() || is_404()){
 		return "NOADS: excluded from this post type-".get_post_type();
 	}
 	
@@ -439,7 +443,10 @@ function adinj_inject_hook($content){
 		$content_adfree_footer = $split[1];
 	}
 
-	# Move onto random ad insertions
+	// TODO add note explaining that start tags are processed before the 'first
+	// paragraph ad
+	
+	// Move onto random ad insertions
 	$paragraphmarker = "</p>";
 	if(stripos($content, $paragraphmarker) === false) return adinj($content, "no &lt;/p&gt; tags");
 	
@@ -578,6 +585,13 @@ function adinj_ticked($option){
 	$options = adinj_options();
 	if (!empty($options[$option])) return 'checked="checked"';
 	return false;
+}
+
+// Widget support
+require_once('ad-injection-widget.php');
+add_action('widgets_init', 'adinj_widgets_init');
+function adinj_widgets_init() {
+	register_widget('Ad_Injection_Widget');
 }
 
 // activate

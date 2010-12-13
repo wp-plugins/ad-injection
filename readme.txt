@@ -1,10 +1,10 @@
 === Ad Injection ===
 Contributors: reviewmylife
 Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
-Tags: ad injection, advert injection, advert, ad, injection, adsense, advertising, affiliate, inject, injection, insert, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, free
+Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free
 Requires at least: 3.0.0
 Tested up to: 3.0.3
-Stable tag: 0.8.9
+Stable tag: 0.9.0
 
 Injects any kind of advert into existing WordPress posts. Can restrict who sees the ads by post age, visitor referrer, IP address. Cache compatible.
 
@@ -16,11 +16,15 @@ It injects any kind of advert (e.g. Google AdSense, Amazon Associates, ClickBank
 
 The ads can be injected into existing posts without requiring any modification of the post. The injection can be done randomly between paragraphs, and there is an option to always inject the first advert after the first paragraph. Two separate adverts can be defined for the top and bottom of the content. Randomly positioning the adverts helps to reduce 'ad blindness'.
 
+= Widget support [new] =
+
+Widgets can be added to your sidebars, or other widget areas on any pages. The same ad display restrictions that you setup for your other ads will also apply to the widgets.
+
 = Ad quantity by post length =
 
 The number of adverts can be set based on the length of the post. It is a good idea for longer posts to have more adverts than shorter posts for example. Adverts can also be turned off for very short posts.
 
-= Search engines only =
+= Search engines only mode =
 
 You can specify that ads should only be shown to search engine visitors (or from any other referring websites) so that your regular visitors (who are unlikely to click your ads) get a better experience of your site. You can define which search engines or any other referring sites see your adverts. A visitor who enters the site by a search engine will see ads for the next hour.
 
@@ -94,6 +98,15 @@ No! All the features of this plugin will work with no caching plugin installed. 
 
 Potentially - if they are compatible with WP Super Cache's mfunc tags. I'm guessing they will work with the original WP Cache as I think the mfunc tags in WP Super Cache were inherited from here. However I haven't yet tested this. W3 Total Cache does have support for some kind of mfunc tags, but I haven't tested to see if they are compatible with the WP Super Cache ones. Do let me know!
 
+= Can I just have adverts on the home page? =
+
+i.e. adverts on the home page, but not on single posts or pages.
+
+Yes you can do this, there are two ways.
+
+1. In the 'Single posts and pages' setting set the number of injected ads to 0. Then in the 'Home page' settings set the number of ads to whatever you want. 
+2. Alternatively use the global exclude options at the top to exclude ads from all page types except the home page.
+
 = What if I am using an incompatible caching plugin? =
 
 Don't worry - everything will still work except for:
@@ -145,7 +158,7 @@ If you are getting errors when using the plugin check the following.
 2. Are there text files in the ads directory? The ad code that you enter into the ad boxes should get saved in text files in the ads directory.
 3. Has the config file been created? It should be at '/wp-content/plugins/ad-injection/ad-injection-config.php'. If not make sure the '/wp-content/plugins/ad-injection/' directory is writeable (chmod 0750 is best, chmod 0755 will do).
 
-If you do get any errors please use the 'Report a bug or give feedback' link on the plugin to send me the error details. If things go so badly wrong that you can't even get to the settings page please send me an email via [this contact form](http://www.reviewmylife.co.uk/blog/contact-us/ "contact form").
+If you do get any errors please use the 'Report a bug or give feedback' link on the plugin to send me the error details. If things go so badly wrong that you can't even get to the settings page please send me an email via [this contact form](http://www.reviewmylife.co.uk/contact-us/ "contact form").
 
 For more information visit [reviewmylife](http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/ "reviewmylife blog").
 
@@ -156,6 +169,13 @@ For more information visit [reviewmylife](http://www.reviewmylife.co.uk/blog/201
 3. Can choose to show the ads only to search engine visitors, or define IP addresses that ads aren't shown to.
 
 == Changelog ==
+
+= 0.9.0 =
+Widget support.
+Only write to the ad files if necessary.
+Chrome display fixes.
+More informative save messages.
+Other fixes.
 
 = 0.8.9 =
 Prevent config file being lost by bulk automatic update.
@@ -183,6 +203,9 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 * First public release
 
 == Upgrade Notice ==
+
+= 0.9.0 =
+Widget support and other fixes.
 
 = 0.8.9 =
 Upgrade to this version by going to the plugins tab and upgrading the individual plugin. If you upgrade from the bulk updator the mfunc config file will be lost and you would have to go to 'Save all settings' to re-generate it. This version attempts to solve the bulk update problem.
