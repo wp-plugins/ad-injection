@@ -1,7 +1,7 @@
 === Ad Injection ===
 Contributors: reviewmylife
 Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
-Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free
+Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free
 Requires at least: 3.0.0
 Tested up to: 3.0.3
 Stable tag: 0.9.0
@@ -14,7 +14,7 @@ It injects any kind of advert (e.g. Google AdSense, Amazon Associates, ClickBank
 
 = Automatic advert injection =
 
-The ads can be injected into existing posts without requiring any modification of the post. The injection can be done randomly between paragraphs, and there is an option to always inject the first advert after the first paragraph. Two separate adverts can be defined for the top and bottom of the content. Randomly positioning the adverts helps to reduce 'ad blindness'.
+The ads can be injected into existing posts without requiring any modification of the post. The injection can be done randomly between paragraphs, and there is an option to always inject the first advert after the first paragraph. Randomly positioning the adverts helps to reduce 'ad blindness'. Two separate adverts can be defined for the top and bottom of the content. Widget adverts can be defined as well.
 
 = Widget support [new] =
 
