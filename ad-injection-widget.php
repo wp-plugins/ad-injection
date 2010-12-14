@@ -21,6 +21,12 @@ class Ad_Injection_Widget extends WP_Widget {
 			(is_archive() && adinj_ticked('widget_exclude_archive'))){
 			return;
 		}
+
+		if ($options['ad_insertion_mode'] == 'direct_dynamic'){
+			if (adinj_show_adverts() !== true){
+				return;
+			}
+		}
 		
 		extract( $args );
 
@@ -94,7 +100,7 @@ class Ad_Injection_Widget extends WP_Widget {
 	}
 	
 	function get_ad_file_path(){
-		return ADINJ_AD_PATH.'/'.get_ad_file_name();
+		return ADINJ_AD_PATH.'/'.$this->get_ad_file_name();
 	}
 	
 	function get_ad_file_name(){
