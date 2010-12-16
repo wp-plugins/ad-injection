@@ -37,6 +37,13 @@ function adinj_checkNonce(){
 	}
 }
 
+function adinj_update_options($options){
+	update_option('adinj_options', $options);
+	// Refresh options from database as cached values are now invalidated
+	global $adinj_data;
+	$adinj_data = get_option('adinj_options');
+}
+
 // TODO investigate register_settings for a future release
 if (isset($_POST['adinj_action'])){
 switch($_POST['adinj_action']){
@@ -85,7 +92,7 @@ case 'Save all settings':
 	$blocked_ips = stripslashes($_POST['blocked_ips']);
 	$options['blocked_ips'] = $blocked_ips;
 	
-	update_option('adinj_options', $options);
+	adinj_update_options($options);
 	
 	// TODO could stop this if not mfunc mode
 	adinj_write_config_file();
@@ -94,7 +101,7 @@ case 'Save all settings':
 
 	case 'Reset to Default':
 	adinj_checkNonce();
-	update_option('adinj_options', adinj_default_options());
+	adinj_update_options(adinj_default_options());
 	break;
 	
 	case 'Delete settings from DB':
@@ -792,7 +799,7 @@ function adinj_activate_hook() {
 		$pending_options['ad_code_bottom_1'] = read_ad_from_file($bottom_file);
 	}
 
-	update_option('adinj_options', $pending_options);
+	adinj_update_options($pending_options);
 }
 
 // If the options in the database are out of sync with our default options
