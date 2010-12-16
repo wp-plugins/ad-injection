@@ -2,29 +2,14 @@
 /*
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
-Description: Inserts any advert into your blog. Options to exclude by post age, visitor IP, and visitor referrer. Works with WP Super Cache.
-Version: 0.9.1
+Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
+Version: 0.9.2
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
 */
 
-/*  Copyright 2010 reviewmylife (contact : http://www.reviewmylife.co.uk/)
-
-	This program is free software; you can redistribute it and/or modify
-	it under the terms of the GNU General Public License, version 2, as 
-	published by the Free Software Foundation.
-
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-*/
-
+/* License header moved to ad-injection-admin.php */
 
 //error_reporting(E_ALL ^ E_STRICT);
 
@@ -32,7 +17,8 @@ License: GPLv2
 define('ADINJ_PATH', WP_PLUGIN_DIR.'/ad-injection');
 define('ADINJ_CONFIG_FILE', ADINJ_PATH . '/ad-injection-config.php');
 define('ADINJ_CONFIG_FILE2', WP_CONTENT_DIR . '/ad-injection-config.php'); // same directory as WP Super Cache config file
-define('ADINJ_AD_PATH', ADINJ_PATH . '/ads');
+define('ADINJ_AD_PATH', ADINJ_PATH . '/ads'); // old ad store
+define('ADINJ_AD_PATH2', WP_PLUGIN_DIR.'/ad-injection-data'); // ad store from 0.9.2
 define('ADINJ_AD_RANDOM_FILE', 'ad_random_1.txt');
 define('ADINJ_AD_TOP_FILE', 'ad_top_1.txt');
 define('ADINJ_AD_BOTTOM_FILE', 'ad_bottom_1.txt');
@@ -320,6 +306,7 @@ function adinj($content, $message){
 	if (!adinj_ticked('debug_mode')) return $content;
 	global $adinj_total_rand_ads_used, $adinj_total_all_ads_used;
 	$path = ADINJ_AD_PATH;
+	$path2 = ADINJ_AD_PATH2;
 	$options = adinj_options();
 	$mode = $options['ad_insertion_mode'];
 	return $content."
@@ -331,6 +318,7 @@ content length=".strlen($content)."
 \$adinj_total_all_ads_used=$adinj_total_all_ads_used
 injection mode=$mode
 ADINJ_AD_PATH=$path
+ADINJ_AD_PATH2=$path2
 //-->\n";
 }
 
@@ -522,7 +510,7 @@ function adinj_inject_hook($content){
 	return adinj($content_adfree_header.$content.$content_adfree_footer, "Ads injected: " . $debug);
 }
 
-function adinj_split_by_tag($content, $tag, &$debugtags=false){
+function adinj_split_by_tag($content, $tag, &$debugtags){
 	$ret = array();
 	if (strpos($content, $tag) !== false){
 		if ($debugtags !== false) $debugtags .= "$tag, ";
@@ -595,10 +583,10 @@ function adinj_widgets_init() {
 }
 
 // activate
-register_activation_hook( __FILE__, 'adinj_activate_hook' );
+register_activation_hook(__FILE__, 'adinj_activate_hook');
 // Content injection
 add_action('wp_enqueue_scripts', 'adinj_addsevjs_hook');
-add_action('wp_footer', 'adinj_print_referrers_hook');
 add_filter('the_content', 'adinj_inject_hook');
+add_action('wp_footer', 'adinj_print_referrers_hook');
 
 ?>

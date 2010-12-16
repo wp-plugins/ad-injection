@@ -60,7 +60,9 @@ class Ad_Injection_Widget extends WP_Widget {
 		$instance['title'] = strip_tags( $new_instance['title'] );
 		$instance['advert'] = $new_instance['advert'];
 		
+		// TODO later on stop saving to the old ad path
 		write_ad_to_file($instance['advert'], $this->get_ad_file_path());
+		write_ad_to_file($instance['advert'], $this->get_ad_file_path2());
 		
 		return $instance;
 	}
@@ -68,20 +70,20 @@ class Ad_Injection_Widget extends WP_Widget {
 	function form( $instance ) {
 
 		/* Set up some default widget settings. */
-		$defaults = array( 'title' => '', 'advert' => '' );
+		$defaults = array('title' => '', 'advert' => '');
 		$instance = wp_parse_args( (array) $instance, $defaults ); 
 		?>
 		
 		<p>
-			<label for="<?php echo $this->get_field_id( 'title' ); ?>">Title:</label>
-			<input id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" value="<?php echo $instance['title']; ?>" style="width:100%;" />
+			<label for="<?php echo $this->get_field_id('title'); ?>">Title:</label>
+			<input id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" value="<?php echo $instance['title']; ?>" style="width:100%;" />
 		<br />
 			<span style="font-size:10px;">Make sure any label complies with your ad provider's TOS. More info for <a href="http://adsense.blogspot.com/2007/04/encouraging-clicks.html" target="_new">AdSense</a> users.</span>
 		</p>
 
 		<p>
-			<label for="<?php echo $this->get_field_id( 'advert' ); ?>">Ad code:</label>
-			<textarea class="widefat" rows="12" cols="20" id="<?php echo $this->get_field_id( 'advert' ); ?>" name="<?php echo $this->get_field_name( 'advert' ); ?>"><?php echo $instance['advert']; ?></textarea>
+			<label for="<?php echo $this->get_field_id('advert'); ?>">Ad code:</label>
+			<textarea class="widefat" rows="12" cols="20" id="<?php echo $this->get_field_id('advert'); ?>" name="<?php echo $this->get_field_name('advert'); ?>"><?php echo $instance['advert']; ?></textarea>
 		</p>
 		
 		<p>The following dynamic options to define who sees these adverts are on the main <a href='options-general.php?page=ad-injection.php'>Ad Injection settings page</a>. The title will however always be displayed. If you want the title to be dynamic as well you should embed it in the ad code text box.</p>
@@ -101,6 +103,10 @@ class Ad_Injection_Widget extends WP_Widget {
 	
 	function get_ad_file_path(){
 		return ADINJ_AD_PATH.'/'.$this->get_ad_file_name();
+	}
+	
+	function get_ad_file_path2(){
+		return ADINJ_AD_PATH2.'/'.$this->get_ad_file_name();
 	}
 	
 	function get_ad_file_name(){

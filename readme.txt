@@ -4,9 +4,9 @@ Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-w
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free
 Requires at least: 3.0.0
 Tested up to: 3.0.3
-Stable tag: 0.9.1
+Stable tag: 0.9.2
 
-Injects any kind of advert into existing WordPress posts. Can restrict who sees the ads by post age, visitor referrer, IP address. Cache compatible.
+Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
 
 == Description ==
 
@@ -81,6 +81,7 @@ One a basic level it can do the same job as Dax's excellent Adsense Injection. I
 * Restrict ad display by referrer (e.g. can restrict display to search engine visitors).
 * Can prevent specific IP addresses from seeing adverts.
 * Can define randomly positioned adverts, and adverts at the top and bottom of the posts.
+* Add adverts to the widget area.
 * Vary number of adverts based on post length.
 * You can inject raw JavaScript and PHP.
 * The dynamic features (restricting ads by referrer and IP) work with WP Super Cache.
@@ -126,7 +127,7 @@ If you use WP Minify and WP Super Cache in combination with this plugin, you'll 
 * Uninstall support is provided to delete this option if you uninstall the plugin.
 * Admin code is separated into a separate file so it is not loaded when your visitors view your pages.
 * When used with WP Super Cache the plugin loads its dynamic settings from a static PHP file so no MySQL database queries are required.
-* The ads are saved as text files into the plugin folder. The plugin will therefore need write access to its own folder.
+* When mfunc mode is used the ads are saved as text files into the plugin folder. The plugin will therefore need write access to the plugins folder.
 * The JavaScript for setting the referrer cookie is inserted using wp_enqueue_scripts.
 * If there is anything I can do better please let me know - this is my first plugin so I still have a lot to learn!
 
@@ -170,6 +171,10 @@ For more information visit [reviewmylife](http://www.reviewmylife.co.uk/blog/201
 
 == Changelog ==
 
+= 0.9.2 =
+If you are using mfunc mode and have added ad widgets please re-save them to regenerate the ad files.
+Save ad files to a new directory so they don't need to be re-created after upgrade.
+
 = 0.9.1 =
 Fix dynamic checking for widgets.
 Fix potential PHP error message with widgets.
@@ -207,6 +212,9 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 * First public release
 
 == Upgrade Notice ==
+
+= 0.9.2 =
+If you are using mfunc mode and have added ad widgets please re-save them to regenerate the ad files.
 
 = 0.9.1 =
 Fix dynamic checking for widgets. Fix potential PHP error message with widgets.

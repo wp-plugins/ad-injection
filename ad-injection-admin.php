@@ -4,6 +4,22 @@ Part of the Ad Injection plugin for WordPress
 http://www.reviewmylife.co.uk/
 */
 
+/*  Copyright 2010 reviewmylife (contact : http://www.reviewmylife.co.uk/)
+
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License, version 2, as 
+	published by the Free Software Foundation.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
+
 if (!is_admin()) return;
 
 $adinj_warning_msg_chmod = "";
@@ -37,23 +53,30 @@ case 'Save all settings':
 		}
 	}
 	
+	global $adinj_warning_msg_filewrite;
 	if (!file_exists(ADINJ_AD_PATH)){
-		global $adinj_warning_msg_filewrite;
-		mkdir(ADINJ_AD_PATH, 0750) //TODO is this the right permission
+		mkdir(ADINJ_AD_PATH, 0750) //TODO is this the right permission?
 			or $adinj_warning_msg_filewrite .= "<br />Error: could not create dir: ".ADINJ_AD_PATH.". Please create it manually and try again.";
 	}
+	if (!file_exists(ADINJ_AD_PATH2)){
+		mkdir(ADINJ_AD_PATH2, 0750) //TODO is this the right permission?
+			or $adinj_warning_msg_filewrite .= "<br />Error: could not create dir: ".ADINJ_AD_PATH2.". Please create it manually and try again.";
+	}
 
-	// TODO we could stop writing to the ad files if direct insertion mode is used
+	// TODO later stop saving to old ADINJ_AD_PATH
 	$raw_ad_code_random = stripslashes($_POST['ad_code_random_1']);
 	write_ad_to_file($raw_ad_code_random, ADINJ_AD_PATH.'/'.ADINJ_AD_RANDOM_FILE);
+	write_ad_to_file($raw_ad_code_random, ADINJ_AD_PATH2.'/'.ADINJ_AD_RANDOM_FILE);
 	$options['ad_code_random_1'] = $raw_ad_code_random;
 	
 	$raw_ad_code_top = stripslashes($_POST['ad_code_top_1']);
 	write_ad_to_file($raw_ad_code_top, ADINJ_AD_PATH.'/'.ADINJ_AD_TOP_FILE);
+	write_ad_to_file($raw_ad_code_top, ADINJ_AD_PATH2.'/'.ADINJ_AD_TOP_FILE);
 	$options['ad_code_top_1'] = $raw_ad_code_top;
 	
 	$raw_ad_code_bottom = stripslashes($_POST['ad_code_bottom_1']);
 	write_ad_to_file($raw_ad_code_bottom, ADINJ_AD_PATH.'/'.ADINJ_AD_BOTTOM_FILE);
+	write_ad_to_file($raw_ad_code_bottom, ADINJ_AD_PATH2.'/'.ADINJ_AD_BOTTOM_FILE);
 	$options['ad_code_bottom_1'] = $raw_ad_code_bottom;
 	
 	$ad_referrers = stripslashes($_POST['ad_referrers']); // TODO do i need strip slashes?
@@ -236,12 +259,13 @@ function adinj_options_page(){
 	
 	<p>These settings apply to all ads (random, top, bottom, and widget). They will override all other settings.</p>
 	
-	<p><input type="checkbox" name="ads_enabled" <?php echo adinj_ticked('ads_enabled'); ?> /><b><?php _e('Ads enabled', 'adinj') ?></b> - Tick this to turn your ads on!<br />
+	<p><input type="checkbox" name="ads_enabled" <?php echo adinj_ticked('ads_enabled'); ?> /><b><?php _e('Ads enabled', 'adinj') ?></b> - Tick this to turn your ads on!</p><br />
 
 	<table border="0">
 	<tr><td>
-	<?php _e("Only show ads on pages older than ", 'adinj') ?>
+	<p><?php _e("Only show ads on pages older than ", 'adinj') ?></p>
 	</td><td>
+	<p>
 	<select name='ads_on_page_older_than'>
 	<?php
 	$older_than_days = array(0, 1, 2, 3, 5, 7, 10, 14, 21, 28, 40, 50);
@@ -403,8 +427,7 @@ function adinj_options_page(){
 	<?php adinj_add_alignment_options('top_'); ?>
 	</td></tr>
 	</table>
-	
-	<p><font color="red">Important: Make sure that the total number of ads does not exceed the amount allowed in your ad provider's TOS!</font> The top ad is in addition to the quantity of random ads selected.</p>
+	<span style="font-size:10px;">The top ad is in addition to the quantity of other ads selected.</span>
 	
 	<p><b>Docs:</b> The top ad will only appear on single posts and pages. It will not appear on multi-post pages. Try a <a href="#468x15">468x15</a> or <a href="#336x280">336x280</a> advert.</p>
 	
@@ -428,8 +451,7 @@ function adinj_options_page(){
 	<?php adinj_add_alignment_options('bottom_'); ?>
 	</td></tr>
 	</table>
-	
-	<p><font color="red">Important: Make sure that the total number of ads does not exceed the amount allowed in your ad provider's TOS!</font> The top ad is in addition to the quantity of random ads selected.</p>
+	<span style="font-size:10px;">The top ad is in addition to the quantity of other ads selected.</span>
 	
 	<p><b>Docs:</b> The bottom ad will only appear on single posts and pages. It will not appear on multi-post pages. Try a <a href="#336x280">336x280</a> advert.</p>
 	
@@ -663,7 +685,8 @@ function adinj_debug_information(){
 	
 	echo 'ADINJ_PATH='.ADINJ_PATH.'<br />';
 	echo 'ADINJ_CONFIG_FILE='.ADINJ_CONFIG_FILE.'<br />';
-	echo 'ADINJ_AD_PATH='.ADINJ_AD_PATH.'<br />';
+	echo 'ADINJ_AD_PATH='.ADINJ_AD_PATH.' (up to v0.9.1)<br />';
+	echo 'ADINJ_AD_PATH2='.ADINJ_AD_PATH2.' (v0.9.2+)<br />';
 	
 	echo 'Plugin version='.adinj_get_version();
 	echo '</blockquote>';
@@ -739,6 +762,8 @@ function adinj_activate_hook() {
 	}
 	
 	// Restore data after automatic upgrade
+	// TODO could remove this code further down the line when everyone
+	// has moved to the new ad store location
 	$random_file = ADINJ_AD_PATH.'/'.ADINJ_AD_RANDOM_FILE;
 	if (!file_exists($random_file) && !empty($pending_options['ad_code_random_1'])){
 		write_ad_to_file($pending_options['ad_code_random_1'], $random_file);
@@ -845,7 +870,6 @@ function adinj_getdefault($option){
 
 function write_ad_to_file($ad, $ad_path){
 	if (strlen($ad) > 0){
-		adinj_chmod(ADINJ_AD_PATH, 0750);
 		adinj_write_file($ad_path, $ad, 0640);
 	}
 }

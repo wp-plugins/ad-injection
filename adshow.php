@@ -44,8 +44,24 @@ function adshow_display_ad_file($adfile){
 	if (adinj_config_debug_mode()){
 		echo "<!--ADINJ DEBUG: adshow_display_ad_file($adfile)-->";
 	}
-	$ad_path = dirname(__FILE__).'/ads/'.$adfile;
-	adshow_display_ad_full_path($ad_path);
+	$plugin_dir = dirname(__FILE__);
+	$ad_path1 = $plugin_dir.'/ads/'.$adfile;
+	if (file_exists($ad_path1)){
+		adshow_display_ad_full_path($ad_path1);
+		return;
+	}
+	
+	$ad_path2 = dirname($plugin_dir).'/ad-injection-data/'.$adfile;
+	if (file_exists($ad_path2)){
+		adshow_display_ad_full_path($ad_path2);
+		return;
+	}
+	echo "
+<!--ADINJ DEBUG: could not read ad from either:
+	$ad_path1
+	$ad_path2
+If you have just upgraded you may need to re-save your ads to regenerate the ad files.
+-->";
 }
 }
 
@@ -62,7 +78,7 @@ function adshow_display_ad_full_path($ad_path){
 	}
 	if (file_exists($ad_path)){
 		$ad = file_get_contents($ad_path);
-		if ($ad === false) die("could not read from file: $ad_path");
+		if ($ad === false) echo "\n<!--ADINJ DEBUG: could not read ad from file: $ad_path-->";
 		if (stripos($ad_path, 'random_1.txt') > 0){ // TODO something better than this
 			echo adinj_config_add_tags_rnd(adshow_eval_php($ad));
 		} else if (stripos($ad_path, 'top_1.txt') > 0){
@@ -73,7 +89,7 @@ function adshow_display_ad_full_path($ad_path){
 			echo adshow_eval_php($ad);
 		}
 	} else {
-		echo "<!--ADINJ DEBUG: file does not exist: $ad_path-->";
+		echo "\n<!--ADINJ DEBUG: ad file does not exist: $ad_path.\nIf you have just upgraded you may need to re-save your ads to regenerate the ad files.\n-->";
 	}
 }
 }
