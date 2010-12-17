@@ -9,6 +9,7 @@ if( !defined( 'ABSPATH') && !defined('WP_UNINSTALL_PLUGIN') )
 
 // Database cleanup
 delete_option('adinj_options');
+//delete_option('widget_adinj'); //TODO does WordPress do this automatically?
 
 // Delete the configuration file
 $adinj_dir = dirname(__FILE__);

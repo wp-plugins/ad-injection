@@ -37,8 +37,8 @@ function adinj_checkNonce(){
 	}
 }
 
-function adinj_update_options($options){
-	update_option('adinj_options', $options);
+function adinj_update_options($ops){
+	update_option('adinj_options', $ops);
 	// Refresh options from database as cached values are now invalidated
 	global $adinj_data;
 	$adinj_data = get_option('adinj_options');
@@ -54,47 +54,40 @@ case 'Save all settings':
 	$default_options = adinj_default_options();
 	foreach ($default_options as $key => $value){
 		if (isset($_POST[$key])){
-			$options[$key] = $_POST[$key];
+			$ops[$key] = $_POST[$key];
 		} else {
-			$options[$key] = "";
+			$ops[$key] = "";
 		}
 	}
 	
-	global $adinj_warning_msg_filewrite;
-	if (!file_exists(ADINJ_AD_PATH)){
-		mkdir(ADINJ_AD_PATH, 0750) //TODO is this the right permission?
-			or $adinj_warning_msg_filewrite .= "<br />Error: could not create dir: ".ADINJ_AD_PATH.". Please create it manually and try again.";
-	}
-	if (!file_exists(ADINJ_AD_PATH2)){
-		mkdir(ADINJ_AD_PATH2, 0750) //TODO is this the right permission?
-			or $adinj_warning_msg_filewrite .= "<br />Error: could not create dir: ".ADINJ_AD_PATH2.". Please create it manually and try again.";
-	}
-
-	// TODO later stop saving to old ADINJ_AD_PATH
 	$raw_ad_code_random = stripslashes($_POST['ad_code_random_1']);
-	write_ad_to_file($raw_ad_code_random, ADINJ_AD_PATH.'/'.ADINJ_AD_RANDOM_FILE);
-	write_ad_to_file($raw_ad_code_random, ADINJ_AD_PATH2.'/'.ADINJ_AD_RANDOM_FILE);
-	$options['ad_code_random_1'] = $raw_ad_code_random;
+	$ops['ad_code_random_1'] = $raw_ad_code_random;
 	
 	$raw_ad_code_top = stripslashes($_POST['ad_code_top_1']);
-	write_ad_to_file($raw_ad_code_top, ADINJ_AD_PATH.'/'.ADINJ_AD_TOP_FILE);
-	write_ad_to_file($raw_ad_code_top, ADINJ_AD_PATH2.'/'.ADINJ_AD_TOP_FILE);
-	$options['ad_code_top_1'] = $raw_ad_code_top;
+	$ops['ad_code_top_1'] = $raw_ad_code_top;
 	
 	$raw_ad_code_bottom = stripslashes($_POST['ad_code_bottom_1']);
-	write_ad_to_file($raw_ad_code_bottom, ADINJ_AD_PATH.'/'.ADINJ_AD_BOTTOM_FILE);
-	write_ad_to_file($raw_ad_code_bottom, ADINJ_AD_PATH2.'/'.ADINJ_AD_BOTTOM_FILE);
-	$options['ad_code_bottom_1'] = $raw_ad_code_bottom;
+	$ops['ad_code_bottom_1'] = $raw_ad_code_bottom;
 	
 	$ad_referrers = stripslashes($_POST['ad_referrers']); // TODO do i need strip slashes?
-	$options['ad_referrers'] = $ad_referrers;
+	$ops['ad_referrers'] = $ad_referrers;
 	
 	$blocked_ips = stripslashes($_POST['blocked_ips']);
-	$options['blocked_ips'] = $blocked_ips;
+	$ops['blocked_ips'] = $blocked_ips;
 	
-	adinj_update_options($options);
+	adinj_update_options($ops);
 	
-	adinj_write_config_file();
+	if ($ops['ad_insertion_mode'] == 'mfunc') {
+		global $adinj_warning_msg_filewrite;
+		if (!file_exists(ADINJ_AD_PATH2)){
+			mkdir(ADINJ_AD_PATH2, 0750) //TODO is this the right permission?
+				or $adinj_warning_msg_filewrite .= "<br />Error: could not create dir: ".ADINJ_AD_PATH2.". Please create it manually and try again.";
+		}
+		write_ad_to_file($raw_ad_code_random, ADINJ_AD_PATH2.'/'.ADINJ_AD_RANDOM_FILE);
+		write_ad_to_file($raw_ad_code_top, ADINJ_AD_PATH2.'/'.ADINJ_AD_TOP_FILE);
+		write_ad_to_file($raw_ad_code_bottom, ADINJ_AD_PATH2.'/'.ADINJ_AD_BOTTOM_FILE);
+		adinj_write_config_file();
+	}
 
 	break;
 
@@ -106,6 +99,10 @@ case 'Save all settings':
 	case 'Delete settings from DB':
 	adinj_checkNonce();
 	delete_option('adinj_options');
+	
+	case 'Delete widget settings from DB':
+	adinj_checkNonce();
+	delete_option('widget_adinj');
 	// TODO add option to delete ads files as well
 	break;
 }
@@ -115,8 +112,8 @@ case 'Save all settings':
 // so be careful if adding any new ones - they might not exist yet, but could
 // still be referenced by adshow.
 function adinj_write_config_file(){
-	$options = adinj_options();
-	if ($options['ad_insertion_mode'] != 'mfunc') return;
+	$ops = adinj_options();
+	if ($ops['ad_insertion_mode'] != 'mfunc') return;
 	$referrer_list = adinj_quote_list('ad_referrers');
 	$ip_list = adinj_quote_list('blocked_ips');
 	$sevisitors_only = adinj_ticked('sevisitors_only')?'true':'false';
@@ -144,19 +141,14 @@ $bottom_func
 
 ?>
 CONFIG;
-	
-	adinj_write_file(ADINJ_CONFIG_FILE, $config, 0640);
-	// We write the second config file to the WP_CONTENT_DIR directory
-	// so that it will persist after bulk plugin upgrades. In a later update
-	// I'll get rid of the duplicate. This is the same directory that
-	// WP Super Cache uses for its config file.
+
 	adinj_write_file(ADINJ_CONFIG_FILE2, $config, 0640);
 
 }
 
 function adinj_write_file($path, $content, $permission){
-	$options = adinj_options();
-	if ($options['ad_insertion_mode'] != 'mfunc') return;
+	$ops = adinj_options();
+	if ($ops['ad_insertion_mode'] != 'mfunc') return;
 	global $adinj_warning_msg_filewrite;
 	$handle = fopen($path, "w");
 	fwrite($handle, $content) or $adinj_warning_msg_filewrite .= "<br />Error: could not write to file: $path";
@@ -178,13 +170,13 @@ function adinj_get_logo(){
 }
 	
 function adinj_options_page(){
-	$options = adinj_options();
-	if ($options === false || adinj_options_need_upgrading($options)){
+	$ops = adinj_options();
+	if ($ops === false || adinj_options_need_upgrading($ops)){
 		// Upgraded via FTP without being deactivated/reactivated
 		adinj_activate_hook();
 	}
-	$options = adinj_options(1);
-	if (!file_exists(ADINJ_CONFIG_FILE)){
+	$ops = adinj_options(1);
+	if (!file_exists(ADINJ_CONFIG_FILE2)){
 		adinj_write_config_file();
 	}
 	
@@ -207,7 +199,7 @@ function adinj_options_page(){
 			echo "If you are using a caching plugin you might need to delete its cache for any changes to take effect.";
         }
 		echo '</strong>';
-		if ($options['ad_insertion_mode']=='mfunc'){
+		if ($ops['ad_insertion_mode']=='mfunc'){
 			global $adinj_warning_msg_filewrite;
 			if (!empty($adinj_warning_msg_filewrite)){
 				echo $adinj_warning_msg_filewrite;
@@ -218,9 +210,9 @@ function adinj_options_page(){
 		if (!empty($adinj_warning_msg_chmod)){
 			echo '<br />Info: Some warnings were generated by chmod. See the <a href="#debugging">debugging</a> section for more info.';
 		}
-		echo '<br />Info: <a href="#restrictions">injection mode</a>='.$options['ad_insertion_mode'];
-		if (empty($options['ads_enabled'])){
-			echo '<br /><font color="red">Warning: Ads are currently disabled. You need to tick the "Ads enabled" box to see them.</font>';
+		echo '<br />Info: <a href="#restrictions">injection mode</a>='.$ops['ad_insertion_mode'];
+		if ($ops['ads_enabled'] != 'on'){
+			echo '<br /><font color="red">Warning: Ads are not enabled. You need to turn the ads on for everyone to see them.</font>';
 		}
 		echo '</p></div>';
 		
@@ -238,19 +230,25 @@ function adinj_options_page(){
 			<ul>
 			<li><a href="http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/" target="_new">Ad Injection Home</a></li>
 			<li><a href="http://wordpress.org/extend/plugins/ad-injection/" target="_new">Ad Injection at WordPress</a></li>
-			<li><a href="https://spreadsheets.google.com/viewform?formkey=dFUwZzBYcG1HNzNKMmJZdWFDdFhkY0E6MQ" target="_new">Report a bug or give feedback!</a></li>
+			<li><b><a href="https://spreadsheets.google.com/viewform?formkey=dFUwZzBYcG1HNzNKMmJZdWFDdFhkY0E6MQ" target="_new">Report a bug / give feedback</a></b></li>
 			</ul>
-			<h4>More by this author</h4>
+			<h4>Coming soon</h4>
 			<ul>
-			<li><a href="http://www.reviewmylife.co.uk/" target="_new">www.reviewmylife.co.uk</a></li>
-			<li><a href="http://www.advancedhtml.co.uk/" target="_new">www.advancedhtml.co.uk</a></li>
+			<li>More precise control over which categories and tags the ads are shown in.</li>
+			<li>Extra places where adverts can be inserted.</li>
 			</ul>
 			
 			<h4><font color="red">Be careful!</font></h4>
 			<p>Make sure that the ad settings and positioning you define are in compliance with your ad provider's terms of service!</p>
 		
-			<h4><font color="red">Beta version!</font></h4>
-			<p>This plugin has only just been released - please bare with me if there are any bugs. I'm actively listening to your feedback and fixing any problems. Please let me know if you like the plugin too!</p>
+			<h4><font color="red">Beta version</font></h4>
+			<p>This plugin has only only recently been released - please bare with me if there are any bugs. I'm actively listening to your feedback and fixing any problems, and adding new features that you request. Please let me know if you like the plugin too!</p>
+			
+			<h4>More by this author</h4>
+			<ul>
+			<li><a href="http://www.reviewmylife.co.uk/" target="_new">www.reviewmylife.co.uk</a></li>
+			<li><a href="http://www.advancedhtml.co.uk/" target="_new">www.advancedhtml.co.uk</a></li>
+			</ul>
 		</div>
 		</div>	
 		</div>
@@ -266,7 +264,10 @@ function adinj_options_page(){
 	
 	<p>These settings apply to all ads (random, top, bottom, and widget). They will override all other settings.</p>
 	
-	<p><input type="checkbox" name="ads_enabled" <?php echo adinj_ticked('ads_enabled'); ?> /><b><?php _e('Ads enabled', 'adinj') ?></b> - Tick this to turn your ads on!</p><br />
+	<input type="radio" name="ads_enabled" value="on" <?php if ($ops['ads_enabled']=='on') echo 'checked="checked"'; ?> /> <b>On: <?php _e('Ads enabled', 'adinj') ?></b><br />
+	<input type="radio" name="ads_enabled" value="off" <?php if ($ops['ads_enabled']=='off' || $ops['ads_enabled']=='') echo 'checked="checked"'; ?> /> <b>Off</b><br />
+	<input type="radio" name="ads_enabled" value="test" <?php if ($ops['ads_enabled']=='test') echo 'checked="checked"'; ?> /> <b>Test mode</b> - Only show ads to admin.<br />
+	<span style="font-size:10px;color:red;">Warning: Turn any caching plugin *off* before using test mode. If you leave them on the test adverts will be cached and shown to your real visitors.</span><br />
 
 	<table border="0">
 	<tr><td>
@@ -278,7 +279,7 @@ function adinj_options_page(){
 	$older_than_days = array(0, 1, 2, 3, 5, 7, 10, 14, 21, 28, 40, 50);
 	for ($value=0; $value<sizeof($older_than_days); ++$value){
 		echo "<option value=\"$older_than_days[$value]\" ";
-		if($options['ads_on_page_older_than'] == $older_than_days[$value]) echo 'selected="selected"';
+		if($ops['ads_on_page_older_than'] == $older_than_days[$value]) echo 'selected="selected"';
 		echo ">$older_than_days[$value]</option>";
 	}
 	?>
@@ -303,7 +304,7 @@ function adinj_options_page(){
 	
 	<table border="0" cellspacing="5">
 	<tr><td style="vertical-align: top">
-	<textarea name="ad_code_random_1" rows="10" cols="60"><?php echo $options['ad_code_random_1']; ?></textarea>
+	<textarea name="ad_code_random_1" rows="10" cols="60"><?php echo $ops['ad_code_random_1']; ?></textarea>
 	</td><td style="vertical-align: top">
 	<?php adinj_add_alignment_options('rnd_'); ?>
 	</td></tr>
@@ -314,8 +315,8 @@ function adinj_options_page(){
 	</table>
 
 	
-	<p><b>Docs:</b> On individual posts or pages this advert is inserted between randomly selected paragraphs. On a multi-post page (e.g. home page), one ad is inserted into each post. Try a <a href="#468x60">468x60</a> or <a href="#728x90">728x90</a> banner.</p>
-	<p>Be especially careful if you decide to use the 'float' layout options. Make sure that you don't have adverts floated over the top of other page elements, or vice-versa.</p>
+	<p><span style="font-size:10px;"><b>Docs:</b> On individual posts or pages this advert is inserted between randomly selected paragraphs. On a multi-post page (e.g. home page), one ad is inserted into each post. Try a <a href="#468x60">468x60</a> or <a href="#728x90">728x90</a> banner.</span></p>
+	<p><span style="font-size:10px;">Be especially careful if you decide to use the 'float' layout options. Make sure that you don't have adverts floated over the top of other page elements, or vice-versa.</span></p>
 	</div>
 	
 	<input type="submit" style="float:right" name="adinj_action" value="<?php _e('Save all settings', 'adinj') ?>" />
@@ -338,7 +339,7 @@ function adinj_options_page(){
 	<?php
 	for ($value=0; $value<=6; ++$value){
 		echo "<option value=\"$value\" ";
-		if($options['max_num_of_ads'] == $value) echo 'selected="selected"';
+		if($ops['max_num_of_ads'] == $value) echo 'selected="selected"';
 		echo ">$value</option>";
 	}
 	?>
@@ -387,7 +388,7 @@ function adinj_options_page(){
 	</table>
 	
 	<br clear="all" />
-	<p><b>Docs:</b> The above directives are processed in order from top to bottom.</p>
+	<p><span style="font-size:10px;"><b>Docs:</b> The above directives are processed in order from top to bottom.</span></p>
 	
 
 	<p></p>
@@ -404,13 +405,13 @@ function adinj_options_page(){
 	<?php
 	for ($value=0; $value<=6; ++$value){
 		echo "<option value=\"$value\" ";
-		if($options['max_num_of_ads_home_page'] == $value) echo 'selected="selected"';
+		if($ops['max_num_of_ads_home_page'] == $value) echo 'selected="selected"';
 		echo ">$value</option>";
 	}
 	?>
 	</select> <?php echo adinj_getdefault('max_num_of_ads_home_page'); ?><br />
 	
-	<p><b>Docs:</b> On multi-post pages such as the home page, one randomly positioned advert will be inserted into each page, up to the maximum number specified here.</p>
+	<p><span style="font-size:10px;"><b>Docs:</b> On a multi-post home page, one randomly positioned advert will be inserted into each post, up to the maximum number specified here.</span></p>
 	
 	<?php adinj_postbox_end(); ?>
 	
@@ -429,14 +430,14 @@ function adinj_options_page(){
 	
 	<table border="0">
 	<tr><td>
-	<textarea name="ad_code_top_1" rows="10" cols="60"><?php echo $options['ad_code_top_1']; ?></textarea>
+	<textarea name="ad_code_top_1" rows="10" cols="60"><?php echo $ops['ad_code_top_1']; ?></textarea>
 	</td><td style="vertical-align: top">
 	<?php adinj_add_alignment_options('top_'); ?>
 	</td></tr>
 	</table>
 	<span style="font-size:10px;">The top ad is in addition to the quantity of other ads selected.</span>
 	
-	<p><b>Docs:</b> The top ad will only appear on single posts and pages. It will not appear on multi-post pages. Try a <a href="#468x15">468x15</a> or <a href="#336x280">336x280</a> advert.</p>
+	<p><span style="font-size:10px;"><b>Docs:</b> The top ad will only appear on single posts and pages. It will not appear on multi-post pages. Try a <a href="#468x15">468x15</a> or <a href="#336x280">336x280</a> advert.</span></p>
 	
 	<?php adinj_postbox_end(); ?>
 	
@@ -453,14 +454,14 @@ function adinj_options_page(){
 	
 	<table border="0">
 	<tr><td>
-	<textarea name="ad_code_bottom_1" rows="10" cols="60"><?php echo $options['ad_code_bottom_1']; ?></textarea>
+	<textarea name="ad_code_bottom_1" rows="10" cols="60"><?php echo $ops['ad_code_bottom_1']; ?></textarea>
 	</td><td style="vertical-align: top">
 	<?php adinj_add_alignment_options('bottom_'); ?>
 	</td></tr>
 	</table>
 	<span style="font-size:10px;">The top ad is in addition to the quantity of other ads selected.</span>
 	
-	<p><b>Docs:</b> The bottom ad will only appear on single posts and pages. It will not appear on multi-post pages. Try a <a href="#336x280">336x280</a> advert.</p>
+	<p><span style="font-size:10px;"><b>Docs:</b> The bottom ad will only appear on single posts and pages. It will not appear on multi-post pages. Try a <a href="#336x280">336x280</a> advert.</span></p>
 	
 	
 	<?php adinj_postbox_end(); ?>
@@ -492,9 +493,9 @@ function adinj_options_page(){
 	<h4>Ad insertion mode</h4>
 	
 	<blockquote>
-	<p><input type="radio" name="ad_insertion_mode" value="mfunc" <?php if ($options['ad_insertion_mode']=='mfunc') echo 'checked="checked"'; ?> /> <b>Use mfunc tags for dynamic features</b> - Dynamic features will work with WP Super Cache in legacy mode (or with a caching program that is compatible with WP Super Cache's mfunc tags). Dynamic features will also work if you don't use a caching program, although if you don't use a caching program 'direct' insertion will be more efficient.</p>
-	<p><input type="radio" name="ad_insertion_mode" value="direct_dynamic" <?php if ($options['ad_insertion_mode']=='direct_dynamic') echo 'checked="checked"'; ?> /> <b>Direct ad insertion with dynamic features</b> - Dynamic features will work if no caching is used. Only select this if you are not using any caching plugin.</p>
-	<p><input type="radio" name="ad_insertion_mode" value="direct_static" <?php if ($options['ad_insertion_mode']=='direct_static') echo 'checked="checked"'; ?> /> <b>Direct static ad insertion</b> - No dynamic feature support. Select this if you are using a caching plugin which is not compatible with WP Super Cache's mfunc tags.</p>
+	<p><input type="radio" name="ad_insertion_mode" value="mfunc" <?php if ($ops['ad_insertion_mode']=='mfunc') echo 'checked="checked"'; ?> /> <b>Use mfunc tags for dynamic features</b> - Dynamic features will work with WP Super Cache in legacy mode (or with a caching program that is compatible with WP Super Cache's mfunc tags). Dynamic features will also work if you don't use a caching program, although if you don't use a caching program 'direct' insertion will be more efficient.</p>
+	<p><input type="radio" name="ad_insertion_mode" value="direct_dynamic" <?php if ($ops['ad_insertion_mode']=='direct_dynamic') echo 'checked="checked"'; ?> /> <b>Direct ad insertion with dynamic features</b> - Dynamic features will work if no caching is used. Only select this if you are not using any caching plugin.</p>
+	<p><input type="radio" name="ad_insertion_mode" value="direct_static" <?php if ($ops['ad_insertion_mode']=='direct_static') echo 'checked="checked"'; ?> /> <b>Direct static ad insertion</b> - No dynamic feature support. Select this if you are using a caching plugin which is not compatible with WP Super Cache's mfunc tags.</p>
 	</blockquote>
 	</div>
 
@@ -504,14 +505,14 @@ function adinj_options_page(){
 	
 	<blockquote>
 	<input type="checkbox" name="sevisitors_only" <?php echo adinj_ticked('sevisitors_only'); ?> /><?php _e("Only show ads to search engine visitors (customise search engine referrers below if necessary).", 'adinj') ?><br />
-	<textarea name="ad_referrers" rows="2" cols="70"><?php echo $options['ad_referrers']; ?></textarea>
+	<textarea name="ad_referrers" rows="2" cols="70"><?php echo $ops['ad_referrers']; ?></textarea>
 	<p>Comma separated list e.g.: <br /><code>.google., .bing., .yahoo., .ask., search?, search., /search/</code></p>
 	</blockquote>
 	
 	<h4>Blocked IP addresses (dynamic feature)</h4>
 	
 	<blockquote>
-	<textarea name="blocked_ips" rows="4" cols="70"><?php echo $options['blocked_ips']; ?></textarea>
+	<textarea name="blocked_ips" rows="4" cols="70"><?php echo $ops['blocked_ips']; ?></textarea>
 	<p>Comma separated list e.g.: <br /><code>0.0.0.1, 0.0.0.2</code></p>
 	<p>Or you can list one IP per line with optional comments e.g.</p>
 	<code style="padding:0px 0px">192.168.0.1<br />0.0.0.2<br /><?php echo $_SERVER['REMOTE_ADDR'] ?> //my ip<br />0.0.0.3</code>
@@ -583,7 +584,7 @@ function adinj_options_page(){
 }
 
 function adinj_postbox_start($title, $anchor, $width='650px'){
-	$options = adinj_options();
+	$ops = adinj_options();
 	?>
 	<div class='postbox-container' style='width:<?php echo $width; ?>;clear:left'>
 	<div class="metabox-holder">
@@ -603,7 +604,7 @@ function adinj_postbox_start($title, $anchor, $width='650px'){
 		});
 	});
 	</script>
-	<input type='hidden' id='ui_<?php echo $anchor; ?>_hide' name='ui_<?php echo $anchor; ?>_hide' value='<?php echo $options['ui_'.$anchor.'_hide']; ?>' />
+	<input type='hidden' id='ui_<?php echo $anchor; ?>_hide' name='ui_<?php echo $anchor; ?>_hide' value='<?php echo $ops['ui_'.$anchor.'_hide']; ?>' />
 	<h3><a name="<?php echo $anchor ?>"></a><?php echo adinj_get_logo() . ' ' . $title; ?></h3>
 	<div class="<?php echo $anchor; ?>-box">
 	<div class="inside" style="margin:10px">
@@ -621,8 +622,8 @@ function adinj_postbox_end(){
 
 function adinj_selection_box($name, $values, $type=NULL){
 	echo "<select name='$name'>";
-	$options = adinj_options();
-	$selected_value = $options[$name];
+	$ops = adinj_options();
+	$selected_value = $ops[$name];
 	foreach ($values as $value){
 		echo "<option value=\"$value\" ";
 		if($selected_value == "$value") echo 'selected="selected"';
@@ -691,7 +692,7 @@ function adinj_debug_information(){
 	echo '<h4>Other settings</h4><blockquote>';
 	
 	echo 'ADINJ_PATH='.ADINJ_PATH.'<br />';
-	echo 'ADINJ_CONFIG_FILE='.ADINJ_CONFIG_FILE.'<br />';
+	echo 'ADINJ_CONFIG_FILE2='.ADINJ_CONFIG_FILE2.'<br />';
 	echo 'ADINJ_AD_PATH='.ADINJ_AD_PATH.' (up to v0.9.1)<br />';
 	echo 'ADINJ_AD_PATH2='.ADINJ_AD_PATH2.' (v0.9.2+)<br />';
 	
@@ -768,27 +769,37 @@ function adinj_activate_hook() {
 		}
 	}
 	
-	// Restore data after automatic upgrade
-	// TODO could remove this code further down the line when everyone
-	// has moved to the new ad store location
-	$random_file = ADINJ_AD_PATH.'/'.ADINJ_AD_RANDOM_FILE;
-	if (!file_exists($random_file) && !empty($pending_options['ad_code_random_1'])){
-		write_ad_to_file($pending_options['ad_code_random_1'], $random_file);
-	}
-	$top_file = ADINJ_AD_PATH.'/'.ADINJ_AD_TOP_FILE;
-	if (!file_exists($top_file) && !empty($pending_options['ad_code_top_1'])){
-		write_ad_to_file($pending_options['ad_code_top_1'], $top_file);
-	}
-	$bottom_file = ADINJ_AD_PATH.'/'.ADINJ_AD_BOTTOM_FILE;
-	if (!file_exists($bottom_file) && !empty($pending_options['ad_code_bottom_1'])){
-		write_ad_to_file($pending_options['ad_code_bottom_1'], $bottom_file);
-	}
-	if (!file_exists(ADINJ_CONFIG_FILE)){
-		adinj_write_config_file();
+	$random_file2 = ADINJ_AD_PATH2.'/'.ADINJ_AD_RANDOM_FILE;
+	$top_file2 = ADINJ_AD_PATH2.'/'.ADINJ_AD_TOP_FILE;
+	$bottom_file2 = ADINJ_AD_PATH2.'/'.ADINJ_AD_BOTTOM_FILE;
+	if ($pending_options['ad_insertion_mode'] == 'mfunc'){
+		if (!file_exists(ADINJ_AD_PATH2)){
+			mkdir(ADINJ_AD_PATH2, 0750) //TODO is this the right permission?
+				or $adinj_warning_msg_filewrite .= "<br />Error: could not create dir: ".ADINJ_AD_PATH2.". Please create it manually and try again.";
+		}
+
+		// Restore data after automatic upgrade
+		// TODO could remove this code further down the line when everyone
+		// has moved to the new ad store location
+		if (!file_exists($random_file2) && !empty($pending_options['ad_code_random_1'])){
+			write_ad_to_file($pending_options['ad_code_random_1'], $random_file2);
+		}
+		if (!file_exists($top_file2) && !empty($pending_options['ad_code_top_1'])){
+			write_ad_to_file($pending_options['ad_code_top_1'], $top_file2);
+		}
+		if (!file_exists($bottom_file2) && !empty($pending_options['ad_code_bottom_1'])){
+			write_ad_to_file($pending_options['ad_code_bottom_1'], $bottom_file2);
+		}
+		if (!file_exists(ADINJ_CONFIG_FILE2)){
+			adinj_write_config_file();
+		}
 	}
 	
 	// In case ads are saved on file and upgrading from first version on plugin
 	// TODO maybe delete this in a few versions time?
+	$random_file = ADINJ_AD_PATH.'/'.ADINJ_AD_RANDOM_FILE;
+	$top_file = ADINJ_AD_PATH.'/'.ADINJ_AD_TOP_FILE;
+	$bottom_file = ADINJ_AD_PATH.'/'.ADINJ_AD_BOTTOM_FILE;
 	if (empty($pending_options['ad_code_random_1']) && file_exists($random_file)){
 		$pending_options['ad_code_random_1'] = read_ad_from_file($random_file);
 	}
@@ -821,7 +832,7 @@ function adinj_options_need_upgrading($stored_options){
 
 function adinj_default_options(){
 	return array(
-			'ads_enabled' => '',
+			'ads_enabled' => 'off',
 			'max_num_of_ads' => '2', // single posts and pages
 			'max_num_of_ads_home_page' => '3',
 			'no_random_ads_if_shorter_than' => '100',
@@ -1018,7 +1029,8 @@ function adinj_docs(){
 }
 
 function adinj_init_hook() {
-	if (!adinj_ticked('ads_enabled')) {
+	$ops = adinj_options();
+	if ($ops['ads_enabled'] != 'on') {
 		add_action('admin_notices', 'adinj_init_warning');
 	}
 }

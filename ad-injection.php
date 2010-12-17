@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 0.9.3.1
+Version: 0.9.3.2
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -15,7 +15,6 @@ License: GPLv2
 
 // Files
 define('ADINJ_PATH', WP_PLUGIN_DIR.'/ad-injection');
-define('ADINJ_CONFIG_FILE', ADINJ_PATH . '/ad-injection-config.php');
 define('ADINJ_CONFIG_FILE2', WP_CONTENT_DIR . '/ad-injection-config.php'); // same directory as WP Super Cache config file
 define('ADINJ_AD_PATH', ADINJ_PATH . '/ads'); // old ad store
 define('ADINJ_AD_PATH2', WP_PLUGIN_DIR.'/ad-injection-data'); // ad store from 0.9.2
@@ -323,8 +322,13 @@ ADINJ_AD_PATH2=$path2
 }
 
 function adinj_ads_completely_disabled_from_page($content=NULL){
-	if (!adinj_ticked('ads_enabled')){
-		return "NOADS: ads_enabled not ticked";
+	$ops = adinj_options();
+	if ($ops['ads_enabled'] == 'off' || 
+		$ops['ads_enabled'] == ''){
+		return "NOADS: Ads are not switched on";
+	}
+	if ($ops['ads_enabled'] == 'test' && !current_user_can('activate_plugins')){
+		return "NOADS: test mode enabled - ads only shown admins";
 	}
 	
 	// check for ads on certain page types being disabled

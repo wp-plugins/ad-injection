@@ -4,7 +4,7 @@ Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-w
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free
 Requires at least: 3.0.0
 Tested up to: 3.0.3
-Stable tag: 0.9.3.1
+Stable tag: 0.9.3.2
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
@@ -56,6 +56,8 @@ As the plugin will inject whatever content you like into the page you can write 
 
 If there are any panels on the admin screen that you don't need, you can click on the show/hide button to hide them until you need them.
 
+For more information visit [reviewmylife](http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/ "reviewmylife blog").
+
 == Installation ==
 
 This section describes how to install the plugin and get it working.
@@ -66,6 +68,12 @@ This section describes how to install the plugin and get it working.
 4. Make sure you select the option to say which ad injection mode to use. You need to say whether you are using WP Super Cache (or compatible) or not. Dynamic features (referrer and IP ad filtering) will only work with either 1) WP Super Cache (or compatible) or 2) no caching plugin. 
 5. Tick the box right at the top to enable your ads.
 6. If you are using a caching plugin you may need to clear the cache to see your ads immediately.
+
+= How to uninstall =
+
+You can uninstall by deactivating the plugin and deleting from the WordPress plugins control panel.
+
+If you have been using mfunc mode with WP Super Cache then you *must* also clear the cache afterwards, otherwise you'll get errors saying the Ad Injection includes can't be found. 
 
 == Frequently Asked Questions ==
 
@@ -142,26 +150,40 @@ Here are some things to check if the ads are not appearing, or are appearing whe
 5. Have you selected the correct insertion mode in the 'Ad insertion mode' section?
 6. The plugin inserts adverts after the closing HTML paragraph tag </p>. If the ads aren't appearing where you expect, check where your </p> tags are.
 
-If you are using WP Super Cache.
+= If you are using WP Super Cache. =
 
 1. Have you enabled the WP Super Cache 'mfunc' mode? (in the Ad insertion mode and dynamic ad display restrictions pane)
 2. Are your WP Super Cache settings correct? It must be in 'Legacy' mode.
 3. If you are using WP Minify as well then turn off the HTML minification as this strips out the mfunc tags that Ad Injection uses to check if the adverts should be inserted.
 
-If you are using WP Minify
+= If you are using WP Minify =
 
 1. Turn off the HTML minification mode if you are also using WP Super Cache. HTML minification strips out the mfunc tags that Ad Injection needs to inject its ads.
 2. If you use the 'Place Minified JavaScript in footer' then try turning it off.
 
-If you are getting errors when using the plugin check the following.
+= If you are getting errors when using mfunc mode check the following =
 
-1. Is there an 'ads' directory in the plugin directory? The path will probably be: '/wp-content/plugins/ad-injection/ads/'. If not create the ads directory and make sure it is writeable by the plugin (chmod 0755 will do, chmod 0750 is better).
-2. Are there text files in the ads directory? The ad code that you enter into the ad boxes should get saved in text files in the ads directory.
-3. Has the config file been created? It should be at '/wp-content/plugins/ad-injection/ad-injection-config.php'. If not make sure the '/wp-content/plugins/ad-injection/' directory is writeable (chmod 0750 is best, chmod 0755 will do).
+1. Are there ad data directories in the plugin directory? The path will be: 
+
+'/wp-content/plugins/ad-injection-data/.
+
+If not create this directory and make sure it is writeable by the plugin (chmod 0755 will do, chmod 0750 is better).
+
+2. Are there text files in the ads directories? The ad code that you enter into the ad boxes should get saved in text files in the ads directory.
+
+3. Has the config file been created? It should be at '/wp-content/ad-injection-config.php'. If not make sure the '/wp-content/' directory is writeable (chmod 0750 is best, chmod 0755 will do).
+
+= Errors after uninstalling the plugin =
+
+If you get an error like:
+
+'Warning: include_once(/homepages/xx/dxxxx/htdocs/blog/wp-content/plugins/ad-injection/adshow.php) [function.include-once]: failed to open stream: No such file or directory in /homepages/xx/dxxxx/htdocs/blog/ on line xx'
+
+Then you need to delete your cache. The references to the Ad Injection includes are still in your cached files, deleting the cache will get rid of them.
+
+= Reporting bugs =
 
 If you do get any errors please use the 'Report a bug or give feedback' link on the plugin to send me the error details. If things go so badly wrong that you can't even get to the settings page please send me an email via [this contact form](http://www.reviewmylife.co.uk/contact-us/ "contact form").
-
-For more information visit [reviewmylife](http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/ "reviewmylife blog").
 
 == Screenshots ==
 
@@ -170,6 +192,9 @@ For more information visit [reviewmylife](http://www.reviewmylife.co.uk/blog/201
 3. Can choose to show the ads only to search engine visitors, or define IP addresses that ads aren't shown to.
 
 == Changelog ==
+
+= 0.9.3.2 =
+Add test mode, and further reduce unnecessary file access.
 
 = 0.9.3.1 =
 Fix chmod comparison problem.
@@ -218,6 +243,9 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 * First public release
 
 == Upgrade Notice ==
+
+= 0.9.3.2 =
+If you are using mfunc mode and have added ad widgets with a version prior to 0.9.2 please re-save them to regenerate the ad files (fixed for upgrades from 0.9.2).
 
 = 0.9.3.1 =
 If you are using mfunc mode and have added ad widgets with a version prior to 0.9.2 please re-save them to regenerate the ad files (fixed for upgrades from 0.9.2).

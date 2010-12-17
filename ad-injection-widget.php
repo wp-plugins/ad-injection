@@ -60,9 +60,10 @@ class Ad_Injection_Widget extends WP_Widget {
 		$instance['title'] = strip_tags( $new_instance['title'] );
 		$instance['advert'] = $new_instance['advert'];
 		
-		// TODO later on stop saving to the old ad path
-		write_ad_to_file($instance['advert'], $this->get_ad_file_path());
-		write_ad_to_file($instance['advert'], $this->get_ad_file_path2());
+		$options = adinj_options();
+		if ($options['ad_insertion_mode'] == 'mfunc'){
+			write_ad_to_file($instance['advert'], $this->get_ad_file_path2());
+		}
 		
 		return $instance;
 	}
@@ -99,10 +100,6 @@ class Ad_Injection_Widget extends WP_Widget {
 		<p>You can also set which <a href='options-general.php?page=ad-injection.php#widgets'>page types</a> the widgets appear on.</p>
 		
 		<?php
-	}
-	
-	function get_ad_file_path(){
-		return ADINJ_AD_PATH.'/'.$this->get_ad_file_name();
 	}
 	
 	function get_ad_file_path2(){
