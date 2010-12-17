@@ -94,7 +94,6 @@ case 'Save all settings':
 	
 	adinj_update_options($options);
 	
-	// TODO could stop this if not mfunc mode
 	adinj_write_config_file();
 
 	break;
@@ -167,10 +166,11 @@ function adinj_write_file($path, $content, $permission){
 
 function adinj_chmod($path, $permission){
 	global $adinj_warning_msg_chmod;
-	$oldperm = fileperms($path);
-	if ($permission == $oldperm) return;
-	chmod($path, $permission) or $adinj_warning_msg_chmod .= "<br />Warning: chmod ".decoct($permission).
-	" on $path failed. Current permissions: ".substr(decoct($oldperm), -4).'.<br />	Try manually updating the permission if problems occur.';
+	$oldperm = substr(decoct(fileperms($path)), -3);
+	$newperm = decoct($permission);
+	if ($newperm == $oldperm) return;
+	chmod($path, $permission) or $adinj_warning_msg_chmod .=  "<br />Warning: chmod $permission " .
+		"on $path failed. Current permissions: $oldperm<br />	Try manually updating the permission if problems occur.";
 }
 
 function adinj_get_logo(){

@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 0.9.3
+Version: 0.9.3.1
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -59,8 +59,8 @@ function adinj_options($reset=false){
 }
 
 function adinj_option($option){
-	$options = adinj_options();
-	return $options[$option];
+	$ops = adinj_options();
+	return $ops[$option];
 }
 
 // TODO make the cookie domain from wp-config.php accessible to script
@@ -83,8 +83,8 @@ SCRIPT;
 }
 
 function adinj_quote_list($option){
-	$options = adinj_options();
-	$list = $options[$option];
+	$ops = adinj_options();
+	$list = $ops[$option];
 	
 	// I'm sure this whole thing could be done with a much simpler single
 	// line of PHP - but right now my brain isn't up to thinking about it!
@@ -118,111 +118,111 @@ function adinj_get_mfunc_code($adfile){
 ";
 }
 
-function adinj_ad_code_eval($adcode){
-	if (stripos($adcode, '<?php') !== false){
-		return adinj_eval_php($adcode);
+function adinj_ad_code_eval($ad){
+	if (stripos($ad, '<?php') !== false){
+		return adinj_eval_php($ad);
 	}
-	return $adcode;
+	return $ad;
 }
 
 function adinj_ad_code_include(){
 	$plugin_dir = ADINJ_PATH;
-	$options = adinj_options();
-	$adcode = "";
-	if ($options['ad_insertion_mode'] == 'mfunc'){
+	$ops = adinj_options();
+	$ad = "";
+	if ($ops['ad_insertion_mode'] == 'mfunc'){
 		// WP Super Cache's support for mclude assumes that we will be including
 		// files from within ABSPATH. To remove this limitation we do the include
 		// using mfunc instead.
-		$adcode = "\n
+		$ad = "\n
 <!--mfunc include_once('$plugin_dir/adshow.php') -->
 <?php include_once('$plugin_dir/adshow.php'); ?>
 <!--/mfunc-->
 ";
 	}
-	return adinj_eval_php($adcode);
+	return adinj_eval_php($ad);
 }
 
-function adinj_add_tags($adcode, $prefix, $func=NULL){
-	$options = adinj_options();
-	if ($options[$prefix . 'align'] !== ADINJ_RULE_DISABLED ||
-		$options[$prefix . 'margin_top'] !== ADINJ_RULE_DISABLED ||
-		$options[$prefix . 'margin_bottom'] !== ADINJ_RULE_DISABLED) {
+function adinj_add_tags($ad, $prefix, $func=NULL){
+	$ops = adinj_options();
+	if ($ops[$prefix . 'align'] !== ADINJ_RULE_DISABLED ||
+		$ops[$prefix . 'margin_top'] !== ADINJ_RULE_DISABLED ||
+		$ops[$prefix . 'margin_bottom'] !== ADINJ_RULE_DISABLED) {
 		$top = "";
 		$bottom = "";
-		if ($options[$prefix . 'margin_top'] !== ADINJ_RULE_DISABLED) $top="margin-top:" . $options[$prefix . 'margin_top'] . "px;";
-		if ($options[$prefix . 'margin_bottom'] !== ADINJ_RULE_DISABLED) $bottom="margin-bottom:" . $options[$prefix . 'margin_bottom'] . "px;";
+		if ($ops[$prefix . 'margin_top'] !== ADINJ_RULE_DISABLED) $top="margin-top:" . $ops[$prefix . 'margin_top'] . "px;";
+		if ($ops[$prefix . 'margin_bottom'] !== ADINJ_RULE_DISABLED) $bottom="margin-bottom:" . $ops[$prefix . 'margin_bottom'] . "px;";
 		
-		if ($options[$prefix . 'align'] == 'left'){
+		if ($ops[$prefix . 'align'] == 'left'){
 			$div = "<div style='float:left;" . $top . $bottom . "'>ADCODE</div><br clear='all' />";
-		} else if ($options[$prefix . 'align'] == 'center'){
+		} else if ($ops[$prefix . 'align'] == 'center'){
 			$div = "<div style='" . $top . $bottom . "'><center>ADCODE</center></div>";
-		} else if ($options[$prefix . 'align'] == 'right'){
+		} else if ($ops[$prefix . 'align'] == 'right'){
 			$div = "<div style='float:right;" . $top . $bottom . "'>ADCODE</div><br clear='all' />";
-		} else if ($options[$prefix . 'align'] == 'float left'){
+		} else if ($ops[$prefix . 'align'] == 'float left'){
 			$div = "<div style='float:left;" . $top . $bottom . "margin-right:5px;'>ADCODE</div>";
-		} else if ($options[$prefix . 'align'] == 'float right'){
+		} else if ($ops[$prefix . 'align'] == 'float right'){
 			$div = "<div style='float:right;" . $top . $bottom . "margin-left:5px;'>ADCODE</div>";
 		} else {
 			$div = "<div style='" . $top . $bottom . "'>ADCODE</div>";
 		}
 		if (empty($func)){
-			return str_replace("ADCODE", $adcode, $div);
+			return str_replace("ADCODE", $ad, $div);
 		} else {
-			$ad = str_replace("ADCODE", "\$adcode", $div);
-			return "function $func(\$adcode) { return \"$ad\"; }";
+			$ad = str_replace("ADCODE", "\$ad", $div);
+			return "function $func(\$ad) { return \"$ad\"; }";
 		}
 	}
 	if (!empty($func)){
-		return "function $func(\$adcode){return \$adcode;}";
+		return "function $func(\$ad){return \$ad;}";
 	}
-	return $adcode;
+	return $ad;
 }
 
 function adinj_ad_code_random(){
-	$options = adinj_options();
-	$adcode = "";
-	if ($options['ad_insertion_mode'] == 'mfunc'){
-		$adcode = adinj_get_mfunc_code(ADINJ_AD_RANDOM_FILE);
+	$ops = adinj_options();
+	$ad = "";
+	if ($ops['ad_insertion_mode'] == 'mfunc'){
+		$ad = adinj_get_mfunc_code(ADINJ_AD_RANDOM_FILE);
 	} else {
-		$adcode = $options['ad_code_random_1'];
-		$adcode = adinj_add_tags($adcode, 'rnd_');
+		$ad = $ops['ad_code_random_1'];
+		$ad = adinj_add_tags($ad, 'rnd_');
 	}
-	return adinj_ad_code_eval($adcode);
+	return adinj_ad_code_eval($ad);
 }
 
 function adinj_ad_code_top(){
 	global $adinj_total_all_ads_used;
 	++$adinj_total_all_ads_used;
-	$options = adinj_options();
-	$adcode = "";
-	if ($options['ad_insertion_mode'] == 'mfunc'){
-		$adcode = adinj_get_mfunc_code(ADINJ_AD_TOP_FILE);
+	$ops = adinj_options();
+	$ad = "";
+	if ($ops['ad_insertion_mode'] == 'mfunc'){
+		$ad = adinj_get_mfunc_code(ADINJ_AD_TOP_FILE);
 	} else {
-		$adcode = $options['ad_code_top_1'];
-		$adcode = adinj_add_tags($adcode, 'top_');
+		$ad = $ops['ad_code_top_1'];
+		$ad = adinj_add_tags($ad, 'top_');
 	}
-	return adinj_ad_code_eval($adcode);
+	return adinj_ad_code_eval($ad);
 }
 
 function adinj_ad_code_bottom(){
 	global $adinj_total_all_ads_used;
 	++$adinj_total_all_ads_used;
-	$options = adinj_options();
-	$adcode = "";
-	if ($options['ad_insertion_mode'] == 'mfunc'){
-		$adcode = adinj_get_mfunc_code(ADINJ_AD_BOTTOM_FILE);
+	$ops = adinj_options();
+	$ad = "";
+	if ($ops['ad_insertion_mode'] == 'mfunc'){
+		$ad = adinj_get_mfunc_code(ADINJ_AD_BOTTOM_FILE);
 	} else {
-		$adcode = $options['ad_code_bottom_1'];
-		$adcode = adinj_add_tags($adcode, 'bottom_');
+		$ad = $ops['ad_code_bottom_1'];
+		$ad = adinj_add_tags($ad, 'bottom_');
 	}
-	return adinj_ad_code_eval($adcode);
+	return adinj_ad_code_eval($ad);
 }
 
 function read_ad_from_file($ad_path){
 	$contents = "";
 	if (file_exists($ad_path)){
 		$contents = file_get_contents($ad_path);
-		if ($contents === false) die("can't read from file: $ad_path");
+		if ($contents === false) return "Error: can't read from file: $ad_path";
 	}
 	return $contents;
 }
@@ -230,8 +230,8 @@ function read_ad_from_file($ad_path){
 // Based on: http://www.wprecipes.com/wordpress-hack-how-to-display-ads-on-old-posts-only
 // Only use for pages and posts. Not for archives, categories, home page, etc.
 function adinj_is_old_post(){
-	$options = adinj_options();
-	$days = $options['ads_on_page_older_than'];
+	$ops = adinj_options();
+	$days = $ops['ads_on_page_older_than'];
 	if ($days == 0) return true;
 	if(is_single() || is_page()) {
 		$current_date = time();
@@ -307,8 +307,8 @@ function adinj($content, $message){
 	global $adinj_total_rand_ads_used, $adinj_total_all_ads_used;
 	$path = ADINJ_AD_PATH;
 	$path2 = ADINJ_AD_PATH2;
-	$options = adinj_options();
-	$mode = $options['ad_insertion_mode'];
+	$ops = adinj_options();
+	$mode = $ops['ad_insertion_mode'];
 	return $content."
 <!--
 [ADINJ DEBUG]
@@ -363,31 +363,31 @@ function adinj_inject_hook($content){
 		return adinj($content, $reason);
 	}
 
-	$options = adinj_options();
+	$ops = adinj_options();
 	
-	if ($options['ad_insertion_mode'] == 'direct_dynamic'){
+	if ($ops['ad_insertion_mode'] == 'direct_dynamic'){
 		$showads = adinj_show_adverts();
 		if ($showads !== true){
 			return adinj($content, "NOADS: ad blocked at run time reason=$showads");
 		}
 	}
 
-	$adcode_include = adinj_ad_code_include();
+	$ad_include = adinj_ad_code_include();
 	
 	# Ad sandwich mode
 	if(is_page() || is_single()){
-		if(stripos($content, "<!--adsandwich-->") !== false) return adinj($adcode_include.adinj_ad_code_top().$content.adinj_ad_code_bottom(), "Ads=adsandwich");
-		if(stripos($content, "<!--adfooter-->") !== false) return adinj($content.$adcode_include.adinj_ad_code_bottom(), "Ads=adfooter");
+		if(stripos($content, "<!--adsandwich-->") !== false) return adinj($ad_include.adinj_ad_code_top().$content.adinj_ad_code_bottom(), "Ads=adsandwich");
+		if(stripos($content, "<!--adfooter-->") !== false) return adinj($content.$ad_include.adinj_ad_code_bottom(), "Ads=adfooter");
 	}
 	
 	# Insert top and bottom ads if necesary
 	$length = strlen($content);
 	if(is_page() || is_single()){
-		if (adinj_do_rule_if($options['top_ad_if_longer_than'], '<', $length)){
-			$content = $adcode_include.adinj_ad_code_top().$content;
-			$adcode_include = false;
+		if (adinj_do_rule_if($ops['top_ad_if_longer_than'], '<', $length)){
+			$content = $ad_include.adinj_ad_code_top().$content;
+			$ad_include = false;
 		}
-		if (adinj_do_rule_if($options['bottom_ad_if_longer_than'], '<', $length)){
+		if (adinj_do_rule_if($ops['bottom_ad_if_longer_than'], '<', $length)){
 			$content = $content.adinj_ad_code_bottom();
 		}
 	}
@@ -395,9 +395,9 @@ function adinj_inject_hook($content){
 	$num_rand_ads_to_insert = adinj_num_rand_ads_to_insert($length);
 	if ($num_rand_ads_to_insert <= 0) return adinj($content, "all ads used up");
 	
-	if ($adcode_include !== false) $content = $adcode_include.$content;
+	if ($ad_include !== false) $content = $ad_include.$content;
 	
-	$debug_on = $options['debug_mode'];
+	$debug_on = $ops['debug_mode'];
 	if (!$debug_on) $debugtags=false;
 	
 	$content_adfree_header = "";
@@ -499,10 +499,10 @@ function adinj_inject_hook($content){
 	sort($inj_positions);
 	
 	// Insert ads in reverse order
-	$adcode = adinj_ad_code_random();
+	$ad = adinj_ad_code_random();
 	global $adinj_total_rand_ads_used, $adinj_total_all_ads_used;
 	for ($adnum=sizeof($inj_positions)-1; $adnum>=0; $adnum--){
-		$content = substr_replace($content, $adcode, $inj_positions[$adnum], 0);
+		$content = substr_replace($content, $ad, $inj_positions[$adnum], 0);
 		++$adinj_total_rand_ads_used;
 		++$adinj_total_all_ads_used;
 	}
@@ -525,11 +525,11 @@ function adinj_split_by_tag($content, $tag, &$debugtags){
 
 function adinj_num_rand_ads_to_insert($content_length){
 	global $adinj_total_rand_ads_used; // a page can be more than one post
-	$options = adinj_options();
+	$ops = adinj_options();
 	if (is_single() || is_page()){
-		$max_num_rand_ads_to_insert = $options['max_num_of_ads'] - $adinj_total_rand_ads_used;
+		$max_num_rand_ads_to_insert = $ops['max_num_of_ads'] - $adinj_total_rand_ads_used;
 	} else if (is_home()){
-		$max_num_rand_ads_to_insert = $options['max_num_of_ads_home_page'] - $adinj_total_rand_ads_used;
+		$max_num_rand_ads_to_insert = $ops['max_num_of_ads_home_page'] - $adinj_total_rand_ads_used;
 	} else {
 		return 0;
 		//TODO Allow ads in other page types later
@@ -543,16 +543,16 @@ function adinj_num_rand_ads_to_insert($content_length){
 		return 1;
 	}
 	$length = $content_length;
-	if (adinj_do_rule_if($options['no_random_ads_if_shorter_than'], '>', $length)){
+	if (adinj_do_rule_if($ops['no_random_ads_if_shorter_than'], '>', $length)){
 		return 0;
 	}
-	if (adinj_do_rule_if($options['one_ad_if_shorter_than'], '>', $length)){
+	if (adinj_do_rule_if($ops['one_ad_if_shorter_than'], '>', $length)){
 		return 1;
 	}
-	if (adinj_do_rule_if($options['two_ads_if_shorter_than'], '>', $length)){
+	if (adinj_do_rule_if($ops['two_ads_if_shorter_than'], '>', $length)){
 		return min(2, $max_num_rand_ads_to_insert);
 	}
-	if (adinj_do_rule_if($options['three_ads_if_shorter_than'], '>', $length)){
+	if (adinj_do_rule_if($ops['three_ads_if_shorter_than'], '>', $length)){
 		return min(3, $max_num_rand_ads_to_insert);
 	}
 	return $max_num_rand_ads_to_insert;
@@ -570,8 +570,8 @@ function adinj_do_rule_if($rule_value, $condition, $content_length){
 }
 
 function adinj_ticked($option){
-	$options = adinj_options();
-	if (!empty($options[$option])) return 'checked="checked"';
+	$ops = adinj_options();
+	if (!empty($ops[$option])) return 'checked="checked"';
 	return false;
 }
 
