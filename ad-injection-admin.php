@@ -992,21 +992,6 @@ function adinj_activate_hook() {
 			adinj_write_config_file();
 		}
 	}
-	
-	// In case ads are saved on file and upgrading from first version on plugin
-	// TODO maybe delete this in a few versions time?
-	$random_file = ADINJ_AD_PATH.'/'.ADINJ_AD_RANDOM_FILE;
-	$top_file = ADINJ_AD_PATH.'/'.ADINJ_AD_TOP_FILE;
-	$bottom_file = ADINJ_AD_PATH.'/'.ADINJ_AD_BOTTOM_FILE;
-	if (empty($pending_options['ad_code_random_1']) && file_exists($random_file)){
-		$pending_options['ad_code_random_1'] = read_ad_from_file($random_file);
-	}
-	if (empty($pending_options['ad_code_top_1']) && file_exists($top_file)){
-		$pending_options['ad_code_top_1'] = read_ad_from_file($top_file);
-	}
-	if (empty($pending_options['ad_code_bottom_1']) && file_exists($bottom_file)){
-		$pending_options['ad_code_bottom_1'] = read_ad_from_file($bottom_file);
-	}
 
 	adinj_update_options($pending_options);
 }
