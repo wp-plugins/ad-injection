@@ -278,6 +278,14 @@ function adinj_options_page(){
 			</td><td>
 			<?php $info = adinj_get_status('restrictions'); echo adinj_dot($info[0]).' '.$info[1]; ?>
 			</td></tr>
+			<tr><td style="text-align:right">
+			<b><a href="#debugging">Debug mode</a></b>
+			</td><td>
+			<?php $info = adinj_get_status('debugging'); echo adinj_dot($info[0]).' '.$info[1]; ?>
+			</td></tr>
+			<tr><td>
+			</td><td>
+			</td></tr>
 			<tr><td>
 			</td><td>
 			<?php } ?>
@@ -307,13 +315,14 @@ function adinj_options_page(){
 			<ul>
 			<li>More precise control over which categories and tags the ads are shown in.</li>
 			<li>Extra places where adverts can be inserted.</li>
+			<li>Merry Christmas by the way!</li>
 			</ul>
 			
 			<h4><font color="red">Be careful!</font></h4>
 			<p>Make sure that the ad settings and positioning you define are in compliance with your ad provider's terms of service!</p>
 		
 			<h4><font color="red">Beta version</font></h4>
-			<p>This plugin has only only recently been released - please bare with me if there are any bugs. I'm actively listening to your feedback and fixing any problems, and adding new features that you request. Please let me know if you like the plugin too!</p>
+			<p>This plugin has only only recently been released. I'm actively listening to your feedback and fixing any problems, and adding new features that you request. Please let me know if you like the plugin too!</p>
 			
 			<h4>More by this author</h4>
 			<ul>
@@ -326,6 +335,17 @@ function adinj_options_page(){
 		</div>
 	</div> 
 	</div>
+		
+	<script type="text/javascript">
+	function adinj_addtext(element, value) {
+		if (value.length == 0) return;
+		separator = ', ';
+		if (element.value.length == 0){
+			separator = '';
+		}
+		element.value += (separator + value);
+	}
+	</script>
 	
 	<p><a href="#random">Random ads</a> | <a href="#topad">Top</a> | <a href="#bottomad">Bottom</a> | <a href="#widgets">Widgets</a> | <a href="#restrictions">Ad insert mode/dynamic restrictions</a> | <a href="#debugging">Debug</a> | <a href="#docs">Quick Start</a> | <a href="#testads">Test ads</a></p>
 	
@@ -356,17 +376,23 @@ function adinj_options_page(){
 		echo ">$older_than_days[$value]</option>";
 	}
 	?>
-	</select><?php _e(" (days)", 'adinj') ?> (only for single posts and pages)</p>
+	</select><?php _e(" (days)", 'adinj') ?> - only for single posts and pages</p>
 	</td></tr>
-	<tr><td>
+	<tr><td style="vertical-align:top">
 	Don't show ads on these page types:
 	</td><td>
-	<input type="checkbox" name="exclude_home" <?php echo adinj_ticked('exclude_home'); ?> />home<br />
-	<input type="checkbox" name="exclude_page" <?php echo adinj_ticked('exclude_page'); ?> />page (<?php echo wp_count_posts('page', 'readable')->publish; ?> page(s))<br />
-	<input type="checkbox" name="exclude_single" <?php echo adinj_ticked('exclude_single'); ?> />single (<?php echo wp_count_posts('post', 'readable')->publish; ?> individual blog post(s))<br />
-	<input type="checkbox" name="exclude_archive" <?php echo adinj_ticked('exclude_archive'); ?> />archive (only <a href="#widgets">widgets</a> currently appear on archives)<br />
+	<input type="checkbox" name="exclude_home" <?php echo adinj_ticked('exclude_home'); ?> />home - <?php echo get_bloginfo('url'); ?><br />
+	<input type="checkbox" name="exclude_page" <?php echo adinj_ticked('exclude_page'); ?> />page - <?php echo wp_count_posts('page', 'readable')->publish; ?> page(s)<br />
+	<input type="checkbox" name="exclude_single" <?php echo adinj_ticked('exclude_single'); ?> />single -<?php echo wp_count_posts('post', 'readable')->publish; ?> individual blog post(s)<br />
+	<input type="checkbox" name="exclude_archive" <?php echo adinj_ticked('exclude_archive'); ?> />archive - only <a href="#widgets">widgets</a> currently appear on archives<br />
 	</td></tr>
 	</table>
+	
+	<b>Category and tag conditions</b>
+	
+	<?php adinj_condition_table('global_category', 'category slugs. e.g: cat1, cat2, cat3', 'category'); ?>
+	
+	<?php adinj_condition_table('global_tag', 'tag slugs. e.g: tag1, tag2, tag3', 'tag'); ?>
 	
 	<?php adinj_postbox_end(); ?>
 	
@@ -410,7 +436,7 @@ function adinj_options_page(){
 	<?php _e("Maximum number of randomly injected ads: ", 'adinj') ?></td><td>
 	<select name='max_num_of_ads'>
 	<?php
-	for ($value=0; $value<=6; ++$value){
+	for ($value=0; $value<=10; ++$value){
 		echo "<option value=\"$value\" ";
 		if($ops['max_num_of_ads'] == $value) echo 'selected="selected"';
 		echo ">$value</option>";
@@ -571,9 +597,42 @@ function adinj_options_page(){
 	<p><input type="radio" name="ad_insertion_mode" value="direct_static" <?php if ($ops['ad_insertion_mode']=='direct_static') echo 'checked="checked"'; ?> /> <b>Direct static ad insertion</b> - No dynamic feature support. Select this if you are using a caching plugin which is not compatible with WP Super Cache's mfunc tags.</p>
 	</blockquote>
 	</div>
-
+	<p></p>
+	
+	<script type="text/javascript">
+	jQuery(document).ready(function(){
+	jQuery('input[name=ad_insertion_mode]:radio').change(function() {
+		if (jQuery('input[name=ad_insertion_mode]:checked').val() == "direct_static"){
+			jQuery('.dynamic_features').slideUp(1000);
+			jQuery('.dynamic_features_msg').slideDown(1000);
+		} else {
+			jQuery('.dynamic_features_msg').slideUp(1000);
+			jQuery('.dynamic_features').slideDown(1000);
+		}
+		return true;
+		});
+	});
+	</script>
+	
+	<?php if ($ops['ad_insertion_mode'] == 'direct_static') { ?>
+	<div class="dynamic_features_msg">
+	<?php } else { ?>
+	<div class="dynamic_features_msg" style="display:none">
+	<?php } ?>
+	<div class="inside" style="margin:10px">
+	<b><span style="font-size:10px;color:red;">Note: Dynamic features (restricting ad views by referrer and IP address) are only available in the mfunc, or direct dynamic modes.</span></b>
+	</div>
+	</div>
+	
+	<?php if ($ops['ad_insertion_mode'] == 'direct_static') { ?>
+	<script type="text/javascript">
+	document.write('<style type="text/css" media="screen">#dynamic_features { display: none; }</style>');
+	</script>
+	<?php } ?>
+	<div id="dynamic_features" class="dynamic_features">
 	
 	<div class="inside" style="margin:10px">
+
 	<h4><a name="dynamic"></a>Show ads only to search engine visitors (dynamic feature)</h4>
 	
 	<blockquote>
@@ -592,8 +651,8 @@ function adinj_options_page(){
 	
 	<p>For reference your current IP address is <code><?php echo $_SERVER['REMOTE_ADDR'] ?></code></p>
 	</blockquote>
-	
 	</div>
+	
 	
 	<h3>Recommended WP Super Cache settings:</h3>
 	<div class="inside" style="margin:10px">
@@ -614,6 +673,9 @@ function adinj_options_page(){
 		echo "Note: WP Super Cache does not appear to be active.";
 	} ?>
 	</p>
+	</div>
+	
+	</div>
 	
 	<?php adinj_postbox_end(); ?>
 	
@@ -659,16 +721,13 @@ function adinj_options_page(){
 function adinj_postbox_start($title, $anchor, $width='650px'){
 	$ops = adinj_options();
 	?>
-	<div class='postbox-container' style='width:<?php echo $width; ?>;float:left;'>
+	<div class='postbox-container' style='width:<?php echo $width; ?>;float:left; clear:left;'>
 	<div class="metabox-holder">
 	<div class="postbox">
 	<input type="submit" style="float:right" class="button-primary" name="adinj_action" value="<?php _e('Save all settings', 'adinj') ?>" />
 	<div class="<?php echo $anchor; ?>-button"></div>
 	<script type="text/javascript">
 	jQuery(document).ready(function(){
-	if (jQuery('#ui_<?php echo $anchor; ?>_hide').val() == 'true'){
-		jQuery('.<?php echo $anchor; ?>-box').hide();
-	}
 	jQuery('.<?php echo $anchor; ?>-button').show().before('<a href="#" style="float:right" id="toggle-<?php echo $anchor; ?>" class="button">Show/Hide</a>');
 	jQuery('a#toggle-<?php echo $anchor; ?>').click(function() {
 		jQuery('#ui_<?php echo $anchor; ?>_hide').val(!jQuery('.<?php echo $anchor; ?>-box').is(":hidden"));
@@ -679,8 +738,16 @@ function adinj_postbox_start($title, $anchor, $width='650px'){
 	</script>
 	<input type='hidden' id='ui_<?php echo $anchor; ?>_hide' name='ui_<?php echo $anchor; ?>_hide' value='<?php echo $ops['ui_'.$anchor.'_hide']; ?>' />
 	<h3><?php $info = adinj_get_status($anchor); echo adinj_dot($info[0]); ?> <a name="<?php echo $anchor; ?>"></a><?php echo adinj_get_logo() . ' ' . $title; ?></h3>
+	<?php if($ops['ui_'.$anchor.'_hide'] == 'true'){ ?>
+	<script type="text/javascript">
+        document.write('<style type="text/css" media="screen">#<?php echo $anchor; ?>-box { display: none; }</style>');
+	</script>
+	<div id="<?php echo $anchor; ?>-box" class="<?php echo $anchor; ?>-box">
+	<?php } else { ?>
 	<div class="<?php echo $anchor; ?>-box">
+	<?php } ?>
 	<div class="inside" style="margin:10px">
+
 	<?php
 }
 
@@ -800,6 +867,15 @@ function adinj_get_status($name){
 		if (!empty($ops['blocked_ips'])){
 			$status[1] .= ' ip';
 		}
+	} else if ($name == 'debugging'){
+		$val = $ops['debug_mode'];
+		if ($val == 'on'){
+			$status[0] = 'green';
+			$status[1] = 'on';
+		} else {
+			$status[0] = 'red';
+			$status[1] = 'off';
+		}
 	}
 	return $status;
 }
@@ -830,10 +906,74 @@ function adinj_selection_box($name, $values, $type=NULL){
 		} else {
 			$typetxt = $type;
 		}
-		if ($value === ADINJ_RULE_DISABLED) $typetxt = "";
+		if ($value === ADINJ_RULE_DISABLED || $value === '') $typetxt = "";
 		echo ">$value $typetxt</option>";
 	}
 	echo "</select>";
+}
+
+function adinj_condition_table($name, $description, $type){
+	$options = adinj_options();
+	?>
+	<table border="0">
+	<tr><td>
+	
+	<textarea name="<?php echo $name; ?>_condition_entries" rows="2" cols="40"><?php echo $options[$name.'_condition_entries']; ?></textarea>
+	
+	
+	</td><td style="vertical-align:top">
+	
+	<?php
+		adinj_selection_box($name."_condition_mode",
+			array('Only show in', 'Never show in'));
+	?>
+	
+	<br />
+	
+		<?php if ($type == 'category') { ?>
+	<select name="<?php echo $name; ?>_dropdown" onchange='adinj_addtext(<?php echo $name; ?>_condition_entries, this.options[this.selectedIndex].value);'>
+		<option value=""><?php echo 'Add ' . $type; ?></option> 
+		<?php 
+		$categories = get_categories(); 
+		foreach ($categories as $category) {
+			$option = '<option value="'.$category->category_nicename.'">';
+			$option .= $category->category_nicename;
+			$option .= ' ('.$category->category_count.')';
+			$option .= '</option>';
+			echo $option;
+		}
+		?>
+	</select>
+	<NOSCRIPT><br /><span style="font-size:10px">As JavaScript is disabled you will have to manually type in the values.</span></NOSCRIPT>
+
+	<?php } else if ($type == 'tag') { ?>
+	
+	<select name="<?php echo $name; ?>_dropdown" onchange='adinj_addtext(document.adinjform.<?php echo $name; ?>_condition_entries, this.options[this.selectedIndex].value);'">
+	
+		<option value=""><?php echo 'Add ' . $type; ?></option> 
+		<?php 
+		$tags = get_tags(); 
+		foreach ($tags as $tag) {
+			$option = '<option value="'.$tag->slug.'">';
+			$option .= $tag->slug;
+			$option .= ' ('.$tag->count.')';
+			$option .= '</option>';
+			echo $option;
+		}
+		?>
+	</select>
+	<NOSCRIPT><br /><span style="font-size:10px">As JavaScript is disabled you will have to manually type in the values.</span></NOSCRIPT>
+	
+	<?php } else {
+		echo 'Type not defined: ' . $type;
+	}?>
+	
+	</td></tr>
+	<tr><td colspan="2">
+	<span style="font-size:10px;">Comma separated list of <?php echo $description; ?></span>
+	</td></tr>
+	</table>
+	<?php
 }
 
 function adinj_add_alignment_options($prefix){
@@ -1015,53 +1155,66 @@ function adinj_options_need_upgrading($stored_options){
 
 function adinj_default_options(){
 	return array(
-			'ads_enabled' => 'off',
-			'max_num_of_ads' => '2', // single posts and pages
-			'max_num_of_ads_home_page' => '3',
-			'no_random_ads_if_shorter_than' => '100',
-			'one_ad_if_shorter_than' => '500',
-			'two_ads_if_shorter_than' => '1000',
-			'three_ads_if_shorter_than' => ADINJ_RULE_DISABLED,
-			'top_ad_if_longer_than' => ADINJ_RULE_DISABLED,
-			'bottom_ad_if_longer_than' => ADINJ_RULE_DISABLED,
-			'rnd_align' => ADINJ_RULE_DISABLED,
-			'rnd_margin_top' => '3',
-			'rnd_margin_bottom' => '3',
-			'top_align' => ADINJ_RULE_DISABLED,
-			'top_margin_top' => '3',
-			'top_margin_bottom' => '3',
-			'bottom_align' => ADINJ_RULE_DISABLED,
-			'bottom_margin_top' => '3',
-			'bottom_margin_bottom' => '3',
-			'widget_exclude_home' => '',
-			'widget_exclude_page' => '',
-			'widget_exclude_single' => '',
-			'widget_exclude_archive' => '',
-			'ads_on_page_older_than' => '10',
-			'exclude_home' => '',
-			'exclude_page' => '',
-			'exclude_single' => '',
-			'exclude_archive' => '',
-			'first_paragraph_ad' => '',
-			'multiple_ads_at_same_position' => '',
-			'sevisitors_only' => '',
-			'ad_referrers' => '.google., .bing., .yahoo., .ask., search?, search., /search/',
-			'blocked_ips' => '',
-			'ad_insertion_mode' => 'mfunc',
-			'ad_code_random_1' => '',
-			'ad_code_top_1' => '',
-			'ad_code_bottom_1' => '',
-			'ui_global_hide' => 'false',
-			'ui_random_hide' => 'false',
-			'ui_topad_hide' => 'false',
-			'ui_bottomad_hide' => 'false',
-			'ui_widgets_hide' => 'false',
-			'ui_restrictions_hide' => 'false',
-			'ui_debugging_hide' => 'true',
-			'ui_docs_hide' => 'false',
-			'ui_testads_hide' => 'false',
-			'debug_mode' => ''
-		);
+		// Global settings
+		'ads_enabled' => '',
+		'ads_on_page_older_than' => '10',
+		'exclude_home' => '',
+		'exclude_page' => '',
+		'exclude_single' => '',
+		'exclude_archive' => '',
+		'global_category_condition_mode' => ADINJ_ONLY_SHOW_IN,
+		'global_category_condition_entries' => '',
+		'global_tag_condition_mode' => ADINJ_ONLY_SHOW_IN,
+		'global_tag_condition_entries' => '',
+		// Random ad
+		'ad_code_random_1' => '',
+		'max_num_of_ads' => '2', // single posts and pages
+		'no_random_ads_if_shorter_than' => '100',
+		'one_ad_if_shorter_than' => '500',
+		'two_ads_if_shorter_than' => '1000',
+		'three_ads_if_shorter_than' => ADINJ_RULE_DISABLED,
+		'top_ad_if_longer_than' => ADINJ_RULE_DISABLED,
+		'bottom_ad_if_longer_than' => ADINJ_RULE_DISABLED,
+		'rnd_align' => ADINJ_RULE_DISABLED,
+		'rnd_margin_top' => '3',
+		'rnd_margin_bottom' => '3',
+		'first_paragraph_ad' => '',
+		'multiple_ads_at_same_position' => '',
+		// Home page specific random ads
+		'max_num_of_ads_home_page' => '3',
+		// top
+		'ad_code_top_1' => '',
+		'top_align' => ADINJ_RULE_DISABLED,
+		'top_margin_top' => '3',
+		'top_margin_bottom' => '3',
+		// bottom
+		'ad_code_bottom_1' => '',
+		'bottom_align' => ADINJ_RULE_DISABLED,
+		'bottom_margin_top' => '3',
+		'bottom_margin_bottom' => '3',
+		// widgets
+		'widget_exclude_home' => '',
+		'widget_exclude_page' => '',
+		'widget_exclude_single' => '',
+		'widget_exclude_archive' => '',
+		// dynamic features
+		'sevisitors_only' => '',
+		'ad_referrers' => '.google., .bing., .yahoo., .ask., search?, search., /search/',
+		'blocked_ips' => '',
+		'ad_insertion_mode' => 'mfunc',
+		// ui
+		'ui_global_hide' => 'false',
+		'ui_random_hide' => 'false',
+		'ui_topad_hide' => 'false',
+		'ui_bottomad_hide' => 'false',
+		'ui_widgets_hide' => 'false',
+		'ui_restrictions_hide' => 'false',
+		'ui_debugging_hide' => 'true',
+		'ui_docs_hide' => 'false',
+		'ui_testads_hide' => 'false',
+		// debug
+		'debug_mode' => ''
+	);
 }
 
 function adinj_getdefault($option){

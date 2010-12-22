@@ -4,7 +4,7 @@ Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-w
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free
 Requires at least: 3.0.0
 Tested up to: 3.0.3
-Stable tag: 0.9.3.4
+Stable tag: 0.9.4
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
@@ -98,6 +98,10 @@ One a basic level it can do the same job as Dax's excellent Adsense Injection. I
 * Extra positioning options - for example you can force the first advert to be right after the first paragraph so that it will be 'above the fold'.
 
 Thanks to Dax by the way for providing the inspiration for this plugin!
+
+= Does this plugin 'take' a percentage of my ad earnings? =
+
+No! Absolutely not. Some ad plugins replace your publisher ID with their own for a certain percentage of adverts. Ad Injection does NOT do this. All your earnings are your own. Ad Injection makes no modifications to your ad code. What you paste into the ad boxes is what is injected into your pages.
 
 = Do I need to have WP Super Cache installed? =
 
@@ -193,6 +197,10 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 
 == Changelog ==
 
+= 0.9.4 =
+Global tag and category restrictions.
+Smoother JQuery show/hide blocks (especially on IE)
+
 = 0.9.3.4 =
 Clean up old settings restore block.
 
@@ -249,6 +257,9 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 * First public release
 
 == Upgrade Notice ==
+
+= 0.9.4 =
+If you are using mfunc mode and have added ad widgets with a version prior to 0.9.2 please re-save them to regenerate the ad files (fixed for upgrades from 0.9.2).
 
 = 0.9.3.4 =
 If you are using mfunc mode and have added ad widgets with a version prior to 0.9.2 please re-save them to regenerate the ad files (fixed for upgrades from 0.9.2).

@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 0.9.3.4
+Version: 0.9.4
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -25,6 +25,9 @@ define('ADINJ_AD_BOTTOM_FILE', 'ad_bottom_1.txt');
 // Constants
 define('ADINJ_RULE_DISABLED', 'Rule Disabled');
 define('ADINJ_ALWAYS_SHOW', 'Always show');
+//
+define('ADINJ_ONLY_SHOW_IN', 'Only show in');
+define('ADINJ_NEVER_SHOW_IN', 'Never show in');
 
 // Global variables
 $adinj_total_rand_ads_used = 0;
@@ -94,7 +97,8 @@ function adinj_quote_list($option){
 	$list = implode(" ", $stripped_lines);
 	
 	$list = preg_replace("/'/", "", $list);
-	$referrers = preg_split("/[\s,]+/", $list);
+	$referrers = preg_split("/[\s,]+/", $list, -1, PREG_SPLIT_NO_EMPTY);
+	if (empty($referrers)) return '';
 	foreach ($referrers as $referrer){
 		$newlist[] = "'" . $referrer . "'";
 	}
@@ -257,11 +261,11 @@ function adinj_adverts_disabled_flag(){
 //////////For runtime ads - i.e. when caching is off and config.php not loaded
 function adinj_search_engine_referrers(){
 	$list = adinj_quote_list('ad_referrers');
-	return preg_split("/[,'\s*]/", $list);
+	return preg_split("/[,'\s]+/", $list, -1, PREG_SPLIT_NO_EMPTY);
 }
 function adinj_blocked_ips(){
 	$list = adinj_quote_list('blocked_ips');
-	return preg_split("/[,'\s*]/", $list);
+	return preg_split("/[,'\s]+/", $list, -1, PREG_SPLIT_NO_EMPTY);
 }
 function adinj_fromasearchengine(){
 	$referrer = $_SERVER['HTTP_REFERER'];
@@ -346,17 +350,74 @@ function adinj_ads_completely_disabled_from_page($content=NULL){
 	// no ads on old posts/pages if rule is enabled
 	if((is_page() || is_single()) && !adinj_is_old_post()) return "NOADS: !is_old_post";
 
-	if ($content == NULL){
-		return false;
-	}
+	$category_ok = adinj_allowed_in_category('global');	
+	if (!$category_ok) return "NOADS: blocked from category";
+	
+	$tag_ok = adinj_allowed_in_tag('global');	
+	if (!$tag_ok) return "NOADS: blocked from tag";
 	
 	// manual ad disabling tags
+	if ($content == NULL) return false;
 	if (strpos($content, "<!--noadsense-->") !== false) return "NOADS: noadsense tag"; // 'Adsense Injection' tag
 	if (strpos($content, "<!-no-adsense-->") !== false) return "NOADS: no-adsense tag"; // 'Whydowork Adsense' tag
 	if (stripos($content,'<!--NoAds-->') !== false) return "NOADS: NoAds tag"; // 'Quick Adsense' tag
 	if (stripos($content,'<!--OffAds-->') !== false) return "NOADS: OffAds tag"; // 'Quick Adsense' tag
 	
 	return false;
+}
+
+function adinj_allowed_in_category($scope){
+	$ops = adinj_options();
+	$cat_list = $ops[$scope.'_category_condition_entries'];
+	$cat_array = preg_split("/[\s,]+/", $cat_list, -1, PREG_SPLIT_NO_EMPTY);
+	if (empty($cat_array)) return true;
+	
+	$cat_mode = $ops[$scope.'_category_condition_mode'];
+	global $post;
+	foreach(get_the_category($post->ID) as $allcats) {
+		$postcat = $allcats->category_nicename;
+		if (in_array($postcat, $cat_array)){
+			if ($cat_mode == ADINJ_ONLY_SHOW_IN){
+				return true;
+			} else if ($cat_mode == ADINJ_NEVER_SHOW_IN){
+				return false;
+			}
+		}
+	}
+	if ($cat_mode == ADINJ_ONLY_SHOW_IN){
+		return false;
+	} else if ($cat_mode == ADINJ_NEVER_SHOW_IN){
+		return true;
+	}
+	echo ("<!--ADINJ DEBUG: error in adinj_allowed_in_category-->");
+	return true;
+}
+
+function adinj_allowed_in_tag($scope){
+	$ops = adinj_options();
+	$tag_list = $ops[$scope.'_tag_condition_entries'];
+	$tag_array = preg_split("/[\s,]+/", $tag_list, -1, PREG_SPLIT_NO_EMPTY);
+	if (empty($tag_array)) return true;
+	
+	$tag_mode = $ops[$scope.'_tag_condition_mode'];
+	global $post;
+	foreach(get_the_tags($post->ID) as $alltags) {
+		$posttag = $alltags->slug;
+		if (in_array($posttag, $tag_array)){
+			if ($tag_mode == ADINJ_ONLY_SHOW_IN){
+				return true;
+			} else if ($tag_mode == ADINJ_NEVER_SHOW_IN){
+				return false;
+			}
+		}
+	}
+	if ($tag_mode == ADINJ_ONLY_SHOW_IN){
+		return false;
+	} else if ($tag_mode == ADINJ_NEVER_SHOW_IN){
+		return true;
+	}
+	echo ("<!--ADINJ DEBUG: error in adinj_allowed_in_tag-->");
+	return true;
 }
 
 function adinj_inject_hook($content){
