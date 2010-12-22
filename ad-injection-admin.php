@@ -151,7 +151,9 @@ function adinj_write_file($path, $content, $permission){
 	if ($ops['ad_insertion_mode'] != 'mfunc') return;
 	global $adinj_warning_msg_filewrite;
 	$handle = fopen($path, "w");
-	fwrite($handle, $content) or $adinj_warning_msg_filewrite .= "<br />Error: could not write to file: $path";
+	if (strlen($content) > 0){
+		fwrite($handle, $content) or $adinj_warning_msg_filewrite .= "<br />Error: could not write to file: $path";
+	}
 	fclose($handle);
 	adinj_chmod($path, $permission);
 }
@@ -1223,9 +1225,7 @@ function adinj_getdefault($option){
 }
 
 function write_ad_to_file($ad, $ad_path){
-	if (strlen($ad) > 0){
 		adinj_write_file($ad_path, $ad, 0640);
-	}
 }
 
 function adinj_docs(){
