@@ -177,8 +177,10 @@ function adinj_options_page(){
 		adinj_activate_hook();
 	}
 	$ops = adinj_options(1);
-	if (!file_exists(ADINJ_CONFIG_FILE2)){
-		adinj_write_config_file();
+	if ($ops['ad_insertion_mode'] == 'mfunc') {
+		if (!file_exists(ADINJ_CONFIG_FILE2)){
+			adinj_write_config_file();
+		}
 	}
 	
 	echo '<div class="wrap">';
