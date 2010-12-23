@@ -61,9 +61,7 @@ class Ad_Injection_Widget extends WP_Widget {
 		$instance['advert'] = $new_instance['advert'];
 		
 		$options = adinj_options();
-		if ($options['ad_insertion_mode'] == 'mfunc'){
-			write_ad_to_file($instance['advert'], $this->get_ad_file_path2());
-		}
+		write_ad_to_file($instance['advert'], $this->get_ad_file_path2());
 		
 		return $instance;
 	}

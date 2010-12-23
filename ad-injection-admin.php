@@ -148,7 +148,6 @@ CONFIG;
 
 function adinj_write_file($path, $content, $permission){
 	$ops = adinj_options();
-	if ($ops['ad_insertion_mode'] != 'mfunc') return;
 	global $adinj_warning_msg_filewrite;
 	$handle = fopen($path, "w");
 	if (strlen($content) > 0){
@@ -384,8 +383,12 @@ function adinj_options_page(){
 	Don't show ads on these page types:
 	</td><td>
 	<input type="checkbox" name="exclude_home" <?php echo adinj_ticked('exclude_home'); ?> />home - <?php echo get_bloginfo('url'); ?><br />
-	<input type="checkbox" name="exclude_page" <?php echo adinj_ticked('exclude_page'); ?> />page - <?php echo wp_count_posts('page', 'readable')->publish; ?> page(s)<br />
-	<input type="checkbox" name="exclude_single" <?php echo adinj_ticked('exclude_single'); ?> />single -<?php echo wp_count_posts('post', 'readable')->publish; ?> individual blog post(s)<br />
+	<?php
+	$count_pages = wp_count_posts('page', 'readable'); 
+	$count_posts = wp_count_posts('post', 'readable'); 
+	?>
+	<input type="checkbox" name="exclude_page" <?php echo adinj_ticked('exclude_page'); ?> />page - <?php echo $count_pages->publish; ?> page(s)<br />
+	<input type="checkbox" name="exclude_single" <?php echo adinj_ticked('exclude_single'); ?> />single -<?php echo $count_posts->publish; ?> individual blog post(s)<br />
 	<input type="checkbox" name="exclude_archive" <?php echo adinj_ticked('exclude_archive'); ?> />archive - only <a href="#widgets">widgets</a> currently appear on archives<br />
 	</td></tr>
 	</table>
@@ -504,7 +507,7 @@ function adinj_options_page(){
 	<?php _e("Maximum number of injected ads: ", 'adinj') ?>
 	<select name='max_num_of_ads_home_page'>
 	<?php
-	for ($value=0; $value<=6; ++$value){
+	for ($value=0; $value<=10; ++$value){
 		echo "<option value=\"$value\" ";
 		if($ops['max_num_of_ads_home_page'] == $value) echo 'selected="selected"';
 		echo ">$value</option>";
@@ -568,7 +571,7 @@ function adinj_options_page(){
 	<?php adinj_postbox_end(); ?>
 	
 	
-	<?php adinj_postbox_start(__("Widget settings", 'adinj'), 'widgets'); ?>
+	<?php adinj_postbox_start(__("Widget settings (sidebar ads)", 'adinj'), 'widgets'); ?>
 	
 	<p>You must configure your individual widgets from the <a href="widgets.php">widgets control panel</a>. However these settings are global to all widgets. Also note that the main set of <a href="#global">global settings</a> will override these ones.</p>
 
@@ -577,10 +580,10 @@ function adinj_options_page(){
 	<tr><td>
 	<p>Don't show widget ads on these page types:</p>
 	</td><td>
-	<input type="checkbox" name="widget_exclude_home" <?php echo adinj_ticked('widget_exclude_home'); ?> />home<br />
-	<input type="checkbox" name="widget_exclude_page" <?php echo adinj_ticked('widget_exclude_page'); ?> />page (<?php echo wp_count_posts('page', 'readable')->publish; ?> page(s))<br />
-	<input type="checkbox" name="widget_exclude_single" <?php echo adinj_ticked('widget_exclude_single'); ?> />single (<?php echo wp_count_posts('post', 'readable')->publish; ?> individual blog post(s))<br />
-	<input type="checkbox" name="widget_exclude_archive" <?php echo adinj_ticked('widget_exclude_archive'); ?> />archive (includes category, tag, author, and date pages types)<br />
+	<input type="checkbox" name="widget_exclude_home" <?php echo adinj_ticked('widget_exclude_home'); ?> />home - <?php echo get_bloginfo('url'); ?><br />
+	<input type="checkbox" name="widget_exclude_page" <?php echo adinj_ticked('widget_exclude_page'); ?> />page - <?php echo $count_pages->publish; ?> page(s)<br />
+	<input type="checkbox" name="widget_exclude_single" <?php echo adinj_ticked('widget_exclude_single'); ?> />single - <?php echo $count_posts->publish; ?> individual blog post(s)<br />
+	<input type="checkbox" name="widget_exclude_archive" <?php echo adinj_ticked('widget_exclude_archive'); ?> />archive - includes category, tag, author, and date pages types<br />
 	</td></tr>
 	
 	</table>
