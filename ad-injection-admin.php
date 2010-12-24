@@ -78,14 +78,9 @@ case 'Save all settings':
 	adinj_update_options($ops);
 	
 	if ($ops['ad_insertion_mode'] == 'mfunc') {
-		global $adinj_warning_msg_filewrite;
-		if (!file_exists(ADINJ_AD_PATH2)){
-			mkdir(ADINJ_AD_PATH2, 0750) //TODO is this the right permission?
-				or $adinj_warning_msg_filewrite .= "<br />Error: could not create dir: ".ADINJ_AD_PATH2.". Please create it manually and try again.";
-		}
-		write_ad_to_file($raw_ad_code_random, ADINJ_AD_PATH2.'/'.ADINJ_AD_RANDOM_FILE);
-		write_ad_to_file($raw_ad_code_top, ADINJ_AD_PATH2.'/'.ADINJ_AD_TOP_FILE);
-		write_ad_to_file($raw_ad_code_bottom, ADINJ_AD_PATH2.'/'.ADINJ_AD_BOTTOM_FILE);
+		write_ad_to_file($raw_ad_code_random, ADINJ_AD_PATH.'/'.ADINJ_AD_RANDOM_FILE);
+		write_ad_to_file($raw_ad_code_top, ADINJ_AD_PATH.'/'.ADINJ_AD_TOP_FILE);
+		write_ad_to_file($raw_ad_code_bottom, ADINJ_AD_PATH.'/'.ADINJ_AD_BOTTOM_FILE);
 		adinj_write_config_file();
 	}
 
@@ -142,27 +137,37 @@ $bottom_func
 ?>
 CONFIG;
 
-	adinj_write_file(ADINJ_CONFIG_FILE2, $config, 0640);
+	adinj_write_file(ADINJ_CONFIG_FILE, $config, 0640);
 
 }
 
 function adinj_write_file($path, $content, $permission){
 	$ops = adinj_options();
 	global $adinj_warning_msg_filewrite;
-	$handle = fopen($path, "w");
-	if (strlen($content) > 0){
-		fwrite($handle, $content) or $adinj_warning_msg_filewrite .= "<br />Error: could not write to file: $path";
+	
+	$dir = dirname($path);
+	if (!@file_exists($dir)){
+		if (!@mkdir($dir, 0750)){
+			@mkdir($dir, 0755) or $adinj_warning_msg_filewrite .= "<br />Warning: could not create dir: ".$dir.". Please create it manually and try again.";
+		}		
 	}
-	fclose($handle);
-	adinj_chmod($path, $permission);
+	
+	$handle = @fopen($path, "w");
+	if (strlen($content) > 0){
+		@fwrite($handle, $content) or $adinj_warning_msg_filewrite .= "<br />Warning: could not write to file: $path";
+	}
+	@fclose($handle);
+	if (@file_exists($path)){
+		adinj_chmod($path, $permission);
+	}
 }
 
 function adinj_chmod($path, $permission){
 	global $adinj_warning_msg_chmod;
-	$oldperm = substr(decoct(fileperms($path)), -3);
+	$oldperm = substr(decoct(@fileperms($path)), -3);
 	$newperm = decoct($permission);
 	if ($newperm == $oldperm) return;
-	chmod($path, $permission) or $adinj_warning_msg_chmod .=  "<br />Warning: chmod $permission " .
+	@chmod($path, $permission) or $adinj_warning_msg_chmod .=  "<br />Warning: chmod $permission " .
 		"on $path failed. Current permissions: $oldperm<br />	Try manually updating the permission if problems occur.";
 }
 
@@ -178,7 +183,7 @@ function adinj_options_page(){
 	}
 	$ops = adinj_options(1);
 	if ($ops['ad_insertion_mode'] == 'mfunc') {
-		if (!file_exists(ADINJ_CONFIG_FILE2)){
+		if (!@file_exists(ADINJ_CONFIG_FILE)){
 			adinj_write_config_file();
 		}
 	}
@@ -218,9 +223,13 @@ function adinj_options_page(){
 		}
 		echo '</p></div>';
 		
-    }
-	
+    } else {
+		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
+		echo "24th December 2010: I'll be taking a break from updating Ad Injection over Christmas and the New Year. The next release will probably be on the 5th January. But please keep sending me any <a href='https://spreadsheets.google.com/viewform?formkey=dFUwZzBYcG1HNzNKMmJZdWFDdFhkY0E6MQ' target='_new'>feedback or bug reports</a>. I read and act on all feedback! Merry Christmas :)";
+		echo '</strong></p></div>';
+	}
 	?>
+	
 	
 	
 	<div style="width:258px; float:right;">
@@ -314,15 +323,14 @@ function adinj_options_page(){
 			<li><a href="http://wordpress.org/extend/plugins/ad-injection/" target="_new">Ad Injection at WordPress</a></li>
 			<li><b><a href="https://spreadsheets.google.com/viewform?formkey=dFUwZzBYcG1HNzNKMmJZdWFDdFhkY0E6MQ" target="_new">Report a bug / give feedback</a></b></li>
 			</ul>
-			<h4>Coming soon</h4>
+			<h4>Coming in 2011</h4>
 			<ul>
 			<li>More precise control over which categories and tags the ads are shown in.</li>
 			<li>Extra places where adverts can be inserted.</li>
-			<li>Merry Christmas by the way!</li>
 			</ul>
 			
-			<h4><font color="red">Be careful!</font></h4>
-			<p>Make sure that the ad settings and positioning you define are in compliance with your ad provider's terms of service!</p>
+			<h4><font color="red">Important!</font></h4>
+			<p>You are responsible for making sure the ad settings and positioning you define are in compliance with your ad provider's terms of service! Failure to do so could get you banned by them!</p>
 		
 			<h4><font color="red">Beta version</font></h4>
 			<p>This plugin has only only recently been released. I'm actively listening to your feedback and fixing any problems, and adding new features that you request. Please let me know if you like the plugin too!</p>
@@ -784,7 +792,7 @@ function adinj_get_status($name){
 		if ($val == 'on'){
 			$status[0] = 'green';
 			$status[1] = $val;
-		} else if ($val == 'off'){
+		} else if ($val == 'off' || $val == ''){
 			$status[0] = 'red';
 			$status[1] = $val;
 		} else if ($val == 'test'){
@@ -991,6 +999,13 @@ function adinj_add_alignment_options($prefix){
 
 	echo "<br />";
 
+	_e("Clear (CSS)", 'adinj');
+	echo "<br />";
+	adinj_selection_box($prefix.'clear',
+		array(ADINJ_RULE_DISABLED, 'left', 'right', 'both'));
+
+	echo "<br />";
+	
 	_e("Margin top", 'adinj');
 	echo "<br />";
 	adinj_selection_box($prefix.'margin_top',
@@ -1037,9 +1052,8 @@ function adinj_debug_information(){
 	echo '<h4>Other settings</h4><blockquote>';
 	
 	echo 'ADINJ_PATH='.ADINJ_PATH.'<br />';
-	echo 'ADINJ_CONFIG_FILE2='.ADINJ_CONFIG_FILE2.'<br />';
-	echo 'ADINJ_AD_PATH='.ADINJ_AD_PATH.' (up to v0.9.1)<br />';
-	echo 'ADINJ_AD_PATH2='.ADINJ_AD_PATH2.' (v0.9.2+)<br />';
+	echo 'ADINJ_CONFIG_FILE='.ADINJ_CONFIG_FILE.'<br />';
+	echo 'ADINJ_AD_PATH='.ADINJ_AD_PATH.'<br />';
 	
 	echo 'Plugin version='.adinj_get_version();
 	echo '</blockquote>';
@@ -1114,28 +1128,23 @@ function adinj_activate_hook() {
 		}
 	}
 	
-	$random_file2 = ADINJ_AD_PATH2.'/'.ADINJ_AD_RANDOM_FILE;
-	$top_file2 = ADINJ_AD_PATH2.'/'.ADINJ_AD_TOP_FILE;
-	$bottom_file2 = ADINJ_AD_PATH2.'/'.ADINJ_AD_BOTTOM_FILE;
+	$random_file2 = ADINJ_AD_PATH.'/'.ADINJ_AD_RANDOM_FILE;
+	$top_file2 = ADINJ_AD_PATH.'/'.ADINJ_AD_TOP_FILE;
+	$bottom_file2 = ADINJ_AD_PATH.'/'.ADINJ_AD_BOTTOM_FILE;
 	if ($pending_options['ad_insertion_mode'] == 'mfunc'){
-		if (!file_exists(ADINJ_AD_PATH2)){
-			mkdir(ADINJ_AD_PATH2, 0750) //TODO is this the right permission?
-				or $adinj_warning_msg_filewrite .= "<br />Error: could not create dir: ".ADINJ_AD_PATH2.". Please create it manually and try again.";
-		}
-
 		// Restore data after automatic upgrade
 		// TODO could remove this code further down the line when everyone
 		// has moved to the new ad store location
-		if (!file_exists($random_file2) && !empty($pending_options['ad_code_random_1'])){
+		if (!@file_exists($random_file2) && !empty($pending_options['ad_code_random_1'])){
 			write_ad_to_file($pending_options['ad_code_random_1'], $random_file2);
 		}
-		if (!file_exists($top_file2) && !empty($pending_options['ad_code_top_1'])){
+		if (!@file_exists($top_file2) && !empty($pending_options['ad_code_top_1'])){
 			write_ad_to_file($pending_options['ad_code_top_1'], $top_file2);
 		}
-		if (!file_exists($bottom_file2) && !empty($pending_options['ad_code_bottom_1'])){
+		if (!@file_exists($bottom_file2) && !empty($pending_options['ad_code_bottom_1'])){
 			write_ad_to_file($pending_options['ad_code_bottom_1'], $bottom_file2);
 		}
-		if (!file_exists(ADINJ_CONFIG_FILE2)){
+		if (!@file_exists(ADINJ_CONFIG_FILE)){
 			adinj_write_config_file();
 		}
 	}
@@ -1163,7 +1172,7 @@ function adinj_options_need_upgrading($stored_options){
 function adinj_default_options(){
 	return array(
 		// Global settings
-		'ads_enabled' => '',
+		'ads_enabled' => 'off',
 		'ads_on_page_older_than' => '10',
 		'exclude_home' => '',
 		'exclude_page' => '',
@@ -1183,6 +1192,7 @@ function adinj_default_options(){
 		'top_ad_if_longer_than' => ADINJ_RULE_DISABLED,
 		'bottom_ad_if_longer_than' => ADINJ_RULE_DISABLED,
 		'rnd_align' => ADINJ_RULE_DISABLED,
+		'rnd_clear' => ADINJ_RULE_DISABLED,
 		'rnd_margin_top' => '3',
 		'rnd_margin_bottom' => '3',
 		'first_paragraph_ad' => '',
@@ -1192,11 +1202,13 @@ function adinj_default_options(){
 		// top
 		'ad_code_top_1' => '',
 		'top_align' => ADINJ_RULE_DISABLED,
+		'top_clear' => ADINJ_RULE_DISABLED,
 		'top_margin_top' => '3',
 		'top_margin_bottom' => '3',
 		// bottom
 		'ad_code_bottom_1' => '',
 		'bottom_align' => ADINJ_RULE_DISABLED,
+		'bottom_clear' => ADINJ_RULE_DISABLED,
 		'bottom_margin_top' => '3',
 		'bottom_margin_bottom' => '3',
 		// widgets

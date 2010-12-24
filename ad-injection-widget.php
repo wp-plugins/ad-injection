@@ -101,7 +101,7 @@ class Ad_Injection_Widget extends WP_Widget {
 	}
 	
 	function get_ad_file_path2(){
-		return ADINJ_AD_PATH2.'/'.$this->get_ad_file_name();
+		return ADINJ_AD_PATH.'/'.$this->get_ad_file_name();
 	}
 	
 	function get_ad_file_name(){

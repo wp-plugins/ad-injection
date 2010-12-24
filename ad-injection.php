@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 0.9.4.3
+Version: 0.9.4.4
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -15,9 +15,8 @@ License: GPLv2
 
 // Files
 define('ADINJ_PATH', WP_PLUGIN_DIR.'/ad-injection');
-define('ADINJ_CONFIG_FILE2', WP_CONTENT_DIR . '/ad-injection-config.php'); // same directory as WP Super Cache config file
-define('ADINJ_AD_PATH', ADINJ_PATH . '/ads'); // old ad store
-define('ADINJ_AD_PATH2', WP_PLUGIN_DIR.'/ad-injection-data'); // ad store from 0.9.2
+define('ADINJ_CONFIG_FILE', WP_CONTENT_DIR . '/ad-injection-config.php'); // same directory as WP Super Cache config file
+define('ADINJ_AD_PATH', WP_PLUGIN_DIR.'/ad-injection-data'); // ad store from 0.9.2
 define('ADINJ_AD_RANDOM_FILE', 'ad_random_1.txt');
 define('ADINJ_AD_TOP_FILE', 'ad_top_1.txt');
 define('ADINJ_AD_BOTTOM_FILE', 'ad_bottom_1.txt');
@@ -148,25 +147,29 @@ function adinj_ad_code_include(){
 function adinj_add_tags($ad, $prefix, $func=NULL){
 	$ops = adinj_options();
 	if ($ops[$prefix . 'align'] !== ADINJ_RULE_DISABLED ||
+		$ops[$prefix . 'clear'] !== ADINJ_RULE_DISABLED ||
 		$ops[$prefix . 'margin_top'] !== ADINJ_RULE_DISABLED ||
 		$ops[$prefix . 'margin_bottom'] !== ADINJ_RULE_DISABLED) {
+		$clear = "";
 		$top = "";
 		$bottom = "";
+		if ($ops[$prefix . 'clear'] !== ADINJ_RULE_DISABLED) $clear="clear:" . $ops[$prefix . 'clear'] . ";";
 		if ($ops[$prefix . 'margin_top'] !== ADINJ_RULE_DISABLED) $top="margin-top:" . $ops[$prefix . 'margin_top'] . "px;";
 		if ($ops[$prefix . 'margin_bottom'] !== ADINJ_RULE_DISABLED) $bottom="margin-bottom:" . $ops[$prefix . 'margin_bottom'] . "px;";
+		$cssrules = $clear . $top . $bottom;
 		
 		if ($ops[$prefix . 'align'] == 'left'){
-			$div = "<div style='float:left;" . $top . $bottom . "'>ADCODE</div><br clear='all' />";
+			$div = "<div style='float:left;" . $cssrules . "'>ADCODE</div><br clear='all' />";
 		} else if ($ops[$prefix . 'align'] == 'center'){
-			$div = "<div style='" . $top . $bottom . "'><center>ADCODE</center></div>";
+			$div = "<div style='" . $cssrules . "'><center>ADCODE</center></div>";
 		} else if ($ops[$prefix . 'align'] == 'right'){
-			$div = "<div style='float:right;" . $top . $bottom . "'>ADCODE</div><br clear='all' />";
+			$div = "<div style='float:right;" . $cssrules . "'>ADCODE</div><br clear='all' />";
 		} else if ($ops[$prefix . 'align'] == 'float left'){
-			$div = "<div style='float:left;" . $top . $bottom . "margin-right:5px;'>ADCODE</div>";
+			$div = "<div style='float:left;" . $cssrules . "margin-right:5px;'>ADCODE</div>";
 		} else if ($ops[$prefix . 'align'] == 'float right'){
-			$div = "<div style='float:right;" . $top . $bottom . "margin-left:5px;'>ADCODE</div>";
+			$div = "<div style='float:right;" . $cssrules . "margin-left:5px;'>ADCODE</div>";
 		} else {
-			$div = "<div style='" . $top . $bottom . "'>ADCODE</div>";
+			$div = "<div style='" . $cssrules . "'>ADCODE</div>";
 		}
 		if (empty($func)){
 			return str_replace("ADCODE", $ad, $div);
@@ -183,41 +186,41 @@ function adinj_add_tags($ad, $prefix, $func=NULL){
 
 function adinj_ad_code_random(){
 	$ops = adinj_options();
-	$ad = "";
+	$ad = $ops['ad_code_random_1'];
+	if (empty($ad)) return false;
 	if ($ops['ad_insertion_mode'] == 'mfunc'){
 		$ad = adinj_get_mfunc_code(ADINJ_AD_RANDOM_FILE);
 	} else {
-		$ad = $ops['ad_code_random_1'];
 		$ad = adinj_add_tags($ad, 'rnd_');
 	}
 	return adinj_ad_code_eval($ad);
 }
 
 function adinj_ad_code_top(){
-	global $adinj_total_all_ads_used;
-	++$adinj_total_all_ads_used;
 	$ops = adinj_options();
-	$ad = "";
+	$ad = $ops['ad_code_top_1'];
+	if (empty($ad)) return "<!--ADINJ DEBUG: no top ad defined. Either define it or turn the ad off-->";
 	if ($ops['ad_insertion_mode'] == 'mfunc'){
 		$ad = adinj_get_mfunc_code(ADINJ_AD_TOP_FILE);
 	} else {
-		$ad = $ops['ad_code_top_1'];
 		$ad = adinj_add_tags($ad, 'top_');
 	}
+	global $adinj_total_all_ads_used;
+	++$adinj_total_all_ads_used;
 	return adinj_ad_code_eval($ad);
 }
 
 function adinj_ad_code_bottom(){
-	global $adinj_total_all_ads_used;
-	++$adinj_total_all_ads_used;
 	$ops = adinj_options();
-	$ad = "";
+	$ad = $ops['ad_code_bottom_1'];
+	if (empty($ad)) return "<!--ADINJ DEBUG: no bottom ad defined. Either define it or turn the ad off-->";
 	if ($ops['ad_insertion_mode'] == 'mfunc'){
 		$ad = adinj_get_mfunc_code(ADINJ_AD_BOTTOM_FILE);
 	} else {
-		$ad = $ops['ad_code_bottom_1'];
 		$ad = adinj_add_tags($ad, 'bottom_');
 	}
+	global $adinj_total_all_ads_used;
+	++$adinj_total_all_ads_used;
 	return adinj_ad_code_eval($ad);
 }
 
@@ -309,7 +312,6 @@ function adinj($content, $message){
 	if (!adinj_ticked('debug_mode')) return $content;
 	global $adinj_total_rand_ads_used, $adinj_total_all_ads_used;
 	$path = ADINJ_AD_PATH;
-	$path2 = ADINJ_AD_PATH2;
 	$ops = adinj_options();
 	$mode = $ops['ad_insertion_mode'];
 	return $content."
@@ -321,7 +323,6 @@ content length=".strlen($content)."
 \$adinj_total_all_ads_used=$adinj_total_all_ads_used
 injection mode=$mode
 ADINJ_AD_PATH=$path
-ADINJ_AD_PATH2=$path2
 //-->\n";
 }
 
@@ -459,6 +460,8 @@ function adinj_inject_hook($content){
 	
 	$num_rand_ads_to_insert = adinj_num_rand_ads_to_insert($length);
 	if ($num_rand_ads_to_insert <= 0) return adinj($content, "all ads used up");
+	$ad = adinj_ad_code_random();
+	if (empty($ad)) return adinj($content, "no random ad defined");
 	
 	if ($ad_include !== false) $content = $ad_include.$content;
 	
@@ -564,7 +567,6 @@ function adinj_inject_hook($content){
 	sort($inj_positions);
 	
 	// Insert ads in reverse order
-	$ad = adinj_ad_code_random();
 	global $adinj_total_rand_ads_used, $adinj_total_all_ads_used;
 	for ($adnum=sizeof($inj_positions)-1; $adnum>=0; $adnum--){
 		$content = substr_replace($content, $ad, $inj_positions[$adnum], 0);

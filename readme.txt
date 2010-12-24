@@ -2,7 +2,7 @@
 Contributors: reviewmylife
 Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free
-Requires at least: 3.0.0
+Requires at least: 2.8.6
 Tested up to: 3.0.3
 Stable tag: 0.9.4.3
 
@@ -120,6 +120,10 @@ Yes you can do this, there are two ways.
 1. In the 'Single posts and pages' setting set the number of injected ads to 0. Then in the 'Home page' settings set the number of ads to whatever you want. 
 2. Alternatively use the global exclude options at the top to exclude ads from all page types except the home page.
 
+= My adverts are overlapping with other page elements (e.g. images) =
+
+You can try defining the 'clear' display setting so that multiple floated parts of your page do not overlap.
+
 = What if I am using an incompatible caching plugin? =
 
 Don't worry - everything will still work except for:
@@ -197,6 +201,11 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 
 == Changelog ==
 
+= 0.9.4.4 =
+New display option for defining CSS clear as left, right or both.
+Suppress file system warnings.
+Tested on WordPress 2.8.6 - it works!
+
 = 0.9.4.3 =
 Only write to config file in mfunc mode.
 
@@ -268,6 +277,9 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 * First public release
 
 == Upgrade Notice ==
+
+= 0.9.4.4 =
+If you are using mfunc mode or switch to mfunc and have added ad widgets you may need to re-save them to regenerate the ad files.
 
 = 0.9.4.3 =
 If you are using mfunc mode and have added ad widgets with a version prior to 0.9.2 please re-save them to regenerate the ad files (fixed for upgrades from 0.9.2).
