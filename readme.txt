@@ -4,7 +4,7 @@ Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-w
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free
 Requires at least: 2.8.6
 Tested up to: 3.0.3
-Stable tag: 0.9.4.4
+Stable tag: 0.9.4.5
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
@@ -201,6 +201,9 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 
 == Changelog ==
 
+= 0.9.4.5 =
+Fix problem with mfunc mode widgets on archive pages.
+
 = 0.9.4.4 =
 New display option for defining CSS clear as left, right or both.
 Suppress file system warnings.
@@ -277,6 +280,9 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 * First public release
 
 == Upgrade Notice ==
+
+= 0.9.4.5 =
+If you are using mfunc mode or switch to mfunc and have added ad widgets you may need to re-save them to regenerate the ad files.
 
 = 0.9.4.4 =
 If you are using mfunc mode or switch to mfunc and have added ad widgets you may need to re-save them to regenerate the ad files.

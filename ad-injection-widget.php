@@ -39,7 +39,9 @@ class Ad_Injection_Widget extends WP_Widget {
 		}
 
 		$adcode = "";
+		$include = "";
 		if ($options['ad_insertion_mode'] == 'mfunc'){
+			$include = adinj_ad_code_include();
 			$adcode = adinj_get_mfunc_code($this->get_ad_file_name());
 		} else {
 			$adcode = $advert;
@@ -47,6 +49,7 @@ class Ad_Injection_Widget extends WP_Widget {
 		$adcode = adinj_ad_code_eval($adcode);			
 			
 		if ( $advert ){
+			echo $include;
 			echo $adcode;
 		}
 
