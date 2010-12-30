@@ -25,11 +25,6 @@ if (!is_admin()) return;
 $adinj_warning_msg_chmod = "";
 $adinj_warning_msg_filewrite = "";
 
-if (is_admin() && !function_exists('check_admin_referer')){
-	//TODO check_admin_referer doesn't exist on post. Why?
-	require_once( ABSPATH . WPINC . '/pluggable.php' );
-}
-
 function adinj_checkNonce(){
 	if (empty($_POST) || !check_admin_referer('_adinj_form', '_adinj_nonce')){
 		echo 'form error';
@@ -44,63 +39,65 @@ function adinj_update_options($ops){
 	$adinj_data = get_option('adinj_options');
 }
 
-// TODO investigate register_settings for a future release
-if (isset($_POST['adinj_action'])){
-switch($_POST['adinj_action']){
-case 'Save all settings':
-	adinj_checkNonce();
-	
-	// Extract all know options
-	$default_options = adinj_default_options();
-	foreach ($default_options as $key => $value){
-		if (isset($_POST[$key])){
-			$ops[$key] = $_POST[$key];
-		} else {
-			$ops[$key] = "";
+function adinj_save_options(){
+	// TODO investigate register_settings for a future release
+	if (isset($_POST['adinj_action'])){
+	switch($_POST['adinj_action']){
+	case 'Save all settings':
+		adinj_checkNonce();
+		
+		// Extract all know options
+		$default_options = adinj_default_options();
+		foreach ($default_options as $key => $value){
+			if (isset($_POST[$key])){
+				$ops[$key] = $_POST[$key];
+			} else {
+				$ops[$key] = "";
+			}
 		}
-	}
-	
-	$raw_ad_code_random = stripslashes($_POST['ad_code_random_1']);
-	$ops['ad_code_random_1'] = $raw_ad_code_random;
-	
-	$raw_ad_code_top = stripslashes($_POST['ad_code_top_1']);
-	$ops['ad_code_top_1'] = $raw_ad_code_top;
-	
-	$raw_ad_code_bottom = stripslashes($_POST['ad_code_bottom_1']);
-	$ops['ad_code_bottom_1'] = $raw_ad_code_bottom;
-	
-	$ad_referrers = stripslashes($_POST['ad_referrers']); // TODO do i need strip slashes?
-	$ops['ad_referrers'] = $ad_referrers;
-	
-	$blocked_ips = stripslashes($_POST['blocked_ips']);
-	$ops['blocked_ips'] = $blocked_ips;
-	
-	adinj_update_options($ops);
-	
-	if ($ops['ad_insertion_mode'] == 'mfunc') {
-		write_ad_to_file($raw_ad_code_random, ADINJ_AD_PATH.'/'.ADINJ_AD_RANDOM_FILE);
-		write_ad_to_file($raw_ad_code_top, ADINJ_AD_PATH.'/'.ADINJ_AD_TOP_FILE);
-		write_ad_to_file($raw_ad_code_bottom, ADINJ_AD_PATH.'/'.ADINJ_AD_BOTTOM_FILE);
-		adinj_write_config_file();
-	}
+		
+		$raw_ad_code_random = stripslashes($_POST['ad_code_random_1']);
+		$ops['ad_code_random_1'] = $raw_ad_code_random;
+		
+		$raw_ad_code_top = stripslashes($_POST['ad_code_top_1']);
+		$ops['ad_code_top_1'] = $raw_ad_code_top;
+		
+		$raw_ad_code_bottom = stripslashes($_POST['ad_code_bottom_1']);
+		$ops['ad_code_bottom_1'] = $raw_ad_code_bottom;
+		
+		$ad_referrers = stripslashes($_POST['ad_referrers']); // TODO do i need strip slashes?
+		$ops['ad_referrers'] = $ad_referrers;
+		
+		$blocked_ips = stripslashes($_POST['blocked_ips']);
+		$ops['blocked_ips'] = $blocked_ips;
+		
+		adinj_update_options($ops);
+		
+		if ($ops['ad_insertion_mode'] == 'mfunc') {
+			write_ad_to_file($raw_ad_code_random, ADINJ_AD_PATH.'/'.ADINJ_AD_RANDOM_FILE);
+			write_ad_to_file($raw_ad_code_top, ADINJ_AD_PATH.'/'.ADINJ_AD_TOP_FILE);
+			write_ad_to_file($raw_ad_code_bottom, ADINJ_AD_PATH.'/'.ADINJ_AD_BOTTOM_FILE);
+			adinj_write_config_file();
+		}
 
-	break;
+		break;
 
-	case 'Reset to Default':
-	adinj_checkNonce();
-	adinj_update_options(adinj_default_options());
-	break;
-	
-	case 'Delete settings from DB':
-	adinj_checkNonce();
-	delete_option('adinj_options');
-	
-	case 'Delete widget settings from DB':
-	adinj_checkNonce();
-	delete_option('widget_adinj');
-	// TODO add option to delete ads files as well
-	break;
-}
+		case 'Reset to Default':
+		adinj_checkNonce();
+		adinj_update_options(adinj_default_options());
+		break;
+		
+		case 'Delete settings from DB':
+		adinj_checkNonce();
+		delete_option('adinj_options');
+		
+		case 'Delete widget settings from DB':
+		adinj_checkNonce();
+		delete_option('widget_adinj');
+		// TODO add option to delete ads files as well
+		break;
+	}
+	}
 }
 
 // Test reminder: These generated functions won't exist until the first save
@@ -176,6 +173,8 @@ function adinj_get_logo(){
 }
 	
 function adinj_options_page(){
+	adinj_save_options();
+	
 	$ops = adinj_options();
 	if ($ops === false || adinj_options_need_upgrading($ops)){
 		// Upgraded via FTP without being deactivated/reactivated

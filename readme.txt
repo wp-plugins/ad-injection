@@ -4,7 +4,7 @@ Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-w
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free
 Requires at least: 2.8.6
 Tested up to: 3.0.3
-Stable tag: 0.9.4.5
+Stable tag: 0.9.4.6
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
@@ -90,6 +90,7 @@ One a basic level it can do the same job as Dax's excellent Adsense Injection. I
 * Can prevent specific IP addresses from seeing adverts.
 * Can define randomly positioned adverts, and adverts at the top and bottom of the posts.
 * Add adverts to the widget area.
+* Restrict adverts by category and tag.
 * Vary number of adverts based on post length.
 * You can inject raw JavaScript and PHP.
 * The dynamic features (restricting ads by referrer and IP) work with WP Super Cache.
@@ -102,6 +103,30 @@ Thanks to Dax by the way for providing the inspiration for this plugin!
 = Does this plugin 'take' a percentage of my ad earnings? =
 
 No! Absolutely not. Some ad plugins replace your publisher ID with their own for a certain percentage of adverts. Ad Injection does NOT do this. All your earnings are your own. Ad Injection makes no modifications to your ad code. What you paste into the ad boxes is what is injected into your pages.
+
+= Is using this plugin allowed for Google AdSense? =
+
+As far as I can tell using this plugin should be legal for AdSense **as long as you** make sure the ad quantities/placements comply with their TOS. However it is up to you to make sure that your website complies.
+
+Ad Injection is designed as a generic plugin for injecting all types of adverts. It will not specifically check that the defined ad quantities or positions are in compliance of the AdSense TOS for you. For example Ad Injection will allow you to inject more ads than Google allows if you configure it to do so. 
+
+Be careful if you use the float left/right positioning options. These options could cause your AdSense adverts to appear under other elements of your page if you have also set a float value for them (e.g. floating images, and adverts together could be problematic). However the new 'clear' option should allow you to make sure this doesn't happen. 
+
+The best advice for any advert plugin is to manually check that you are happy with the advert quantities and positioning it produces, to ensure that you comply with the TOS for your ad program.
+
+You use this plugin at your own risk.
+
+= Do you have any testing recommendations? =
+
+For testing your ad settings I'd recommend that you first disable any caching plugin, and then set Ad Injection to test mode.
+
+If you are unsure as to why ads are appearing (or aren't) enable debug mode from the UI and look for the 'ADINJ DEBUG' tags in the HTML source of your webpage. 
+
+When you are happy with the ad quantities / positions you can disable debug mode, re-enable your caching plugin, and set the Ad Injection mode to 'On'.
+
+If you are testing the search engine referrer settings be aware that Ad Injection sets a one hour cookie when you visit via a site with a matching referrer. This means that after you have visited the site via the matching referrer the adverts will keep showing for the next hour. Clear your cookies to reset the behaviour. The Firefox 'Cookie Monster' plugin is very useful if you want to check the status of the cookie. Look for the 'adinj' cookie. Instead of clearing all your cookies you can just delete this one.
+
+Using a second browser in 'privacy mode' is also a good way of testing your site with a clean slate. A browser like Google Chrome will allow you to test your site with no cookies definied if you start a new private browsing session.
 
 = Do I need to have WP Super Cache installed? =
 
@@ -201,6 +226,9 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 
 == Changelog ==
 
+= 0.9.4.6 =
+Save options in admin_menu hook so that WordPress is correctly initialised when saving. Allows 'pluggable' include to be removed, which should fix 'Cannot redeclare get_userdatabylogin' conflict with vbbridge.
+
 = 0.9.4.5 =
 Fix problem with mfunc mode widgets on archive pages.
 
@@ -280,6 +308,9 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 * First public release
 
 == Upgrade Notice ==
+
+= 0.9.4.6 =
+If you are using mfunc mode or switch to mfunc and have added ad widgets you may need to re-save them to regenerate the ad files.
 
 = 0.9.4.5 =
 If you are using mfunc mode or switch to mfunc and have added ad widgets you may need to re-save them to regenerate the ad files.
