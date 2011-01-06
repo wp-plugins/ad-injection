@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 0.9.4.6
+Version: 0.9.5
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -12,6 +12,9 @@ License: GPLv2
 /* License header moved to ad-injection-admin.php */
 
 //error_reporting(E_ALL ^ E_STRICT);
+
+//
+define('ADINJ_NO_CONFIG_FILE', 1);
 
 // Files
 define('ADINJ_PATH', WP_PLUGIN_DIR.'/ad-injection');
@@ -22,6 +25,7 @@ define('ADINJ_AD_TOP_FILE', 'ad_top_1.txt');
 define('ADINJ_AD_BOTTOM_FILE', 'ad_bottom_1.txt');
 
 // Constants
+define('ADINJ_DISABLED', 'Disabled');
 define('ADINJ_RULE_DISABLED', 'Rule Disabled');
 define('ADINJ_ALWAYS_SHOW', 'Always show');
 //
@@ -33,6 +37,7 @@ $adinj_total_rand_ads_used = 0;
 $adinj_total_all_ads_used = 0;
 $adinj_data = array();
 
+require_once(ADINJ_PATH . '/adshow.php');
 if (is_admin()){
 	require_once(ADINJ_PATH . '/ad-injection-admin.php');
 }
@@ -112,17 +117,60 @@ function adinj_addsevjs_hook(){
 	wp_enqueue_script('adinj_sev', WP_PLUGIN_URL.'/ad-injection/adinj-sev.js', NULL, NULL, true);
 }
 
-function adinj_get_mfunc_code($adfile){
+function adinj_get_mfunc_code($adfile, $options = array()){
+	$options = adinj_formatting_options($adfile, "string", $options);
 	return "\n
-<!--mfunc adshow_display_ad_file('$adfile') -->
-<?php adshow_display_ad_file('$adfile'); ?>
+<!--mfunc adshow_display_ad_file_v2('$adfile', NULL, array($options)) -->
+<?php adshow_display_ad_file_v2('$adfile', NULL, array($options)); ?>
 <!--/mfunc-->
 ";
 }
 
+// adname could either be the name of the adfile or the database row
+function adinj_formatting_options($adname, $output_type="string", $options = array()){
+	$ops = adinj_options();
+	$align = "";
+	$clear = "";
+	$margin_top = "";
+	$margin_bottom = "";
+	if (preg_match("/random_[\d+]/i", $adname)){
+		$align = $ops['rnd_align'];
+		$clear = $ops['rnd_clear'];
+		$margin_top = $ops['rnd_margin_top'];
+		$margin_bottom = $ops['rnd_margin_bottom'];
+	} else if (preg_match("/top_[\d+]/i", $adname)){
+		$align = $ops['top_align'];
+		$clear = $ops['top_clear'];
+		$margin_top = $ops['top_margin_top'];
+		$margin_bottom = $ops['top_margin_bottom'];
+	} else if (preg_match("/bottom_[\d+]/i", $adname)){
+		$align = $ops['bottom_align'];
+		$clear = $ops['bottom_clear'];
+		$margin_top = $ops['bottom_margin_top'];
+		$margin_bottom = $ops['bottom_margin_bottom'];
+	} else if (preg_match("/widget_[\d+]/i", $adname)){
+		$align = $options['align'];
+		$clear = $options['clear'];
+		$margin_top = $options['margin_top'];
+		$margin_bottom = $options['margin_bottom'];
+	}
+	
+	if (adinj_disabled($align)) $align = "";
+	if (adinj_disabled($clear)) $clear = "";
+	if (adinj_disabled($margin_top)) $margin_top = "";
+	if (adinj_disabled($margin_bottom)) $margin_bottom = "";
+	
+	if ($output_type == "string"){
+		return "'align' => '$align', 'clear' => '$clear', 'margin_top' => '$margin_top', 'margin_bottom' => '$margin_bottom'";
+	} else {
+		return array('align' => $align, 'clear' => $clear, 'margin_top' => $margin_top, 'margin_bottom' => $margin_bottom);
+	}
+}
+
 function adinj_ad_code_eval($ad){
+	if (strlen($ad) == 0) return $ad;
 	if (stripos($ad, '<?php') !== false){
-		return adinj_eval_php($ad);
+		return adshow_eval_php($ad);
 	}
 	return $ad;
 }
@@ -141,21 +189,21 @@ function adinj_ad_code_include(){
 <!--/mfunc-->
 ";
 	}
-	return adinj_eval_php($ad);
+	return adinj_ad_code_eval($ad);
 }
 
 function adinj_add_tags($ad, $prefix, $func=NULL){
 	$ops = adinj_options();
-	if ($ops[$prefix . 'align'] !== ADINJ_RULE_DISABLED ||
-		$ops[$prefix . 'clear'] !== ADINJ_RULE_DISABLED ||
-		$ops[$prefix . 'margin_top'] !== ADINJ_RULE_DISABLED ||
-		$ops[$prefix . 'margin_bottom'] !== ADINJ_RULE_DISABLED) {
+	if (!adinj_disabled($ops[$prefix . 'align']) ||
+		!adinj_disabled($ops[$prefix . 'clear']) ||
+		!adinj_disabled($ops[$prefix . 'margin_top']) ||
+		!adinj_disabled($ops[$prefix . 'margin_bottom'])) {
 		$clear = "";
 		$top = "";
 		$bottom = "";
-		if ($ops[$prefix . 'clear'] !== ADINJ_RULE_DISABLED) $clear="clear:" . $ops[$prefix . 'clear'] . ";";
-		if ($ops[$prefix . 'margin_top'] !== ADINJ_RULE_DISABLED) $top="margin-top:" . $ops[$prefix . 'margin_top'] . "px;";
-		if ($ops[$prefix . 'margin_bottom'] !== ADINJ_RULE_DISABLED) $bottom="margin-bottom:" . $ops[$prefix . 'margin_bottom'] . "px;";
+		if (!adinj_disabled($ops[$prefix . 'clear'])) $clear="clear:" . $ops[$prefix . 'clear'] . ";";
+		if (!adinj_disabled($ops[$prefix . 'margin_top'])) $top="margin-top:" . $ops[$prefix . 'margin_top'] . "px;";
+		if (!adinj_disabled($ops[$prefix . 'margin_bottom'])) $bottom="margin-bottom:" . $ops[$prefix . 'margin_bottom'] . "px;";
 		$cssrules = $clear . $top . $bottom;
 		
 		if ($ops[$prefix . 'align'] == 'left'){
@@ -191,7 +239,7 @@ function adinj_ad_code_random(){
 	if ($ops['ad_insertion_mode'] == 'mfunc'){
 		$ad = adinj_get_mfunc_code(ADINJ_AD_RANDOM_FILE);
 	} else {
-		$ad = adinj_add_tags($ad, 'rnd_');
+		$ad = adshow_add_formatting($ad, adinj_formatting_options('ad_code_random_1', "array"));
 	}
 	return adinj_ad_code_eval($ad);
 }
@@ -203,7 +251,7 @@ function adinj_ad_code_top(){
 	if ($ops['ad_insertion_mode'] == 'mfunc'){
 		$ad = adinj_get_mfunc_code(ADINJ_AD_TOP_FILE);
 	} else {
-		$ad = adinj_add_tags($ad, 'top_');
+		$ad = adshow_add_formatting($ad, adinj_formatting_options('ad_code_top_1', "array"));
 	}
 	global $adinj_total_all_ads_used;
 	++$adinj_total_all_ads_used;
@@ -217,7 +265,7 @@ function adinj_ad_code_bottom(){
 	if ($ops['ad_insertion_mode'] == 'mfunc'){
 		$ad = adinj_get_mfunc_code(ADINJ_AD_BOTTOM_FILE);
 	} else {
-		$ad = adinj_add_tags($ad, 'bottom_');
+		$ad = adshow_add_formatting($ad, adinj_formatting_options('ad_code_bottom_1', "array"));
 	}
 	global $adinj_total_all_ads_used;
 	++$adinj_total_all_ads_used;
@@ -260,53 +308,6 @@ function adinj_adverts_disabled_flag(){
 	}
 	return 0;
 }
-
-//////////For runtime ads - i.e. when caching is off and config.php not loaded
-function adinj_search_engine_referrers(){
-	$list = adinj_quote_list('ad_referrers');
-	return preg_split("/[,'\s]+/", $list, -1, PREG_SPLIT_NO_EMPTY);
-}
-function adinj_blocked_ips(){
-	$list = adinj_quote_list('blocked_ips');
-	return preg_split("/[,'\s]+/", $list, -1, PREG_SPLIT_NO_EMPTY);
-}
-function adinj_fromasearchengine(){
-	$referrer = $_SERVER['HTTP_REFERER'];
-	$searchengines = adinj_search_engine_referrers();
-	foreach ($searchengines as $se) {
-		if (stripos($referrer, $se) !== false) {
-			return true;
-		}
-	}
-	// Also return true if the visitor has recently come from a search engine
-	// and has the adinj cookie set.
-	return ($_COOKIE["adinj"]==1);
-}
-function adinj_blocked_ip(){
-	$visitorIP = $_SERVER['REMOTE_ADDR'];
-	return in_array($visitorIP, adinj_blocked_ips());
-}
-function adinj_show_adverts(){
-	if (adinj_blocked_ip()){
-		return "blockedip";
-	}
-	if (adinj_ticked('sevisitors_only')){
-		if (!adinj_fromasearchengine()){
-			return "blockedreferrer";
-		}
-	}
-	return true;
-}
-// From: Exec-PHP plugin
-function adinj_eval_php($code)	{
-	if (strlen($code) == 0) return $code;
-	ob_start();
-	eval("?>$code<?php ");
-	$output = ob_get_contents();
-	ob_end_clean();
-	return $output;
-}
-//////////For runtime ads
 
 function adinj($content, $message){
 	if (!adinj_ticked('debug_mode')) return $content;
@@ -422,6 +423,11 @@ function adinj_allowed_in_tag($scope){
 }
 
 function adinj_inject_hook($content){
+	global $adinj_total_rand_ads_used;
+	if(is_page() || is_single()){
+		// TODO hack for no random ads bug
+		$adinj_total_rand_ads_used = 0;
+	}
 	if (is_feed()) return $content;
 	
 	$reason = adinj_ads_completely_disabled_from_page($content);
@@ -432,9 +438,10 @@ function adinj_inject_hook($content){
 	$ops = adinj_options();
 	
 	if ($ops['ad_insertion_mode'] == 'direct_dynamic'){
-		$showads = adinj_show_adverts();
+		$showads = adshow_show_adverts();
 		if ($showads !== true){
 			return adinj($content, "NOADS: ad blocked at run time reason=$showads");
+			// TODO alt content
 		}
 	}
 
@@ -627,13 +634,18 @@ function adinj_num_rand_ads_to_insert($content_length){
 
 function adinj_do_rule_if($rule_value, $condition, $content_length){
 	if ($rule_value == ADINJ_ALWAYS_SHOW) return true;
+	if (adinj_disabled($rule_value)) return false;
 	if ($condition == '>'){
-		return ($rule_value != ADINJ_RULE_DISABLED && $rule_value > $content_length);
+		return ($rule_value > $content_length);
 	} else if ($condition == '<'){
-		return ($rule_value != ADINJ_RULE_DISABLED && $rule_value < $content_length);
+		return ($rule_value < $content_length);
 	} else {
 		die("adinj_do_rule_if bad condition: $condition");
 	}
+}
+
+function adinj_disabled($value){
+	return $value === ADINJ_RULE_DISABLED || $value === ADINJ_DISABLED || $value === '';
 }
 
 function adinj_ticked($option){

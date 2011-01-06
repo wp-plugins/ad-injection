@@ -26,8 +26,10 @@ $adinj_warning_msg_chmod = "";
 $adinj_warning_msg_filewrite = "";
 
 function adinj_checkNonce(){
-	if (empty($_POST) || !check_admin_referer('_adinj_form', '_adinj_nonce')){
-		echo 'form error';
+	if (!empty($_POST) && check_admin_referer('_adinj_form')){
+		// ok
+	} else {
+		echo 'Ad Injection: Nonce check has failed.';
 		exit();
 	}
 }
@@ -111,6 +113,7 @@ function adinj_write_config_file(){
 	$sevisitors_only = adinj_ticked('sevisitors_only')?'true':'false';
 	$debug_mode = adinj_ticked('debug_mode')?'true':'false';
 	
+	// TODO remove these from config file later...
 	$rnd_func = adinj_add_tags(NULL, 'rnd_', 'adinj_config_add_tags_rnd');
 	$top_func = adinj_add_tags(NULL, 'top_', 'adinj_config_add_tags_top');
 	$bottom_func = adinj_add_tags(NULL, 'bottom_', 'adinj_config_add_tags_bottom');
@@ -187,7 +190,7 @@ function adinj_options_page(){
 		}
 	}
 	
-	echo '<div class="wrap">';
+	echo '<div class="wrap" style="width:950px;">';
 
 	if (adinj_problem_with_wpminify_check()){
 		echo '<div id="ad-injection-warning" class="error"><p><strong>';
@@ -224,7 +227,7 @@ function adinj_options_page(){
 		
     } else {
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "24th December 2010: I'll be taking a break from updating Ad Injection over Christmas and the New Year. The next release will probably be on the 5th January. But please keep sending me any <a href='https://spreadsheets.google.com/viewform?formkey=dFUwZzBYcG1HNzNKMmJZdWFDdFhkY0E6MQ' target='_new'>feedback or bug reports</a>. I read and act on all feedback! Merry Christmas :)";
+		echo "6th January 2011: Added top/bottom spacing options for widgets and new random align option. Plus bug fixes. This release contains some 'under the hood' changes to prepare for the new features that will be released later in January. If you spot any bugs, or odd behaviour please let me know via the ".'<a href="https://spreadsheets.google.com/viewform?formkey=dFUwZzBYcG1HNzNKMmJZdWFDdFhkY0E6MQ" target="_new">feedback form</a>.';
 		echo '</strong></p></div>';
 	}
 	?>
@@ -360,7 +363,7 @@ function adinj_options_page(){
 	<p><a href="#random">Random ads</a> | <a href="#topad">Top</a> | <a href="#bottomad">Bottom</a> | <a href="#widgets">Widgets</a> | <a href="#restrictions">Ad insert mode/dynamic restrictions</a> | <a href="#debugging">Debug</a> | <a href="#docs">Quick Start</a> | <a href="#testads">Test ads</a></p>
 	
 	<form name="adinjform" method="post" action="">
-	<?php wp_nonce_field('_adinj_form', '_adinj_nonce'); ?>
+	<?php wp_nonce_field('_adinj_form'); ?>
 	
 	
 	<?php adinj_postbox_start(__("Global settings", 'adinj'), 'global'); ?>
@@ -535,7 +538,7 @@ function adinj_options_page(){
 	<?php
 		_e("Only show top ad on pages longer than: ", 'adinj');
 		adinj_selection_box("top_ad_if_longer_than",
-			array(ADINJ_RULE_DISABLED, 100, 200, 300, 500, 1000, 1500, 2000, 2500, 3000, 5000, 10000, 20000, ADINJ_ALWAYS_SHOW));
+			array(ADINJ_DISABLED, ADINJ_ALWAYS_SHOW, 100, 200, 300, 500, 1000, 1500, 2000, 2500, 3000, 5000, 10000, 20000));
 			
 	?>
 
@@ -560,7 +563,7 @@ function adinj_options_page(){
 	<?php
 		_e("Only show bottom ad on pages longer than: ", 'adinj');
 		adinj_selection_box("bottom_ad_if_longer_than",
-			array(ADINJ_RULE_DISABLED, 100, 200, 300, 500, 1000, 1500, 2000, 2500, 3000, 5000, 10000, 20000, ADINJ_ALWAYS_SHOW));
+			array(ADINJ_DISABLED, ADINJ_ALWAYS_SHOW, 100, 200, 300, 500, 1000, 1500, 2000, 2500, 3000, 5000, 10000, 20000));
 	?>
 	
 	<br clear="all"/>
@@ -835,7 +838,7 @@ function adinj_get_status($name){
 			return $status;
 		}
 		$val = $ops['top_ad_if_longer_than'];
-		if ($val == ADINJ_RULE_DISABLED){
+		if (adinj_disabled($val)){
 			$status[0] = 'red';
 			$status[1] = 'off';
 		} else {
@@ -850,7 +853,7 @@ function adinj_get_status($name){
 			return $status;
 		}
 		$val = $ops['bottom_ad_if_longer_than'];
-		if ($val == ADINJ_RULE_DISABLED){
+		if (adinj_disabled($val)){
 			$status[0] = 'red';
 			$status[1] = 'off';
 		} else {
@@ -908,10 +911,23 @@ function adinj_dot($colour){
 	return '<span style="color:'.$colour.'">&#x25cf;</span>';
 }
 
-function adinj_selection_box($name, $values, $type=NULL){
+function adinj_selection_box($name, $values, $type=NULL, $options=NULL, $selected_value_name=NULL){
 	echo "<select name='$name'>";
-	$ops = adinj_options();
-	$selected_value = $ops[$name];
+	
+	$ops = "";
+	if ($options != NULL){
+		$ops = $options;
+	} else {
+		$ops = adinj_options();
+	}
+	
+	$selected_value = "";
+	if ($selected_value_name != NULL){
+		$selected_value = $ops[$selected_value_name];
+	} else {
+		$selected_value = $ops[$name];
+	}
+
 	foreach ($values as $value){
 		echo "<option value=\"$value\" ";
 		if($selected_value == "$value") echo 'selected="selected"';
@@ -920,7 +936,7 @@ function adinj_selection_box($name, $values, $type=NULL){
 		} else {
 			$typetxt = $type;
 		}
-		if ($value === ADINJ_RULE_DISABLED || $value === '') $typetxt = "";
+		if (adinj_disabled($value)) $typetxt = "";
 		echo ">$value $typetxt</option>";
 	}
 	echo "</select>";
@@ -994,28 +1010,45 @@ function adinj_add_alignment_options($prefix){
 	_e("Alignment", 'adinj');
 	echo "<br />";
 	adinj_selection_box($prefix.'align',
-		array(ADINJ_RULE_DISABLED, 'left', 'center', 'right', 'float left', 'float right'));
+		array(ADINJ_DISABLED, 'left', 'center', 'right', 'float left', 'float right', 'rand lcr', 'rand float lr', 'rand all'));
 
 	echo "<br />";
 
 	_e("Clear (CSS)", 'adinj');
 	echo "<br />";
 	adinj_selection_box($prefix.'clear',
-		array(ADINJ_RULE_DISABLED, 'left', 'right', 'both'));
+		array(ADINJ_DISABLED, 'left', 'right', 'both'));
 
 	echo "<br />";
 	
+	adinj_add_margin_top_bottom_options($prefix);
+}
+
+function adinj_add_margin_top_bottom_options($prefix, $options=NULL, $topname=NULL, $bottomname=NULL){
+	$tname = $prefix.'margin_top';
+	$bname = $prefix.'margin_bottom';
+	$tdefault = NULL;
+	$bdefault = NULL;
+	if ($topname != NULL){
+		$tname = $topname;
+		$tdefault = "margin_top";
+	}
+	if ($bottomname != NULL){
+		$bname = $bottomname;
+		$bdefault = "margin_bottom";
+	}
+
 	_e("Margin top", 'adinj');
 	echo "<br />";
-	adinj_selection_box($prefix.'margin_top',
-		array(ADINJ_RULE_DISABLED, 0, 1, 2, 3, 4, 5, 7, 10, 15, 20, 30), "(px)");
+	adinj_selection_box($tname,
+		array(ADINJ_DISABLED, 0, 1, 2, 3, 4, 5, 7, 10, 15, 20, 30), "(px)", $options, $tdefault);
 	
 	echo "<br />";
 	
 	_e("Margin bottom", 'adinj');
 	echo "<br />";
-	adinj_selection_box($prefix.'margin_bottom',
-		array(ADINJ_RULE_DISABLED, 0, 1, 2, 3, 4, 5, 7, 10, 15, 20, 30), "(px)");
+	adinj_selection_box($bname,
+		array(ADINJ_DISABLED, 0, 1, 2, 3, 4, 5, 7, 10, 15, 20, 30), "(px)", $options, $bdefault);	
 }
 
 function adinj_debug_information(){
@@ -1190,8 +1223,8 @@ function adinj_default_options(){
 		'three_ads_if_shorter_than' => ADINJ_RULE_DISABLED,
 		'top_ad_if_longer_than' => ADINJ_RULE_DISABLED,
 		'bottom_ad_if_longer_than' => ADINJ_RULE_DISABLED,
-		'rnd_align' => ADINJ_RULE_DISABLED,
-		'rnd_clear' => ADINJ_RULE_DISABLED,
+		'rnd_align' => ADINJ_DISABLED,
+		'rnd_clear' => ADINJ_DISABLED,
 		'rnd_margin_top' => '3',
 		'rnd_margin_bottom' => '3',
 		'first_paragraph_ad' => '',
@@ -1200,14 +1233,14 @@ function adinj_default_options(){
 		'max_num_of_ads_home_page' => '3',
 		// top
 		'ad_code_top_1' => '',
-		'top_align' => ADINJ_RULE_DISABLED,
-		'top_clear' => ADINJ_RULE_DISABLED,
+		'top_align' => ADINJ_DISABLED,
+		'top_clear' => ADINJ_DISABLED,
 		'top_margin_top' => '3',
 		'top_margin_bottom' => '3',
 		// bottom
 		'ad_code_bottom_1' => '',
-		'bottom_align' => ADINJ_RULE_DISABLED,
-		'bottom_clear' => ADINJ_RULE_DISABLED,
+		'bottom_align' => ADINJ_DISABLED,
+		'bottom_clear' => ADINJ_DISABLED,
 		'bottom_margin_top' => '3',
 		'bottom_margin_bottom' => '3',
 		// widgets

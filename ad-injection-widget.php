@@ -7,13 +7,12 @@ http://www.reviewmylife.co.uk/
 class Ad_Injection_Widget extends WP_Widget {
 	function Ad_Injection_Widget() {
 		$widget_ops = array( 'classname' => 'adinjwidget', 'description' => 'Insert Ad Injection adverts into your sidebars/widget areas.' );
-		$control_ops = array( 'width' => 400, 'height' => 300, 'id_base' => 'adinj' );
+		$control_ops = array( 'width' => 450, 'height' => 300, 'id_base' => 'adinj' );
 		$this->WP_Widget( 'adinj', 'Ad Injection', $widget_ops, $control_ops );
 	}
 	
 	function widget( $args, $instance ) {
 		if (adinj_ads_completely_disabled_from_page()) return;
-		$options = adinj_options();
 		
 		if ((is_home() && adinj_ticked('widget_exclude_home')) ||
 			(is_page() && adinj_ticked('widget_exclude_page')) ||
@@ -22,8 +21,9 @@ class Ad_Injection_Widget extends WP_Widget {
 			return;
 		}
 
-		if ($options['ad_insertion_mode'] == 'direct_dynamic'){
-			if (adinj_show_adverts() !== true){
+		$ops = adinj_options();
+		if ($ops['ad_insertion_mode'] == 'direct_dynamic'){
+			if (adshow_show_adverts() !== true){
 				return;
 			}
 		}
@@ -40,11 +40,11 @@ class Ad_Injection_Widget extends WP_Widget {
 
 		$adcode = "";
 		$include = "";
-		if ($options['ad_insertion_mode'] == 'mfunc'){
+		if ($ops['ad_insertion_mode'] == 'mfunc'){
 			$include = adinj_ad_code_include();
-			$adcode = adinj_get_mfunc_code($this->get_ad_file_name());
+			$adcode = adinj_get_mfunc_code($this->get_ad_file_name(), $instance);
 		} else {
-			$adcode = $advert;
+			$adcode = adshow_add_formatting($advert, adinj_formatting_options('widget_1', "array"));
 		}
 		$adcode = adinj_ad_code_eval($adcode);			
 			
@@ -62,9 +62,10 @@ class Ad_Injection_Widget extends WP_Widget {
 		/* Strip tags (if needed) and update the widget settings. */
 		$instance['title'] = strip_tags( $new_instance['title'] );
 		$instance['advert'] = $new_instance['advert'];
-		
-		$options = adinj_options();
-		write_ad_to_file($instance['advert'], $this->get_ad_file_path2());
+		$instance['margin_top'] = $new_instance['margin_top'];
+		$instance['margin_bottom'] = $new_instance['margin_bottom'];
+
+		write_ad_to_file($instance['advert'], $this->get_ad_file_path());
 		
 		return $instance;
 	}
@@ -72,7 +73,11 @@ class Ad_Injection_Widget extends WP_Widget {
 	function form( $instance ) {
 
 		/* Set up some default widget settings. */
-		$defaults = array('title' => '', 'advert' => '');
+		$defaults = array(
+			'title' => '', 
+			'advert' => '', 
+			'margin_top' => ADINJ_DISABLED,
+			'margin_bottom' => ADINJ_DISABLED);
 		$instance = wp_parse_args( (array) $instance, $defaults ); 
 		?>
 		
@@ -83,10 +88,14 @@ class Ad_Injection_Widget extends WP_Widget {
 			<span style="font-size:10px;">Make sure any label complies with your ad provider's TOS. More info for <a href="http://adsense.blogspot.com/2007/04/encouraging-clicks.html" target="_new">AdSense</a> users.</span>
 		</p>
 
-		<p>
+		<table border="0" cellspacing="5">
+		<tr><td style="vertical-align: top">
 			<label for="<?php echo $this->get_field_id('advert'); ?>">Ad code:</label>
-			<textarea class="widefat" rows="12" cols="20" id="<?php echo $this->get_field_id('advert'); ?>" name="<?php echo $this->get_field_name('advert'); ?>"><?php echo $instance['advert']; ?></textarea>
-		</p>
+			<textarea class="widefat" rows="12" cols="30" id="<?php echo $this->get_field_id('advert'); ?>" name="<?php echo $this->get_field_name('advert'); ?>"><?php echo $instance['advert']; ?></textarea>
+		</td><td style="vertical-align: top">
+			<?php adinj_add_margin_top_bottom_options('widget_', $instance, $this->get_field_name('margin_top'), $this->get_field_name('margin_bottom') ); ?>
+		</td></tr>
+		</table>
 		
 		<p>The following dynamic options to define who sees these adverts are on the main <a href='options-general.php?page=ad-injection.php'>Ad Injection settings page</a>. The title will however always be displayed. If you want the title to be dynamic as well you should embed it in the ad code text box.</p>
 		
@@ -103,7 +112,7 @@ class Ad_Injection_Widget extends WP_Widget {
 		<?php
 	}
 	
-	function get_ad_file_path2(){
+	function get_ad_file_path(){
 		return ADINJ_AD_PATH.'/'.$this->get_ad_file_name();
 	}
 	
