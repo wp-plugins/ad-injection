@@ -1148,34 +1148,6 @@ function adinj_debug_information(){
 	}
 	echo '</table>';
 	
-	?><h4>Widget settings dump from database (all in 'widget_adinj' option)</h4>
-	<table border="1" style="width:610px; word-wrap:break-word;">
-	<tr><td><b>Widget</b></td><td><b>Setting:Value</b></td></tr>
-	<?php
-	//<td><b>Value</b></td>
-	$widgetops = get_option('widget_adinj');
-	$count = 0;
-	foreach($widgetops as $key=>$val){
-		if ($count % 2 == 0){
-			echo '<tr style="background-color:#cccccc"><td style="vertical-align:top">';
-		} else {
-			echo '<tr><td style="vertical-align:top">';
-		}
-		echo $key;
-		echo "</td>";
-		echo '<td style="vertical-align:top">';
-		if (is_array($val)){
-			foreach($val as $subkey=>$subval){
-				echo $subkey.':'.htmlentities($subval).'<br />';
-			}
-		} else {
-			echo htmlentities($val);
-		}
-		echo '</td></tr>';
-		++$count;
-	}
-	echo '</table>';
-	
 	echo '<h4>Other settings</h4><blockquote>';
 	
 	echo 'ADINJ_PATH='.ADINJ_PATH.'<br />';

@@ -4,7 +4,7 @@ Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-w
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog
 Requires at least: 2.8.6
 Tested up to: 3.1
-Stable tag: 0.9.5.1
+Stable tag: 0.9.5.2
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
@@ -232,6 +232,10 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 
 == Changelog ==
 
+= 0.9.5.2 =
+New CSS padding options for widgets. Fixes for CSS margin options.
+Update docs for due to new mfunc support in WP Super Cache. If you are using mfunc mode and upgrade to the latest version of WP Super Cache (0.9.9.8) you can now use the faster mod_rewrite mode or PHP mode instead of legacy mode.
+
 = 0.9.5.1 =
 New CSS padding options for widgets. Fixes for CSS margin options.
 Update docs for due to new mfunc support in WP Super Cache. If you are using mfunc mode and upgrade to the latest version of WP Super Cache (0.9.9.8) you can now use the faster mod_rewrite mode or PHP mode instead of legacy mode.
@@ -323,6 +327,10 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 * First public release
 
 == Upgrade Notice ==
+
+= 0.9.5.2 =
+New CSS padding options for widgets. Fixes for CSS margin options.
+If you are using WP Super Cache 0.9.9.8 you can now switch to its faster mod_rewrite or PHP modes.
 
 = 0.9.5.1 =
 New CSS padding options for widgets. Fixes for CSS margin options.
