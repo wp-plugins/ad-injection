@@ -225,9 +225,9 @@ function adinj_options_page(){
 		}
 		echo '</p></div>';
 		
-    } else {
+	} else {
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "6th January 2011: Added top/bottom spacing options for widgets and new random align option. Plus bug fixes. This release contains some 'under the hood' changes to prepare for the new features that will be released later in January. If you spot any bugs, or odd behaviour please let me know via the ".'<a href="https://spreadsheets.google.com/viewform?formkey=dFUwZzBYcG1HNzNKMmJZdWFDdFhkY0E6MQ" target="_new">feedback form</a>.';
+		echo "10th January 2011: Added new top/bottom padding options for widgets (slightly different behaviour to the existing top/bottom margin option). Plus added some fixes for the widget margins. If you spot any bugs, or odd behaviour please let me know via the ".'<a href="https://spreadsheets.google.com/viewform?formkey=dFUwZzBYcG1HNzNKMmJZdWFDdFhkY0E6MQ" target="_new">feedback form</a>.';
 		echo '</strong></p></div>';
 	}
 	?>
@@ -609,7 +609,33 @@ function adinj_options_page(){
 	<h4>Ad insertion mode</h4>
 	
 	<blockquote>
-	<p><input type="radio" name="ad_insertion_mode" value="mfunc" <?php if ($ops['ad_insertion_mode']=='mfunc') echo 'checked="checked"'; ?> /> <b>Use mfunc tags for dynamic features</b> - Dynamic features will work with WP Super Cache in legacy mode (or with a caching program that is compatible with WP Super Cache's mfunc tags). Dynamic features will also work if you don't use a caching program, although if you don't use a caching program 'direct' insertion will be more efficient.</p>
+	<p><input type="radio" name="ad_insertion_mode" value="mfunc" <?php if ($ops['ad_insertion_mode']=='mfunc') echo 'checked="checked"'; ?> /> <b>Use mfunc tags for dynamic features (WP Super Cache mode)</b> - Dynamic features will work with WP Super Cache. </p>
+	
+	<?php if (!is_plugin_active('wp-super-cache/wp-cache.php')) {
+		echo '<p><b><span style="font-size:10px;color:red;">Note: WP Super Cache does not appear to be active. If you are not using WP Super Cache /WP Cache (or compatible) you should use one of the direct insertion modes.</span></b></p>';		
+	} ?>
+	
+	<?php if ($ops['ad_insertion_mode'] != 'mfunc') { ?>
+	<script type="text/javascript">
+	document.write('<style type="text/css" media="screen">#wp_supercache_msg { display: none; }</style>');
+	</script>
+	<?php }  ?>
+
+	<div id="wp_supercache_msg" class="wp_supercache_msg">
+	<p>With WP Super Cache version 0.9.9.8+ you can use the fastest 'mod rewrite rules' caching mode. With older versions of WP Super Cache you'll have to use the slower 'legacy mode'.</p>
+	
+	<p>Go to the 
+	
+	<?php if (is_plugin_active('wp-super-cache/wp-cache.php')) { ?>
+	<a href='options-general.php?page=wpsupercache&amp;tab=settings'>WP Super Cache advanced options page</a>
+	<?php } else { ?>
+	WP Super Cache advanced options page
+	<?php }  ?>
+	to configure the caching mode.</p>
+	
+	<p>Dynamic features will also work if you don't use a caching program with mfunc mode. Although if you don't use a caching program one of the 'direct' insertion modes will be more efficient.</p>
+	</div>
+	
 	<p><input type="radio" name="ad_insertion_mode" value="direct_dynamic" <?php if ($ops['ad_insertion_mode']=='direct_dynamic') echo 'checked="checked"'; ?> /> <b>Direct ad insertion with dynamic features</b> - Dynamic features will work if no caching is used. Only select this if you are not using any caching plugin.</p>
 	<p><input type="radio" name="ad_insertion_mode" value="direct_static" <?php if ($ops['ad_insertion_mode']=='direct_static') echo 'checked="checked"'; ?> /> <b>Direct static ad insertion</b> - No dynamic feature support. Select this if you are using a caching plugin which is not compatible with WP Super Cache's mfunc tags.</p>
 	</blockquote>
@@ -622,9 +648,15 @@ function adinj_options_page(){
 		if (jQuery('input[name=ad_insertion_mode]:checked').val() == "direct_static"){
 			jQuery('.dynamic_features').slideUp(1000);
 			jQuery('.dynamic_features_msg').slideDown(1000);
-		} else {
+			jQuery('.wp_supercache_msg').slideUp(1000);
+		} else if (jQuery('input[name=ad_insertion_mode]:checked').val() == "direct_dynamic"){
 			jQuery('.dynamic_features_msg').slideUp(1000);
 			jQuery('.dynamic_features').slideDown(1000);
+			jQuery('.wp_supercache_msg').slideUp(1000);
+		} else { // mfunc
+			jQuery('.dynamic_features_msg').slideUp(1000);
+			jQuery('.dynamic_features').slideDown(1000);
+			jQuery('.wp_supercache_msg').slideDown(1000);
 		}
 		return true;
 		});
@@ -661,6 +693,7 @@ function adinj_options_page(){
 	<h4>Blocked IP addresses (dynamic feature)</h4>
 	
 	<blockquote>
+	<!--<input type="checkbox" name="block_ips" <?php echo adinj_ticked('block_ips'); ?> /><?php _e("Exclude ads from these IP addresses.", 'adinj') ?><br />-->
 	<textarea name="blocked_ips" rows="4" cols="70"><?php echo $ops['blocked_ips']; ?></textarea>
 	<p>Comma separated list e.g.: <br /><code>0.0.0.1, 0.0.0.2</code></p>
 	<p>Or you can list one IP per line with optional comments e.g.</p>
@@ -668,28 +701,6 @@ function adinj_options_page(){
 	
 	<p>For reference your current IP address is <code><?php echo $_SERVER['REMOTE_ADDR'] ?></code></p>
 	</blockquote>
-	</div>
-	
-	
-	<h3>Recommended WP Super Cache settings:</h3>
-	<div class="inside" style="margin:10px">
-
-	<blockquote>
-		<ul>
-		<li>Cache hits to this website for quick access.</li>
-		<li>Legacy page caching.</li>
-		<li>Compress pages so they&#x2019;re served more quickly to visitors.</li>
-		<li>Expire time: 36000 (10 hours). Or 3600 (1 hour) for very busy site.</li>
-		</ul>
-	</blockquote>
-	
-	<p>
-	<?php if (is_plugin_active('wp-super-cache/wp-cache.php')) {
-		echo "Go to the WP Super Cache <a href='options-general.php?page=wpsupercache&amp;tab=settings'>advanced settings page</a> (where you can set the caching mode to Legacy).";
-	} else {
-		echo "Note: WP Super Cache does not appear to be active.";
-	} ?>
-	</p>
 	</div>
 	
 	</div>
@@ -718,9 +729,13 @@ function adinj_options_page(){
 	
 	<input type="submit" name="adinj_action" value="<?php _e('Reset to Default', 'adinj') ?>" />
 	
-	<p>You can delete the database settings if you are going to uninstall Ad Injection.</p>
+	<p>You can delete the database settings if you are going to uninstall Ad Injection (they will be automatically deleted if you uninstall via WordPress as well).</p>
 	
 	<input type="submit" name="adinj_action" value="<?php _e('Delete settings from DB', 'adinj') ?>" />
+	
+	<p>This button will delete all your Ad Injection widgets.</p>
+	
+	<input type="submit" name="adinj_action" value="<?php _e('Delete widget settings from DB', 'adinj') ?>" />
 	
 	<?php adinj_postbox_end(); ?>
 
@@ -733,6 +748,31 @@ function adinj_options_page(){
 	
 	echo '</form>';
 	echo '</div> <!--wrap-->';
+}
+
+// From WP Super cache
+function adinj_admin_tabs( $current = 0 ) {
+	global $wp_db_version;
+	if ( $current == 0 ) {
+		if ( isset( $_GET[ 'tab' ] ) ) {
+			$current = $_GET[ 'tab' ];
+		} else {
+			$current = 'main';
+		}
+	}
+	$tabs = array( 'main' => __( 'Main', 'ad-injection' ), 'adrotation' => __( 'Ad Rotation / A:B Testing', 'ad-injection' ), 'alternate' => __( 'Alternate Content', 'ad-injection' ) );
+	$links = array();
+	foreach( $tabs as $tab => $name ) {
+		if ( $current == $tab ) {
+			$links[] = "<a class='nav-tab nav-tab-active' href='?page=ad-injection&tab=$tab'>$name</a>";
+		} else {
+			$links[] = "<a class='nav-tab' href='?page=ad-injection&tab=$tab'>$name</a>";
+		}
+	}
+	
+	echo '<div id="nav"><h2 class="themes-php">';
+	echo implode( "", $links );
+	echo '</h2></div>';
 }
 
 function adinj_postbox_start($title, $anchor, $width='650px'){
@@ -881,7 +921,7 @@ function adinj_get_status($name){
 		if ($ops['sevisitors_only'] == 'on'){
 			$status[1] .= 'referrer';
 		}
-		if (!empty($ops['blocked_ips'])){
+		if ($ops['block_ips'] == 'on' && !empty($ops['blocked_ips'])){
 			$status[1] .= ' ip';
 		}
 	} else if ($name == 'debugging'){
@@ -1051,6 +1091,33 @@ function adinj_add_margin_top_bottom_options($prefix, $options=NULL, $topname=NU
 		array(ADINJ_DISABLED, 0, 1, 2, 3, 4, 5, 7, 10, 15, 20, 30), "(px)", $options, $bdefault);	
 }
 
+function adinj_add_padding_top_bottom_options($prefix, $options=NULL, $topname=NULL, $bottomname=NULL){
+	$tname = $prefix.'padding_top';
+	$bname = $prefix.'padding_bottom';
+	$tdefault = NULL;
+	$bdefault = NULL;
+	if ($topname != NULL){
+		$tname = $topname;
+		$tdefault = "padding_top";
+	}
+	if ($bottomname != NULL){
+		$bname = $bottomname;
+		$bdefault = "padding_bottom";
+	}
+
+	_e("Padding top", 'adinj');
+	echo "<br />";
+	adinj_selection_box($tname,
+		array(ADINJ_DISABLED, 0, 1, 2, 3, 4, 5, 7, 10, 15, 20, 30), "(px)", $options, $tdefault);
+	
+	echo "<br />";
+	
+	_e("Padding bottom", 'adinj');
+	echo "<br />";
+	adinj_selection_box($bname,
+		array(ADINJ_DISABLED, 0, 1, 2, 3, 4, 5, 7, 10, 15, 20, 30), "(px)", $options, $bdefault);	
+}
+
 function adinj_debug_information(){
 	$stored_options = adinj_options();
 	$default_options = adinj_default_options();
@@ -1078,6 +1145,34 @@ function adinj_debug_information(){
 		}
 	} else {
 		echo "<br />No options in database!";
+	}
+	echo '</table>';
+	
+	?><h4>Widget settings dump from database (all in 'widget_adinj' option)</h4>
+	<table border="1" style="width:610px; word-wrap:break-word;">
+	<tr><td><b>Widget</b></td><td><b>Setting:Value</b></td></tr>
+	<?php
+	//<td><b>Value</b></td>
+	$widgetops = get_option('widget_adinj');
+	$count = 0;
+	foreach($widgetops as $key=>$val){
+		if ($count % 2 == 0){
+			echo '<tr style="background-color:#cccccc"><td style="vertical-align:top">';
+		} else {
+			echo '<tr><td style="vertical-align:top">';
+		}
+		echo $key;
+		echo "</td>";
+		echo '<td style="vertical-align:top">';
+		if (is_array($val)){
+			foreach($val as $subkey=>$subval){
+				echo $subkey.':'.htmlentities($subval).'<br />';
+			}
+		} else {
+			echo htmlentities($val);
+		}
+		echo '</td></tr>';
+		++$count;
 	}
 	echo '</table>';
 	
@@ -1251,6 +1346,7 @@ function adinj_default_options(){
 		// dynamic features
 		'sevisitors_only' => '',
 		'ad_referrers' => '.google., .bing., .yahoo., .ask., search?, search., /search/',
+		'block_ips' => 'on',
 		'blocked_ips' => '',
 		'ad_insertion_mode' => 'mfunc',
 		// ui

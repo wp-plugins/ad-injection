@@ -44,7 +44,7 @@ class Ad_Injection_Widget extends WP_Widget {
 			$include = adinj_ad_code_include();
 			$adcode = adinj_get_mfunc_code($this->get_ad_file_name(), $instance);
 		} else {
-			$adcode = adshow_add_formatting($advert, adinj_formatting_options('widget_1', "array"));
+			$adcode = adshow_add_formatting($advert, $instance);
 		}
 		$adcode = adinj_ad_code_eval($adcode);			
 			
@@ -64,6 +64,8 @@ class Ad_Injection_Widget extends WP_Widget {
 		$instance['advert'] = $new_instance['advert'];
 		$instance['margin_top'] = $new_instance['margin_top'];
 		$instance['margin_bottom'] = $new_instance['margin_bottom'];
+		$instance['padding_top'] = $new_instance['padding_top'];
+		$instance['padding_bottom'] = $new_instance['padding_bottom'];
 
 		write_ad_to_file($instance['advert'], $this->get_ad_file_path());
 		
@@ -77,7 +79,9 @@ class Ad_Injection_Widget extends WP_Widget {
 			'title' => '', 
 			'advert' => '', 
 			'margin_top' => ADINJ_DISABLED,
-			'margin_bottom' => ADINJ_DISABLED);
+			'margin_bottom' => ADINJ_DISABLED,
+			'padding_top' => ADINJ_DISABLED,
+			'padding_bottom' => ADINJ_DISABLED);
 		$instance = wp_parse_args( (array) $instance, $defaults ); 
 		?>
 		
@@ -94,6 +98,8 @@ class Ad_Injection_Widget extends WP_Widget {
 			<textarea class="widefat" rows="12" cols="30" id="<?php echo $this->get_field_id('advert'); ?>" name="<?php echo $this->get_field_name('advert'); ?>"><?php echo $instance['advert']; ?></textarea>
 		</td><td style="vertical-align: top">
 			<?php adinj_add_margin_top_bottom_options('widget_', $instance, $this->get_field_name('margin_top'), $this->get_field_name('margin_bottom') ); ?>
+			<br />
+			<?php adinj_add_padding_top_bottom_options('widget_', $instance, $this->get_field_name('padding_top'), $this->get_field_name('padding_bottom') ); ?>
 		</td></tr>
 		</table>
 		

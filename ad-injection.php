@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 0.9.5
+Version: 0.9.5.1
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -133,6 +133,8 @@ function adinj_formatting_options($adname, $output_type="string", $options = arr
 	$clear = "";
 	$margin_top = "";
 	$margin_bottom = "";
+	$padding_top = "";
+	$padding_bottom = "";
 	if (preg_match("/random_[\d+]/i", $adname)){
 		$align = $ops['rnd_align'];
 		$clear = $ops['rnd_clear'];
@@ -153,17 +155,26 @@ function adinj_formatting_options($adname, $output_type="string", $options = arr
 		$clear = $options['clear'];
 		$margin_top = $options['margin_top'];
 		$margin_bottom = $options['margin_bottom'];
+		$padding_top = $options['padding_top'];
+		$padding_bottom = $options['padding_bottom'];
 	}
 	
 	if (adinj_disabled($align)) $align = "";
 	if (adinj_disabled($clear)) $clear = "";
 	if (adinj_disabled($margin_top)) $margin_top = "";
 	if (adinj_disabled($margin_bottom)) $margin_bottom = "";
+	if (adinj_disabled($padding_top)) $padding_top = "";
+	if (adinj_disabled($padding_bottom)) $padding_bottom = "";
 	
 	if ($output_type == "string"){
-		return "'align' => '$align', 'clear' => '$clear', 'margin_top' => '$margin_top', 'margin_bottom' => '$margin_bottom'";
+		return "'align' => '$align', 'clear' => '$clear', 'margin_top' => '$margin_top', 'margin_bottom' => '$margin_bottom', 'padding_top' => '$padding_top', 'padding_bottom' => '$padding_bottom'";
 	} else {
-		return array('align' => $align, 'clear' => $clear, 'margin_top' => $margin_top, 'margin_bottom' => $margin_bottom);
+		return array('align' => $align,
+			'clear' => $clear,
+			'margin_top' => $margin_top,
+			'margin_bottom' => $margin_bottom,
+			'padding_top' => $padding_top,
+			'padding_bottom' => $padding_bottom);
 	}
 }
 

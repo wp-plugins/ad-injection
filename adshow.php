@@ -222,14 +222,20 @@ function adshow_add_formatting($ad, $ops = array()){
 	if (strlen($ops['align']) > 0 ||
 		strlen($ops['clear']) > 0 ||
 		strlen($ops['margin_top']) > 0 ||
-		strlen($ops['margin_bottom']) > 0) {
+		strlen($ops['margin_bottom']) > 0 ||
+		strlen($ops['padding_top']) > 0 ||
+		strlen($ops['padding_bottom']) > 0) {
 		$clear = "";
-		$top = "";
-		$bottom = "";
+		$mtop = "";
+		$mbottom = "";
+		$ptop = "";
+		$pbottom = "";
 		if (strlen($ops['clear']) > 0) $clear="clear:" . $ops['clear'] . ";";
-		if (strlen($ops['margin_top']) > 0) $top="margin-top:" . $ops['margin_top'] . "px;";
-		if (strlen($ops['margin_bottom']) > 0) $bottom="margin-bottom:" . $ops['margin_bottom'] . "px;";
-		$cssrules = $clear . $top . $bottom;
+		if (strlen($ops['margin_top']) > 0) $mtop="margin-top:" . $ops['margin_top'] . "px;";
+		if (strlen($ops['margin_bottom']) > 0) $mbottom="margin-bottom:" . $ops['margin_bottom'] . "px;";
+		if (strlen($ops['padding_top']) > 0) $ptop="padding-top:" . $ops['padding_top'] . "px;";
+		if (strlen($ops['padding_bottom']) > 0) $pbottom="padding-bottom:" . $ops['padding_bottom'] . "px;";
+		$cssrules = $clear . $mtop . $mbottom . $ptop . $pbottom;
 		
 		if ($ops['align'] == 'rand lcr') $ops['align'] = array_rand(array_flip(array('left', 'center', 'right')));
 		if ($ops['align'] == 'rand float lr') $ops['align'] = array_rand(array_flip(array('float left', 'float right')));
