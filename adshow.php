@@ -27,6 +27,7 @@ function adshow_functions_exist(){
 		if (!adshow_functions_exist_impl('adinj_config_add_tags_bottom')){ return false; }
 		if (!adshow_functions_exist_impl('adinj_config_sevisitors_only')){ return false; }
 		if (!adshow_functions_exist_impl('adinj_config_search_engine_referrers')){ return false; }
+		//if (!adshow_functions_exist_impl('adinj_config_block_ips')){ return false; } // TODO enable
 		if (!adshow_functions_exist_impl('adinj_config_blocked_ips')){ return false; }
 		if (!adshow_functions_exist_impl('adinj_config_debug_mode')){ return false; }
 	}
@@ -34,7 +35,7 @@ function adshow_functions_exist(){
 }
 function adshow_functions_exist_impl($function){
 	if (!function_exists($function)){
-		echo "<!--ADINJ DEBUG:".__FILE__." Error: $function does not exist. Might be because config file is missing. Re-save settings to fix. -->";
+		echo "<!--ADINJ DEBUG:".__FILE__." Error: $function does not exist. Might be because config file is missing or out of date. Re-save settings to fix. -->";
 		return false;
 	}
 	return true;
@@ -49,6 +50,10 @@ function adinj_config_sevisitors_only() {
 function adinj_config_search_engine_referrers() {
 	$list = adinj_quote_list('ad_referrers');
 	return preg_split("/[,'\s]+/", $list, -1, PREG_SPLIT_NO_EMPTY);
+}
+
+function adinj_config_block_ips() { // TODO use this
+	return adinj_ticked('block_ips');
 }
 
 function adinj_config_blocked_ips() { 
@@ -104,7 +109,7 @@ function adshow_display_ad_full_path($ad_path){
 	}
 	if (file_exists($ad_path)){
 		$ad = file_get_contents($ad_path);
-		if ($ad === false) echo "\n<!--ADINJ DEBUG: could not read ad from file: $ad_path-->";
+		if ($ad === false) echo "<!--ADINJ DEBUG: could not read ad from file: $ad_path-->\n";
 		if (stripos($ad_path, 'random_1.txt') > 0){ // TODO something better than this
 			echo adinj_config_add_tags_rnd(adshow_eval_php($ad));
 		} else if (stripos($ad_path, 'top_1.txt') > 0){
@@ -127,8 +132,8 @@ function adshow_display_ad_file_v2($adfiles, $adfiles_frequency = array(), $opti
 	if (!adshow_functions_exist()){ return false; }
 	if (adinj_config_debug_mode()){	echo "<!--ADINJ DEBUG: adshow_display_ad_file() quantity=".sizeof($adfiles)."-->\n"; }
 	
-	if (empty($adfiles)){
-		echo "<!--ADINJ DEBUG: Error: adfiles is empty-->\n";
+	if (empty($adfiles) && empty($altfiles)){
+		echo "<!--ADINJ DEBUG: Error: adfiles and altfiles are empty-->\n";
 		return false;
 	}
 	
@@ -142,6 +147,7 @@ function adshow_display_ad_file_v2($adfiles, $adfiles_frequency = array(), $opti
 			if (adinj_config_debug_mode()){	echo "<!--ADINJ DEBUG: alt content file defined:$alt_content_file-->\n"; }
 			$adfile = $alt_content_file;
 		} else {
+			if (adinj_config_debug_mode()){	echo "<!--ADINJ DEBUG: no alt content file defined-->\n"; }
 			return false;
 		}
 	}
@@ -150,7 +156,7 @@ function adshow_display_ad_file_v2($adfiles, $adfiles_frequency = array(), $opti
 		$adfile = adshow_pick_value($adfiles, $adfiles_frequency);
 	}
 	
-	if (adinj_config_debug_mode()){ echo "<!--ADINJ DEBUG: adshow_display_ad_file($adfile)-->";	}
+	if (adinj_config_debug_mode()){ echo "<!--ADINJ DEBUG: adshow_display_ad_file($adfile)-->\n";	}
 	
 	$plugin_dir = dirname(__FILE__);
 	
@@ -182,7 +188,7 @@ function adshow_pick_value($values, $frequency){
 		// each value has its own probability of being picked
 		$count = sizeof($values);
 		if ($count != sizeof($frequency)){
-			echo "<!--ADINJ DEBUG: size of arrays don't match ".$count."!=".sizeof($frequency)."-->";
+			echo "<!--ADINJ DEBUG: size of arrays don't match ".$count."!=".sizeof($frequency)."-->\n";
 			return NULL;
 		}
 		$total = array_sum($frequency);
@@ -192,7 +198,7 @@ function adshow_pick_value($values, $frequency){
 			$cumulative += $frequency[$i];
 			if ($rand <= $cumulative){
 				$val = $values[$i];
-				if (adinj_config_debug_mode()){ echo "<!--ADINJ DEBUG: picked value at position $i:$val-->";	}
+				if (adinj_config_debug_mode()){ echo "<!--ADINJ DEBUG: picked value at position $i: $val-->\n";	}
 				break;
 			}
 		}
@@ -206,12 +212,12 @@ function adshow_display_ad_full_path_v2($ad_path, $ops = array()){
 	if (!adshow_functions_exist()){ return false; }
 
 	if (!file_exists($ad_path)){
-		echo "\n<!--ADINJ DEBUG: ad file does not exist: $ad_path.\nIf you have just upgraded you may need to re-save your ads to regenerate the ad files.\n-->";
+		echo "<!--ADINJ DEBUG: ad file does not exist: $ad_path.\nIf you have just upgraded you may need to re-save your ads to regenerate the ad files.\n-->\n";
 		return false;
 	}
 
 	$ad = file_get_contents($ad_path);
-	if ($ad === false) echo "\n<!--ADINJ DEBUG: could not read ad from file: $ad_path-->";
+	if ($ad === false) echo "<!--ADINJ DEBUG: could not read ad from file: $ad_path-->\n";
 	$ad = adshow_eval_php($ad);
 	echo adshow_add_formatting($ad, $ops);
 }

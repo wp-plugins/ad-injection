@@ -1,24 +1,34 @@
 === Ad Injection ===
 Contributors: reviewmylife
 Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
-Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog
+Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog, ad rotation, A:B testing, split testing
 Requires at least: 2.8.6
 Tested up to: 3.1
-Stable tag: 0.9.5.2
+Stable tag: 0.9.6
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
 == Description ==
 
-It injects any kind of advert (e.g. Google AdSense, Amazon Associates, ClickBank, TradeDoubler, etc) into the existing content of your WordPress posts and pages. You can control the number of adverts based on the post length, and it can restrict who sees adverts by post age, visitor referrer and IP address. And the dynamic restrictions (by IP and referrer) work with WP Super Cache!
+Ad Injection injects any kind of advert (e.g. Google AdSense, Amazon Associates, ClickBank, TradeDoubler, etc) into the existing content of your WordPress posts and pages. You can control the number of adverts based on the post length, and it can restrict who sees adverts by post age, visitor referrer and IP address. Adverts can be configured in the post (random, top, and bottom positions) or in any widget/sidebar area. There's support for A:B split testing / ad rotation. And the dynamic restrictions (by IP and referrer) work with WP Super Cache!
+
+**New Features 0.9.6.x**
+
+* Ad rotation / A:B split testing support for random, top, bottom and widget/sidebar adverts.
+* Alternate content which can be defined for users who are dynamically blocked (by IP or referrer) from seeing adverts.
+* Choose which paragraph to start the random ads via the UI.
 
 = Automatic advert injection =
 
-The ads can be injected into existing posts without requiring any modification of the post. The injection can be done randomly between paragraphs, and there is an option to always inject the first advert after the first paragraph. Randomly positioning the adverts helps to reduce 'ad blindness'. Two separate adverts can be defined for the top and bottom of the content. Widget adverts can be defined as well.
+The ads can be injected into existing posts without requiring any modification of the post. The injection can be done randomly between paragraphs, and there is an option to always inject the first advert at a specified paragraph (e.g. the first or second). Randomly positioning the adverts helps to reduce 'ad blindness'. Two separate adverts can be defined for the top and bottom of the content. Widget adverts can be defined as well.
 
 = Widget support =
 
 Widgets can be added to your sidebars, or other widget areas on any pages. The same ad display restrictions that you setup for your other ads will also apply to the widgets.
+
+= Ad rotation / split testing =
+
+You can define multiple adverts for the same ad space which are rotated according to the ratios you define. Works with random, top, bottom and sidget/sidebar ads.
 
 = Ad quantity by post length =
 
@@ -36,13 +46,17 @@ Adverts can be restricted to posts that are more than a defined numbers of days 
 
 IP addresses of people who shouldn't see your ads can be defined. These could be the IP addresses of your friends, family, or even yourself.
 
+= Alternate content =
+
+This is content that is displayed when ads are blocked for the user. Ads can only be blocked for specific users if you use one of the dynamic modes (mfunc or direct_dynamic). You could use this alternate content to show other content, some kind of layout filler, or even a different type of ad. I've added support for rotation of alternate content as well.
+
 = Not tied to any ad provider =
 
 The advert code can be copied and pasted directly from your ad provider (Google AdSense, adBrite, ClickBank, etc) which will help you to comply with any terms of service (TOS) that state their ad code may not be modified. 
 
 = Flexible ad positioning =
 
-Easy positioning options are provided for left, right, center, float left, and float right (or a random variant of these). Extra spacing can be set above and below the ad using the CSS margin and padding boxes. Or if that isn't flexible enough, you can write your own positioning code using HTML and CSS.
+Easy positioning options are provided for left, right, center, float left, and float right (or a random variant of these). Extra spacing can be set above and below the ad using the CSS margin and padding boxes. Or if that isn't flexible enough, you can write your own positioning code using HTML and CSS. And you can select which paragraph random ads should start from.
 
 = Works with WP Super Cache =
 
@@ -151,9 +165,23 @@ Yes you can do this, there are two ways.
 1. In the 'Single posts and pages' setting set the number of injected ads to 0. Then in the 'Home page' settings set the number of ads to whatever you want. 
 2. Alternatively use the global exclude options at the top to exclude ads from all page types except the home page.
 
+= How do I stop adverts from appearing on my contacts form page? =
+
+To stop ads appearing on the contact page (or any other post/page) you have many of options. Here are three to choose from:
+
+1. Add (copy and paste) <!--NoAds--> into the content of the post/page with the contact form. Just edit the contact page and paste this in - it will be invisible to the reader.
+2. Add a disable_adverts custom field to the post/page containing the contact form and set the value to 1 (the number one as a single digit).
+3. Add a tag to the page to mean that it shouldn't have adverts, and then add that tag to the tag filtering condition in the global settings area of the plugin configuration page.
+
 = My adverts are overlapping with other page elements (e.g. images) =
 
 You can try defining the 'clear' display setting so that multiple floated parts of your page do not overlap.
+
+If you always have a floated image at the top of the page you can set which paragraph the first random advert will start from. If you needed finer control over where the random adverts appear you can use the <!--adstart--> and <!--adend--> tags in the page.
+
+= I have configured four Google AdSense ad units but only three are showing. Why? =
+
+Google's AdSense TOS only allow allow three ad units, and three link units per page. If you have for example tried to insert four ad units on your page then Google will (probably) disable the forth one automatically. Read Google's AdSense [program policies](https://www.google.com/adsense/support/bin/answer.py?hl=en&answer=48182 "AdSense program policies") for more info.
 
 = What if I am using an incompatible caching plugin? =
 
@@ -166,7 +194,27 @@ If you aren't interested in these features then it doesn't matter! Just make sur
 
 = Are there any known plugin conflicts? =
 
+**WP Minify**
+
+Problem: No ads appear when using mfunc mode.
+
 If you use WP Minify and WP Super Cache in combination with this plugin, you'll need to turn off the HTML minification in WP Minify. This is because HTML minification strips out the mfunc tags that Ad Injection uses. You can leave the CSS and JavaScript minification on if you already use them.
+
+**FeedWordPress**
+
+Problem: Random, top and bottom ads don't appear on syndicated posts.
+
+By default FeedWordPress prevents the syndicated post contents from being passed to 'the_content' hook which is where the random, top and bottom ads are added. There's an easy fix: 
+
+From the FeedWordPress settings page go to 'Posts & Links' and then in the 'Formatting' section set 'Formatting filters' to 'Expose syndicated posts to formatting filters'.
+
+**W3 Total Cache (and other caching programs)** 
+
+Problem: Dynamic features don't work.
+
+I don't think the dynamic features (restricting ads by IP and referrer) will work with any caching programs other than WP Super Cache and WP Cache. With other caching programs you should use the 'direct_static' mode.
+
+It is on my TODO list to try to make Ad Injection work with W3 Total Cache.
 
 = Some technical details =
 
@@ -231,6 +279,11 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 3. Can choose to show the ads only to search engine visitors, or define IP addresses that ads aren't shown to.
 
 == Changelog ==
+
+= 0.9.6 =
+* Ad rotation / A:B split testing support for random, top, bottom and widget adverts.
+* Alternate content which can be defined for users who are dynamically blocked (by IP or referrer) from seeing adverts.
+* Choose which paragraph to start the random ads via the UI.
 
 = 0.9.5.2 =
 New CSS padding options for widgets. Fixes for CSS margin options.
@@ -328,79 +381,12 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 
 == Upgrade Notice ==
 
+= 0.9.6 =
+New split testing, ad rotation and alternate content features. If you have any problems with disappearing ads re-save them to make them appear again.
+
 = 0.9.5.2 =
 New CSS padding options for widgets. Fixes for CSS margin options.
 If you are using WP Super Cache 0.9.9.8 you can now switch to its faster mod_rewrite or PHP modes.
-
-= 0.9.5.1 =
-New CSS padding options for widgets. Fixes for CSS margin options.
-If you are using WP Super Cache 0.9.9.8 you can now switch to its faster mod_rewrite or PHP modes.
-
-= 0.9.5 =
-New spacing/alignment options, and misc fixes.
-
-= 0.9.4.6 =
-If you are using mfunc mode or switch to mfunc and have added ad widgets you may need to re-save them to regenerate the ad files.
-
-= 0.9.4.5 =
-If you are using mfunc mode or switch to mfunc and have added ad widgets you may need to re-save them to regenerate the ad files.
-
-= 0.9.4.4 =
-If you are using mfunc mode or switch to mfunc and have added ad widgets you may need to re-save them to regenerate the ad files.
-
-= 0.9.4.3 =
-If you are using mfunc mode and have added ad widgets with a version prior to 0.9.2 please re-save them to regenerate the ad files (fixed for upgrades from 0.9.2).
-
-= 0.9.4.2 =
-If you are using mfunc mode and have added ad widgets with a version prior to 0.9.2 please re-save them to regenerate the ad files (fixed for upgrades from 0.9.2).
-
-= 0.9.4.1 =
-If you are using mfunc mode and have added ad widgets with a version prior to 0.9.2 please re-save them to regenerate the ad files (fixed for upgrades from 0.9.2).
-
-= 0.9.4 =
-If you are using mfunc mode and have added ad widgets with a version prior to 0.9.2 please re-save them to regenerate the ad files (fixed for upgrades from 0.9.2).
-
-= 0.9.3.4 =
-If you are using mfunc mode and have added ad widgets with a version prior to 0.9.2 please re-save them to regenerate the ad files (fixed for upgrades from 0.9.2).
-
-= 0.9.3.3 =
-If you are using mfunc mode and have added ad widgets with a version prior to 0.9.2 please re-save them to regenerate the ad files (fixed for upgrades from 0.9.2).
-
-= 0.9.3.2 =
-If you are using mfunc mode and have added ad widgets with a version prior to 0.9.2 please re-save them to regenerate the ad files (fixed for upgrades from 0.9.2).
-
-= 0.9.3.1 =
-If you are using mfunc mode and have added ad widgets with a version prior to 0.9.2 please re-save them to regenerate the ad files (fixed for upgrades from 0.9.2).
-
-= 0.9.3 =
-If you are using mfunc mode and have added ad widgets please re-save them to regenerate the ad files (fixed from 0.9.2).
-
-= 0.9.2 =
-If you are using mfunc mode and have added ad widgets please re-save them to regenerate the ad files (fixed from 0.9.2).
-
-= 0.9.1 =
-Fix dynamic checking for widgets. Fix potential PHP error message with widgets.
-
-= 0.9.0 =
-Widget support and other fixes.
-
-= 0.8.9 =
-Upgrade to this version by going to the plugins tab and upgrading the individual plugin. If you upgrade from the bulk updator the mfunc config file will be lost and you would have to go to 'Save all settings' to re-generate it. This version attempts to solve the bulk update problem.
-
-= 0.8.8 =
-Try to make sure ads don't appear on archive pages, 404s or search results, in case theme is working in a non-standard way. Reduce dependency on files.
-
-= 0.8.7 =
-More fault tolerant mfunc support.
-
-= 0.8.6 =
-Fix problems relating to over strict chmod usage. And add save message.
-
-= 0.8.5 =
-If you get a 'Something badly wrong in num_rand_ads_to_insert' message install this update.
-
-= 0.8.4 =
-If you have already configured your ad code then this update will delete the ads. Sorry - this update fixes that bug. Before upgrading please save your ads. All other settings will be carried over.
 
 = 0.8.3 =
 First public release.
