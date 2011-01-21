@@ -49,7 +49,6 @@ function adinj_save_options(){
 		
 		// Extract all know options
 		$default_options = adinj_default_options();
-		// TODO - should use default as baseline? This won't delete old ops?
 		$ops = adinj_options();
 		foreach ($default_options as $key => $value){
 			if (isset($_POST[$key])){
@@ -342,9 +341,9 @@ function adinj_admin_tabs( $current = 0 ) {
 	$links = array();
 	foreach( $tabs as $tab => $name ) {
 		if ( $current == $tab ) {
-			$links[] = "<a class='nav-tab nav-tab-active' href='?page=ad-injection&nbsp;tab=$tab'>$name</a>";
+			$links[] = "<a class='nav-tab nav-tab-active' href='?page=ad-injection&amp;tab=$tab'>$name</a>";
 		} else {
-			$links[] = "<a class='nav-tab' href='?page=ad-injection&nbsp;tab=$tab'>$name</a>";
+			$links[] = "<a class='nav-tab' href='?page=ad-injection&amp;tab=$tab'>$name</a>";
 		}
 	}
 	
