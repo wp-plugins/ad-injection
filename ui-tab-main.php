@@ -87,7 +87,7 @@ function adinj_tab_main(){
 	</td></tr>
 	<tr><td>
 	<?php
-		_e("Always put the first ad after paragraph: ", 'adinj');
+		_e("Always put the first ad immediately after paragraph: ", 'adinj');
 		adinj_selection_box("start_from_paragraph",
 			array(ADINJ_DISABLED, 1, 2, 3, 4, 5), " ");
 	?>
@@ -281,35 +281,34 @@ function adinj_tab_main(){
 	<h4>Ad insertion mode</h4>
 	
 	<blockquote>
-	<p><input type="radio" name="ad_insertion_mode" value="mfunc" <?php if ($ops['ad_insertion_mode']=='mfunc') echo 'checked="checked"'; ?> /> <b>Use mfunc tags for dynamic features (WP Super Cache mode)</b> - Dynamic features will work with WP Super Cache. </p>
+	<p><input type="radio" name="ad_insertion_mode" value="mfunc" <?php if ($ops['ad_insertion_mode']=='mfunc') echo 'checked="checked"'; ?> /> <b>mfunc: Use mfunc tags for dynamic features</b> - Dynamic features will work with WP Super Cache, W3 Total Cache and WP Cache. Only select this mode if you are using one of those caching plugins.</p>
 	
-	<?php if (!is_plugin_active('wp-super-cache/wp-cache.php')) {
-		echo '<p><b><span style="font-size:10px;color:red;">Note: WP Super Cache does not appear to be active. If you are not using WP Super Cache /WP Cache (or compatible) you should use one of the direct insertion modes.</span></b></p>';		
+	<?php if (!is_supported_caching_plugin_active()) {
+		echo '<p><b><span style="font-size:10px;color:red;">Note: A supported caching plugin does not appear to be active. If you are not using WP Super Cache / W3 Total Cache / WP Cache you should use one of the direct insertion modes.</span></b></p>';		
 	} ?>
 	
 	<?php if ($ops['ad_insertion_mode'] != 'mfunc') { ?>
 	<script type="text/javascript">
-	document.write('<style type="text/css" media="screen">#wp_supercache_msg { display: none; }</style>');
+	document.write('<style type="text/css" media="screen">#caching_plugin_msg { display: none; }</style>');
 	</script>
 	<?php }  ?>
 
-	<div id="wp_supercache_msg" class="wp_supercache_msg">
-	<p>With WP Super Cache version 0.9.9.8+ you can use the fastest 'mod rewrite rules' caching mode. With older versions of WP Super Cache you'll have to use the slower 'legacy mode'.</p>
+	<div id="caching_plugin_msg" class="caching_plugin_msg">
+	<?php
+	if (is_plugin_active('wp-super-cache/wp-cache.php')){
+		adinj_wp_super_cache_msg();
+	} else if (is_plugin_active('w3-total-cache/w3-total-cache.php')){
+		adinj_w3_total_cache_msg();
+	} else if (is_plugin_active('wp-cache/wp-cache.php')){
+		adinj_wp_cache_msg();
+	}
+	adinj_unknown_cache_msg();
+	?>
 	
-	<p>Go to the 
-	
-	<?php if (is_plugin_active('wp-super-cache/wp-cache.php')) { ?>
-	<a href='options-general.php?page=wpsupercache&amp;tab=settings'>WP Super Cache advanced options page</a>
-	<?php } else { ?>
-	WP Super Cache advanced options page
-	<?php }  ?>
-	to configure the caching mode.</p>
-	
-	<p>Dynamic features will also work if you don't use a caching program with mfunc mode. Although if you don't use a caching program one of the 'direct' insertion modes will be more efficient.</p>
 	</div>
 	
-	<p><input type="radio" name="ad_insertion_mode" value="direct_dynamic" <?php if ($ops['ad_insertion_mode']=='direct_dynamic') echo 'checked="checked"'; ?> /> <b>Direct ad insertion with dynamic features</b> - Dynamic features will work if no caching is used. Only select this if you are not using any caching plugin.</p>
-	<p><input type="radio" name="ad_insertion_mode" value="direct_static" <?php if ($ops['ad_insertion_mode']=='direct_static') echo 'checked="checked"'; ?> /> <b>Direct static ad insertion</b> - No dynamic feature support. Select this if you are using a caching plugin which is not compatible with WP Super Cache's mfunc tags.</p>
+	<p><input type="radio" name="ad_insertion_mode" value="direct_dynamic" <?php if ($ops['ad_insertion_mode']=='direct_dynamic') echo 'checked="checked"'; ?> /> <b>direct_dynamic: Direct ad insertion with dynamic features</b> - Dynamic features will work if no caching is used. Only select this if you are not using any caching plugin.</p>
+	<p><input type="radio" name="ad_insertion_mode" value="direct_static" <?php if ($ops['ad_insertion_mode']=='direct_static') echo 'checked="checked"'; ?> /> <b>direct_static: Direct static ad insertion</b> - No dynamic feature support. Select this if you are are not using dynamic features or are using an incompatible caching plugin.</p>
 	</blockquote>
 	</div>
 	<p></p>
@@ -320,15 +319,15 @@ function adinj_tab_main(){
 		if (jQuery('input[name=ad_insertion_mode]:checked').val() == "direct_static"){
 			jQuery('.dynamic_features').slideUp(1000);
 			jQuery('.dynamic_features_msg').slideDown(1000);
-			jQuery('.wp_supercache_msg').slideUp(1000);
+			jQuery('.caching_plugin_msg').slideUp(1000);
 		} else if (jQuery('input[name=ad_insertion_mode]:checked').val() == "direct_dynamic"){
 			jQuery('.dynamic_features_msg').slideUp(1000);
 			jQuery('.dynamic_features').slideDown(1000);
-			jQuery('.wp_supercache_msg').slideUp(1000);
+			jQuery('.caching_plugin_msg').slideUp(1000);
 		} else { // mfunc
 			jQuery('.dynamic_features_msg').slideUp(1000);
 			jQuery('.dynamic_features').slideDown(1000);
-			jQuery('.wp_supercache_msg').slideDown(1000);
+			jQuery('.caching_plugin_msg').slideDown(1000);
 		}
 		return true;
 		});
@@ -341,7 +340,8 @@ function adinj_tab_main(){
 	<div class="dynamic_features_msg" style="display:none">
 	<?php } ?>
 	<div class="inside" style="margin:10px">
-	<b><span style="font-size:10px;color:red;">Note: Dynamic features (restricting ad views by referrer and IP address) are only available in the mfunc, or direct dynamic modes.</span></b>
+	<blockquote><b><span style="font-size:10px;color:red;">Note: Dynamic ad blocking features (restricting ad views by referrer or IP address) are only available in the mfunc, or direct_dynamic modes.</span></b>
+	</blockquote>
 	</div>
 	</div>
 	
@@ -417,6 +417,46 @@ function adinj_tab_main(){
 	<?php
 	
 	adinj_docs();
+}
+
+function adinj_wp_super_cache_msg(){
+	?>
+	<p>With WP Super Cache version 0.9.9.8+ you can use the fastest 'mod rewrite rules' caching mode. With older versions of WP Super Cache you'll have to use the slower 'legacy mode'.</p>
+	<p>Go to the 
+	<?php if (is_plugin_active('wp-super-cache/wp-cache.php')) { ?>
+	<a href='options-general.php?page=wpsupercache&amp;tab=settings'>WP Super Cache advanced options page</a>
+	<?php } else { ?>
+	WP Super Cache advanced options page
+	<?php }  ?>
+	to configure the caching mode.</p>
+	<?php
+}
+
+function adinj_w3_total_cache_msg(){
+	?>
+	<p>W3 Total Cache will cache the the page on-disk if you use its Page Cache: 'Disk (basic)' mode. However if you use its Page Cache: Disk (enhanced) mode it won't cache the page. You might find that WP Super Cache works faster when Ad Injection's dynamic features are enabled as it can return pre-built static PHP pages via mod rewrite rules, rather than having load up WordPress to return them via PHP. If you aren't using Ad Injection's dynamic features then you can use W3 Total Cache with Page Cache: Disk (enhanced) mode.</p>
+	<?php
+}
+
+function adinj_wp_cache_msg(){
+	?>
+	<p>With WP Cache just turn the caching on and all pages will be cached. You may however want to consider upgrading to WP Super Cache as it has more efficient caching options such as serving static files via mod rewrite.</p>
+	<?php
+}
+
+function adinj_unknown_cache_msg(){
+	?>
+	<blockquote>
+	<p><b>Recommended settings:</b></p>
+	<blockquote>
+	<ul>
+	<li><b>WP Super Cache</b> - 0.9.9.8+ using mod_rewrite mode.</li>
+	<li><b>W3 Total Cache</b> - Page Cache: 'Disk (basic)' mode.</li>
+	<li><b>WP Cache</b> - Just turn the caching on.</li>
+	</ul>
+	</blockquote>
+	</blockquote>
+	<?php
 }
 
 function adinj_side_status_box(){
@@ -724,7 +764,7 @@ function adinj_docs(){
 
 <h4>468x60 banner with dynamic PHP</h4>
 
-<p>The PHP will execute if either 1) WP Super Cache is turned on, or 2) if WP Super Cache is not installed/disabled. If you use another caching plugin the dynamic code will probably not work.</p>
+<p>The PHP will execute if you use a mfunc compatible caching plugin which is correctly configured, or if you don't use any caching plugin at all.</p>
 
 <p><textarea onclick="javascript:this.focus();this.select();" style="min-height:50px;" cols="80" rows="5">&lt;div style=&quot;background-color:#ffff99; width:468px; height:60px;&quot;&gt;
 &lt;b&gt;TEST ADVERT 468x60 with date() and rand()&lt;/b&gt;&lt;br /&gt;

@@ -1,26 +1,27 @@
 === Ad Injection ===
 Contributors: reviewmylife
 Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
-Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog, ad rotation, A:B testing, split testing
+Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, widgets, sidebar, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog, ad rotation, A:B testing, split testing, WP Super Cache, W3 Total Cache, WP Cache
 Requires at least: 2.8.6
 Tested up to: 3.1
-Stable tag: 0.9.6.1
+Stable tag: 0.9.6.2
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
 == Description ==
 
-Ad Injection injects any kind of advert (e.g. Google AdSense, Amazon Associates, ClickBank, TradeDoubler, etc) into the existing content of your WordPress posts and pages. You can control the number of adverts based on the post length, and it can restrict who sees adverts by post age, visitor referrer and IP address. Adverts can be configured in the post (random, top, and bottom positions) or in any widget/sidebar area. There's support for A:B split testing / ad rotation. And the dynamic restrictions (by IP and referrer) work with WP Super Cache!
+Ad Injection injects any kind of advert (e.g. Google AdSense, Amazon Associates, ClickBank, TradeDoubler, etc) into the existing content of your WordPress posts and pages. You can control the number of adverts based on the post length, and it can restrict who sees adverts by post age, visitor referrer and IP address. Adverts can be configured in the post (random, top, and bottom positions) or in any widget/sidebar area. There's support for A:B split testing / ad rotation. And the dynamic restrictions (by IP and referrer) work with WP Super Cache, W3 Total Cache and WP Cache.
 
 **New Features 0.9.6.x**
 
 * Ad rotation / A:B split testing support for random, top, bottom and widget/sidebar adverts.
 * Alternate content which can be defined for users who are dynamically blocked (by IP or referrer) from seeing adverts.
 * Choose which paragraph to start the random ads via the UI.
+* Dynamic features will work with W3 Total Cache and WP Cache as well as the previously suppoted WP Super Cache.
 
 = Automatic advert injection =
 
-The ads can be injected into existing posts without requiring any modification of the post. The injection can be done randomly between paragraphs, and there is an option to always inject the first advert at a specified paragraph (e.g. the first or second). Randomly positioning the adverts helps to reduce 'ad blindness'. Two separate adverts can be defined for the top and bottom of the content. Widget adverts can be defined as well.
+The ads can be injected into existing posts without requiring any modification of the post. The injection can be done randomly between paragraphs, and there is an option to always inject the first advert at a specified paragraph (e.g. the first or second). Randomly positioning the adverts helps to reduce 'ad blindness'. Two additional adverts can be defined for the top and bottom of the content. Widget adverts can be defined as well.
 
 = Widget support =
 
@@ -42,6 +43,10 @@ You can specify that ads should only be shown to search engine visitors (or from
 
 Adverts can be restricted to posts that are more than a defined numbers of days old. This prevents your regular visitors from having to see your ads.
 
+= Category, tag and post type filters =
+
+You can configure the adverts to only appear on specific categories, tags, or post types, or block the adverts from specific categories, tags or post types.
+
 = Block ads from IP addresses =
 
 IP addresses of people who shouldn't see your ads can be defined. These could be the IP addresses of your friends, family, or even yourself.
@@ -58,11 +63,13 @@ The advert code can be copied and pasted directly from your ad provider (Google 
 
 Easy positioning options are provided for left, right, center, float left, and float right (or a random variant of these). Extra spacing can be set above and below the ad using the CSS margin and padding boxes. Or if that isn't flexible enough, you can write your own positioning code using HTML and CSS. And you can select which paragraph random ads should start from.
 
-= Works with WP Super Cache =
+= Works with WP Super Cache, W3 Total Cache and WP Cache =
 
-The dynamic features that require code to be executed for each page view (i.e. search engine visitors only, and ad blocking based on IP address) work with WP Super Cache! This plugin will automatically use the dynamic mfunc tag to ensure that the dynamic ad features still work when caching is on. Displaying the adverts (even with the dynamic restrictions) whilst caching with WP Super Cache requires no MySQL database access. 
+The dynamic features that require code to be executed for each page view (i.e. ad rotation, search engine visitors only, and ad blocking based on IP address) work with WP Super Cache, W3 Total Cache and WP Cache.
 
-Note: If you use a version of WP Super Cache prior to 0.9.9.8  it must be configured in 'Legacy' mode for the dynamic features to work. If you use WP Super Cache 0.9.9.8 or above you can use any of the caching modes (mod_rewrite and PHP are faster than legacy).
+This plugin will automatically use the dynamic mfunc tag to ensure that the dynamic ad features still work when caching is on. 
+
+If you use WP Super Cache in mod_rewrite mode displaying the adverts (even with the dynamic restrictions) whilst caching requires no MySQL database access. For W3 Total Cache and WP Cache Ad Injection will not require any extra MySQL database access for cached pages other than what these plugin already use.
 
 = Inject PHP and JavaScript =
 
@@ -82,18 +89,26 @@ As of January 2011 this plugin is being actively developed and maintained. Some 
 
 This section describes how to install the plugin and get it working.
 
-1. Upload the ad-injection folder to the '/wp-content/plugins/' directory. The plugin must be in a folder called 'ad-injection'. So the main plugin file will be at /wp-content/plugins/ad-injection/ad-injection.php
+1. Upload the ad-injection folder to the '/wp-content/plugins/' directory (or just use the WordPress plugin installer to do it for you). The plugin must be in a folder called 'ad-injection'. So the main plugin file will be at /wp-content/plugins/ad-injection/ad-injection.php
 2. Activate the plugin through the 'Plugins' menu in WordPress.
 3. Configure your ads. Carefully go through all the sections to setup your ad placements. 
-4. Make sure you select the option to say which ad injection mode to use. You need to say whether you are using WP Super Cache (or compatible) or not. Dynamic features (referrer and IP ad filtering) will only work with either 1) WP Super Cache (or compatible) or 2) no caching plugin. 
+4. Make sure you select the option to say which ad injection mode to use. Dynamic features (ad rotation, and referrer/IP ad filtering) will only work with either 1) WP Super Cache/W3 Total Cache/WP Cache or 2) no caching plugin. 
 5. Tick the box right at the top to enable your ads.
 6. If you are using a caching plugin you may need to clear the cache to see your ads immediately.
+
+**Recommended cache plugin settings**
+
+* WP Super Cache - 0.9.9.8+ using mod_rewrite mode.
+* W3 Total Cache - Page Cache: 'Disk (basic)' mode.
+* WP Cache - Just turn the caching on.
+
+Note: If you use a version of WP Super Cache prior to 0.9.9.8  it must be configured in 'Legacy' mode for the dynamic features to work. If you use WP Super Cache 0.9.9.8 or above you can use any of the caching modes (mod_rewrite and PHP are faster than legacy).
 
 = How to uninstall =
 
 You can uninstall by deactivating the plugin and deleting from the WordPress plugins control panel.
 
-If you have been using mfunc mode with WP Super Cache then you *must* also clear the cache afterwards, otherwise you'll get errors saying the Ad Injection includes can't be found. 
+If you have been using mfunc mode with a caching plugin then you *must* also clear the cache afterwards, otherwise you'll get errors saying the Ad Injection includes can't be found. 
 
 == Frequently Asked Questions ==
 
@@ -110,10 +125,12 @@ One a basic level it can do the same job as Dax's excellent Adsense Injection. I
 * Can prevent specific IP addresses from seeing adverts.
 * Can define randomly positioned adverts, and adverts at the top and bottom of the posts.
 * Add adverts to the widget area.
+* Ad rotation / split testing.
 * Restrict adverts by category and tag.
 * Vary number of adverts based on post length.
 * You can inject raw JavaScript and PHP.
-* The dynamic features (restricting ads by referrer and IP) work with WP Super Cache.
+* The dynamic features (ad rotation, restricting ads by referrer and IP) work with WP Super Cache, W3 Total Cache and WP Cache.
+* Define alternate content for users who are dynamically restricted from seeing ads.
 * Compatible with the <!--noadsense--> <!--adsensestart--> in-page tags from Adsense Injection to make migration easy.
 * Compatible with in-page tags from Whydowork Adsense and Quick Adsense.
 * Extra positioning options - for example you can force the first advert to be right after the first paragraph so that it will be 'above the fold'.
@@ -148,13 +165,13 @@ If you are testing the search engine referrer settings be aware that Ad Injectio
 
 Using a second browser in 'privacy mode' is also a good way of testing your site with a clean slate. A browser like Google Chrome will allow you to test your site with no cookies definied if you start a new private browsing session.
 
-= Do I need to have WP Super Cache installed? =
+= Do I need to have WP Super Cache (or anther caching plugin) installed? =
 
-No! All the features of this plugin will work with no caching plugin installed. But if you do have WP Super Cache the dynamic features (enabling ads based on IP address and referrer) will still work. And your blog will run a lot faster than with no caching plugin. Usually a caching plugin would prevent dynamic plugin features from working. Just make sure you choose the option on Ad Injection to say that you are using WP Super Cache. If using a version of WP
+No! All the features of this plugin will work with no caching plugin installed. But if you do have WP Super Cache the dynamic features (ad rotation and enabling ads based on IP address and referrer) will still work. And your blog will run a lot faster than with no caching plugin. Usually a caching plugin would prevent dynamic plugin features from working. Just make sure you choose the mfunc dynamic insertion mode in the Ad Injection settings screen.
 
 = Will the dynamic features work with other caching plugins? =
 
-Potentially - if they are compatible with WP Super Cache's mfunc tags. I'm guessing they will work with the original WP Cache as I think the mfunc tags in WP Super Cache were inherited from here. However I haven't yet tested this. W3 Total Cache does have support for some kind of mfunc tags, but I haven't tested to see if they are compatible with the WP Super Cache ones. Do let me know!
+The dynamic features will work with any caching program that supports the mfunc tag. At the moment that is WP Super Cache, W3 Total Cache, and WP Cache.
 
 = Can I just have adverts on the home page? =
 
@@ -198,7 +215,7 @@ If you aren't interested in these features then it doesn't matter! Just make sur
 
 Problem: No ads appear when using mfunc mode.
 
-If you use WP Minify and WP Super Cache in combination with this plugin, you'll need to turn off the HTML minification in WP Minify. This is because HTML minification strips out the mfunc tags that Ad Injection uses. You can leave the CSS and JavaScript minification on if you already use them.
+If you use WP Minify and a caching plugin in combination with Ad Injection, you'll need to turn off the HTML minification in WP Minify. This is because HTML minification strips out the mfunc tags that Ad Injection uses. You can leave the CSS and JavaScript minification on if you already use them.
 
 **FeedWordPress**
 
@@ -208,20 +225,12 @@ By default FeedWordPress prevents the syndicated post contents from being passed
 
 From the FeedWordPress settings page go to 'Posts & Links' and then in the 'Formatting' section set 'Formatting filters' to 'Expose syndicated posts to formatting filters'.
 
-**W3 Total Cache (and other caching programs)** 
-
-Problem: Dynamic features don't work.
-
-I don't think the dynamic features (restricting ads by IP and referrer) will work with any caching programs other than WP Super Cache and WP Cache. With other caching programs you should use the 'direct_static' mode.
-
-It is on my TODO list to try to make Ad Injection work with W3 Total Cache.
-
 = Some technical details =
 
 * Plugin stores all its settings in a single option (adinj_options).
 * Uninstall support is provided to delete this option if you uninstall the plugin.
 * Admin code is separated into a separate file so it is not loaded when your visitors view your pages.
-* When used with WP Super Cache the plugin loads its dynamic settings from a static PHP file so no MySQL database queries are required.
+* When used with a compatible caching plugin Ad Injection loads its dynamic settings from a static PHP file, and the ads from disk so no extra MySQL database queries are required.
 * When mfunc mode is used the ads are saved as text files into the plugin folder. The plugin will therefore need write access to the plugins folder.
 * The JavaScript for setting the referrer cookie is inserted using wp_enqueue_scripts.
 * If there is anything I can do better please let me know - this is my first plugin so I still have a lot to learn!
@@ -237,15 +246,15 @@ Here are some things to check if the ads are not appearing, or are appearing whe
 5. Have you selected the correct insertion mode in the 'Ad insertion mode' section?
 6. The plugin inserts adverts after the closing HTML paragraph tag </p>. If the ads aren't appearing where you expect, check where your </p> tags are.
 
-= If you are using WP Super Cache. =
+= If you are using a caching plugin =
 
-1. Have you enabled the WP Super Cache 'mfunc' mode? (in the Ad insertion mode and dynamic ad display restrictions pane)
+1. Have you enabled Ad Injection's 'mfunc' mode? (in the Ad insertion mode and dynamic ad display restrictions pane)
 2. If you use a version of WP Super Cache prior to 0.9.9.8  it must be configured in 'Legacy' mode for the dynamic features to work. If you use WP Super Cache 0.9.9.8 or above you can use any of the caching modes (mod_rewrite and PHP are faster than legacy).
 3. If you are using WP Minify as well then turn off the HTML minification as this strips out the mfunc tags that Ad Injection uses to check if the adverts should be inserted.
 
 = If you are using WP Minify =
 
-1. Turn off the HTML minification mode if you are also using WP Super Cache. HTML minification strips out the mfunc tags that Ad Injection needs to inject its ads.
+1. Turn off the HTML minification mode if you are also using a caching plugin. HTML minification strips out the mfunc tags that Ad Injection needs to inject its ads.
 2. If you use the 'Place Minified JavaScript in footer' then try turning it off.
 
 = If you are getting errors when using mfunc mode check the following =
@@ -280,7 +289,10 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 
 == Changelog ==
 
-= 0.9.6 =
+= 0.9.6.2 =
+* Support for W3 Total Cache and WP Cache (as well as the already supported WP Super Cache).
+
+= 0.9.6.1 =
 * Ad rotation / A:B split testing support for random, top, bottom and widget adverts.
 * Alternate content which can be defined for users who are dynamically blocked (by IP or referrer) from seeing adverts.
 * Choose which paragraph to start the random ads via the UI.
@@ -381,12 +393,8 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 
 == Upgrade Notice ==
 
-= 0.9.6 =
+= 0.9.6.2 =
 New split testing, ad rotation and alternate content features. If you have any problems with disappearing ads re-save them to make them appear again.
-
-= 0.9.5.2 =
-New CSS padding options for widgets. Fixes for CSS margin options.
-If you are using WP Super Cache 0.9.9.8 you can now switch to its faster mod_rewrite or PHP modes.
 
 = 0.8.3 =
 First public release.

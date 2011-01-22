@@ -254,8 +254,12 @@ function adinj_top_message_box(){
 	if (isset($_POST['adinj_action'])) {
         echo '<div id="message" class="updated below-h2"><p><strong>';
         echo 'All settings saved: ';
-		if (is_plugin_active('wp-super-cache/wp-cache.php')) {
+		if (is_plugin_active('wp-super-cache/wp-cache.php')){
 			echo "You might need to <a href='options-general.php?page=wpsupercache&amp;tab=tester'>clear your WP Super Cache cache</a> for the settings to take effect.";
+		} else if (is_plugin_active('w3-total-cache/w3-total-cache.php')){
+			echo "You might need to <a href='options-general.php?page=w3tc_general'>clear your cache</a> for the settings to take effect.";
+		} else if (is_plugin_active('wp-cache/wp-cache.php')){
+			echo "You might need to <a href='options-general.php?page=wp-cache/wp-cache'>clear your cache</a> for the settings to take effect.";
 		} else {
 			echo "If you are using a caching plugin you might need to delete its cache for any changes to take effect.";
         }
@@ -278,7 +282,7 @@ function adinj_top_message_box(){
 		
 	} else {
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "21st January 2011: This is a big update introducing support for split testing / ad rotation. And also 'alternate content' as well as other fixes and updates. I've done my best to test this update but as the  update is big there is a risk of problems. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="https://spreadsheets.google.com/viewform?formkey=dFUwZzBYcG1HNzNKMmJZdWFDdFhkY0E6MQ" target="_new">feedback form</a>.';
+		echo "22nd January 2011: Yesterday saw a big update introducing support for split testing / ad rotation. And also 'alternate content' as well as other fixes and updates. Today is support for W3 Total Cache and WP Cache (although for dynamic features I recommend WP Super Cache). Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">feedback form</a>.';
 		echo '</strong></p></div>';
 	}
 }
@@ -293,9 +297,9 @@ function adinj_side_info_box(){
 		<div class="inside" style="margin:5px;">
 			<h4>More Ad Injection information</h4>
 			<ul>
+			<li><a href="http://wordpress.org/extend/plugins/ad-injection/" target="_new">Ad Injection at WordPress (docs, FAQ)</a></li>
 			<li><a href="http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/" target="_new">Ad Injection at reviewmylife</a></li>
-			<li><a href="http://wordpress.org/extend/plugins/ad-injection/" target="_new">Ad Injection at WordPress</a></li>
-			<li><b><a href="https://spreadsheets.google.com/viewform?formkey=dFUwZzBYcG1HNzNKMmJZdWFDdFhkY0E6MQ" target="_new">Report a bug / give feedback</a></b></li>
+			<li><b><a href="<?php echo adinj_feedback_url(); ?>" target="_new">Report a bug / give feedback</a></b></li>
 			</ul>
 			<h4>Coming in 2011</h4>
 			<ul>
@@ -320,6 +324,11 @@ function adinj_side_info_box(){
 		</div>
 	</div> 
 	<?php
+}
+
+function adinj_feedback_url(){
+	return "https://spreadsheets.google.com/viewform?formkey=dFUwZzBYcG1HNzNKMmJZdWFDdFhkY0E6MQ";
+	//return "https://spreadsheets.google.com/viewform?formkey=dFUwZzBYcG1HNzNKMmJZdWFDdFhkY0E6MQ&amp;entry_1=test";
 }
 
 function adinj_add_checkbox($name){
@@ -359,17 +368,36 @@ function adinj_postbox_start($title, $anchor, $width='650px'){
 	<div class="metabox-holder">
 	<div class="postbox">
 	<input type="submit" style="float:right" class="button-primary" name="adinj_action" value="<?php _e('Save all settings', 'adinj') ?>" />
-	<div class="<?php echo $anchor; ?>-button"></div>
+	<?php
+	$anchorclick = $anchor.'_click';
+	$anchorupdate = $anchor.'_update';
+	$anchorhide = 'ui_'.$anchor.'_hide';
+echo <<<HTML
+	<a href="#" onclick='javascript:$anchorclick();return false;' style="float:right;display:none" id="toggle-$anchor" class="button">Show/Hide</a>
 	<script type="text/javascript">
+
 	jQuery(document).ready(function(){
-	jQuery('.<?php echo $anchor; ?>-button').show().before('<a href="#" style="float:right" id="toggle-<?php echo $anchor; ?>" class="button">Show/Hide</a>');
-	jQuery('a#toggle-<?php echo $anchor; ?>').click(function() {
-		jQuery('#ui_<?php echo $anchor; ?>_hide').val(!jQuery('.<?php echo $anchor; ?>-box').is(":hidden"));
-		jQuery('.<?php echo $anchor; ?>-box').slideToggle(1000);
-		return false;
-		});
+		$anchorupdate();
+		jQuery('#toggle-$anchor').show();
 	});
+	
+	function $anchorclick(){
+		jQuery('#$anchorhide').val(!jQuery('.$anchor-box').is(":hidden"));
+		$anchorupdate();
+		jQuery('.$anchor-box').slideToggle(1000);
+		return false;
+	}
+	
+	function $anchorupdate(){
+		if (jQuery('#$anchorhide').val() == 'false'){
+			jQuery('#toggle-$anchor').text('Hide');
+		} else {
+			jQuery('#toggle-$anchor').text('Show');
+		}
+	}
 	</script>
+HTML;
+	?>
 	<input type='hidden' id='ui_<?php echo $anchor; ?>_hide' name='ui_<?php echo $anchor; ?>_hide' value='<?php echo $ops['ui_'.$anchor.'_hide']; ?>' />
 	<h3><?php $info = adinj_get_status($anchor); echo adinj_dot($info[0]); ?> <a name="<?php echo $anchor; ?>"></a><?php echo adinj_get_logo() . ' ' . $title; ?></h3>
 	<?php if($ops['ui_'.$anchor.'_hide'] == 'true'){ ?>
@@ -716,14 +744,15 @@ function adinj_get_version(){
 
 function adinj_problem_with_wpminify_check(){
 	$wpm_options = get_option('wp_minify');
-	if ($wpm_options['enable_html'] == true && is_plugin_active('wp-super-cache/wp-cache.php')){
+	$ops = adinj_options();
+	if ($wpm_options['enable_html'] == true && $ops['ad_insertion_mode'] == 'mfunc'){
 		return true;
 	}
 	return false;
 }
 
 function adinj_get_problem_with_wpminify_message(){
-	return '<font color="red">Problem: Ad Injection will not work if WP Minify is set to minify HTML whilst WP Super Cache is enabled.</font><br />
+	return '<font color="red">Problem: Ad Injection will not work if WP Minify is set to minify HTML whilst mfunc mode is enabled.</font><br />
 			Solution: Go to <a href="options-general.php?page=wp-minify">the WP Minify settings page</a> and untick "Enable HTML Minification".';
 }
 
@@ -747,6 +776,15 @@ function adinj_compatibility_checks() {
 			echo '</strong></p></div>';
 		}
 	}
+}
+
+function is_supported_caching_plugin_active(){
+	if (!is_plugin_active('wp-super-cache/wp-cache.php') && 
+		!is_plugin_active('w3-total-cache/w3-total-cache.php') &&
+		!is_plugin_active('wp-cache/wp-cache.php')){
+		return false;
+	}
+	return true;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -822,7 +860,7 @@ function adinj_activate_hook(){
 function adinj_install_db(){
 	$new_options = adinj_default_options();
 	// Dynamic defaults.
-	if (!is_plugin_active('wp-super-cache/wp-cache.php')){
+	if (!is_supported_caching_plugin_active()){
 		$new_options['ad_insertion_mode'] = 'direct_dynamic';
 	}
 	adinj_update_options($new_options);
