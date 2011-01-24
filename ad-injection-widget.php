@@ -16,7 +16,8 @@ class Ad_Injection_Widget extends WP_Widget {
 	function widget( $args, $instance ) {
 		if (adinj_ads_completely_disabled_from_page()) return;
 		
-		if ((is_home() && adinj_ticked('widget_exclude_home')) ||
+		if ((is_front_page() && adinj_ticked('widget_exclude_front')) ||
+			(is_home() && adinj_ticked('widget_exclude_home')) ||
 			(is_page() && adinj_ticked('widget_exclude_page')) ||
 			(is_single() && adinj_ticked('widget_exclude_single')) ||
 			(is_archive() && adinj_ticked('widget_exclude_archive'))){

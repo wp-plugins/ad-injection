@@ -51,17 +51,19 @@ function adinj_tab_main(){
 	</select><?php _e(" (days)", 'adinj') ?> - only for single posts and pages</p>
 	</td></tr>
 	<tr><td style="vertical-align:top">
-	Don't show ads on these page types:
+	Don't show ads on these types:
 	</td><td>
-	<?php adinj_add_checkbox('exclude_home') ?>home - <?php echo get_bloginfo('url'); ?><br />
+	<?php adinj_add_checkbox('exclude_front') ?>front - <?php echo get_bloginfo('url'); ?><br />
+	<?php adinj_add_checkbox('exclude_home') ?>home - latest posts page (may be same as front)<br />
 	<?php
 	$count_pages = wp_count_posts('page', 'readable'); 
 	$count_posts = wp_count_posts('post', 'readable'); 
 	?>
 	<?php adinj_add_checkbox('exclude_page') ?>page - <?php echo $count_pages->publish; ?> page(s)<br />
-	<?php adinj_add_checkbox('exclude_single') ?>single -<?php echo $count_posts->publish; ?> individual blog post(s)<br />
+	<?php adinj_add_checkbox('exclude_single') ?>single -<?php echo $count_posts->publish; ?> single blog post(s)<br />
 	<?php adinj_add_checkbox('exclude_archive') ?>archive - only <a href="#widgets">widgets</a> currently appear on archives<br />
 	</td></tr>
+	<tr><td colspan="2"><p><span style="font-size:10px;">If you have <a href='options-reading.php'>set your front page</a> to be a static 'page' rather than your latest posts, the 'page' tick box will also apply to the front page.</span></p></td></tr>
 	</table>
 	
 	<b>Category and tag conditions</b>
@@ -97,14 +99,14 @@ function adinj_tab_main(){
 	</table>
 
 	
-	<p><span style="font-size:10px;"><b>Docs:</b> On individual posts or pages this advert is inserted between randomly selected paragraphs. On a multi-post page (e.g. home page), one ad is inserted into each post. Try a <a href="#468x60">468x60</a> or <a href="#728x90">728x90</a> banner.</span></p>
+	<p><span style="font-size:10px;"><b>Docs:</b> On single posts or pages this advert is inserted between randomly selected paragraphs. On 'your latest posts' page, one ad is inserted into each post. Try a <a href="#468x60">468x60</a> or <a href="#728x90">728x90</a> banner.</span></p>
 	<p><span style="font-size:10px;">Be especially careful if you decide to use the 'float' layout options. Make sure that you don't have adverts floated over the top of other page elements, or vice-versa.</span></p>
 	</div>
 	
 	<input type="submit" style="float:right" name="adinj_action" value="<?php _e('Save all settings', 'adinj') ?>" />
 	<h3><a name="random_single"></a><?php _e("Single posts and pages: Randomly Injected ad settings", 'adinj') ?></h3>
 	<div class="inside" style="margin:10px">
-	<p>These random ad injection settings are specific to individual posts and pages.</p>
+	<p>These random ad injection settings are specific to single posts and pages.</p>
 	
 	<table border="0">
 	
@@ -178,9 +180,9 @@ function adinj_tab_main(){
 	</div>
 	
 	<input type="submit" style="float:right" name="adinj_action" value="<?php _e('Save all settings', 'adinj') ?>" />
-	<h3><a name="random_home"></a><?php _e("Home page: Randomly Injected ad settings", 'adinj') ?> (<?php echo get_bloginfo('url'); ?>)</h3>
+	<h3><a name="random_home"></a><?php _e("Home page: Randomly Injected ad settings", 'adinj') ?></h3>
 	<div class="inside" style="margin:10px">
-	<p>These random ad injection settings are specific to your home page.</p>
+	<p>These random ad injection settings are specific to your home page. The home page is the page containing your latest posts. It may not be the same as your front page if you have set a static page to be your front page in the <a href='options-reading.php'>reading settings</a>.</p>
 	
 	<?php _e("Maximum number of injected ads: ", 'adinj') ?>
 	<select name='max_num_of_ads_home_page'>
@@ -193,7 +195,7 @@ function adinj_tab_main(){
 	?>
 	</select> <?php echo adinj_getdefault('max_num_of_ads_home_page'); ?><br />
 	
-	<p><span style="font-size:10px;"><b>Docs:</b> On a multi-post home page, one randomly positioned advert will be inserted into each post, up to the maximum number specified here.</span></p>
+	<p><span style="font-size:10px;"><b>Docs:</b> On a 'your latest posts' page, one randomly positioned advert will be inserted into each post, up to the maximum number specified here.</span></p>
 	
 	<?php adinj_postbox_end(); ?>
 	
@@ -262,13 +264,15 @@ function adinj_tab_main(){
 	<table border="0">
 	
 	<tr><td>
-	<p>Don't show widget ads on these page types:</p>
+	<p>Don't show widget ads on these types:</p>
 	</td><td>
-	<?php adinj_add_checkbox('widget_exclude_home') ?>home - <?php echo get_bloginfo('url'); ?><br />
+	<?php adinj_add_checkbox('widget_exclude_front') ?>front - <?php echo get_bloginfo('url'); ?><br />
+	<?php adinj_add_checkbox('widget_exclude_home') ?>home - latest posts page (may be same as front)<br />
 	<?php adinj_add_checkbox('widget_exclude_page') ?>page - <?php echo $count_pages->publish; ?> page(s)<br />
-	<?php adinj_add_checkbox('widget_exclude_single') ?>single - <?php echo $count_posts->publish; ?> individual blog post(s)<br />
+	<?php adinj_add_checkbox('widget_exclude_single') ?>single - <?php echo $count_posts->publish; ?> single blog post(s)<br />
 	<?php adinj_add_checkbox('widget_exclude_archive') ?>archive - includes category, tag, author, and date pages types<br />
 	</td></tr>
+	<tr><td colspan="2"><p><span style="font-size:10px;">If you have <a href='options-reading.php'>set your front page</a> to be a static 'page' rather than your latest posts, the 'page' tick box will also apply to the front page.</span></p></td></tr>
 	
 	</table>
 	
@@ -284,7 +288,7 @@ function adinj_tab_main(){
 	<p><input type="radio" name="ad_insertion_mode" value="mfunc" <?php if ($ops['ad_insertion_mode']=='mfunc') echo 'checked="checked"'; ?> /> <b>mfunc: Use mfunc tags for dynamic features</b> - Dynamic features will work with WP Super Cache, W3 Total Cache and WP Cache. Only select this mode if you are using one of those caching plugins.</p>
 	
 	<?php if (!is_supported_caching_plugin_active()) {
-		echo '<p><b><span style="font-size:10px;color:red;">Note: A supported caching plugin does not appear to be active. If you are not using WP Super Cache / W3 Total Cache / WP Cache you should use one of the direct insertion modes.</span></b></p>';		
+		echo '<p><b><span style="font-size:10px;color:red;">Note: A supported caching plugin does not appear to be active. If you are not using WP Super Cache / W3 Total Cache / WP Cache you should use one of the direct insertion modes below.</span></b></p>';		
 	} ?>
 	
 	<?php if ($ops['ad_insertion_mode'] != 'mfunc') { ?>
@@ -434,7 +438,7 @@ function adinj_wp_super_cache_msg(){
 
 function adinj_w3_total_cache_msg(){
 	?>
-	<p>W3 Total Cache will cache the the page on-disk if you use its Page Cache: 'Disk (basic)' mode. However if you use its Page Cache: Disk (enhanced) mode it won't cache the page. You might find that WP Super Cache works faster when Ad Injection's dynamic features are enabled as it can return pre-built static PHP pages via mod rewrite rules, rather than having load up WordPress to return them via PHP. If you aren't using Ad Injection's dynamic features then you can use W3 Total Cache with Page Cache: Disk (enhanced) mode.</p>
+	<p>W3 Total Cache will cache the the page on-disk if you use its Page Cache: 'Disk (basic)' mode. However if you use its Page Cache: Disk (enhanced) mode it won't cache the page. If you aren't using Ad Injection's dynamic features then you can use W3 Total Cache with Page Cache: Disk (enhanced) mode.</p>
 	<?php
 }
 
@@ -480,6 +484,7 @@ function adinj_side_status_box(){
 			<?php 
 			$info = adinj_get_status('global'); echo adinj_dot($info[0]).' '.$info[1];
 			if ($info[0] != 'red') {	?>
+			<br />&nbsp;&nbsp;<?php echo adinj_green_or_red_dot('exclude_front'); ?> front
 			<br />&nbsp;&nbsp;<?php echo adinj_green_or_red_dot('exclude_home'); ?> home
 			<br />&nbsp;&nbsp;<?php echo adinj_green_or_red_dot('exclude_page'); ?> page
 			<br />&nbsp;&nbsp;<?php echo adinj_green_or_red_dot('exclude_single'); ?> single
@@ -522,6 +527,7 @@ function adinj_side_status_box(){
 			</td><td>
 			<?php $info = adinj_get_status('widgets'); echo adinj_dot($info[0]).' '.$info[1]; 
 			if ($info[0] != 'red') {	?>
+			<br />&nbsp;&nbsp;<?php echo adinj_green_or_red_dot('widget_exclude_front'); ?> front
 			<br />&nbsp;&nbsp;<?php echo adinj_green_or_red_dot('widget_exclude_home'); ?> home
 			<br />&nbsp;&nbsp;<?php echo adinj_green_or_red_dot('widget_exclude_page'); ?> page
 			<br />&nbsp;&nbsp;<?php echo adinj_green_or_red_dot('widget_exclude_single'); ?> single
@@ -668,7 +674,7 @@ function adinj_docs(){
 <h3><?php echo adinj_get_logo(); ?> Supported in-page tags</h3>
 <div class="inside" style="margin:10px">
 
-<p>These tags can be inserted into the page source to override the configured behaviour on individual pages. Because sometimes specific pages need to be treated differently.</p>
+<p>These tags can be inserted into the page source to override the configured behaviour on single posts and pages. Because sometimes specific pages need to be treated differently.</p>
 
 <ul>
 <li><code>&lt;!--noadsense--&gt;</code> OR <code>&lt;!-no-adsense--&gt;</code> OR <code>&lt;!--NoAds--&gt;</code> OR <code>&lt;!--OffAds--&gt;</code> - disables all ads on this page. These tags are here to make this plugin compatible with the tags from Adsense Injection, Whydowork Adsense and Quick Adsense.</li>

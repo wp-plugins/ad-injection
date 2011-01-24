@@ -4,7 +4,7 @@ Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-w
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, widgets, sidebar, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog, ad rotation, A:B testing, split testing, WP Super Cache, W3 Total Cache, WP Cache
 Requires at least: 2.8.6
 Tested up to: 3.1
-Stable tag: 0.9.6.2
+Stable tag: 0.9.6.3
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
@@ -173,6 +173,22 @@ No! All the features of this plugin will work with no caching plugin installed. 
 
 The dynamic features will work with any caching program that supports the mfunc tag. At the moment that is WP Super Cache, W3 Total Cache, and WP Cache.
 
+= Which caching plugin is best? =
+
+Both WP Super Cache and W3 Total Cache are likely to be faster than WP Cache.
+
+If you aren't using the dynamic features (and you are using direct_static mode) then the only way to find out which is best between WP Super Cache and W3 Total Cache is to measure the performance yourself, as the speed depends on many factors that will be unique to your web server and web site.
+
+If you are using dynamic features (i.e. with mfunc mode) then WP Super Cache (in mod_rewrite mode) and W3 Total Cache (in Page Cache: Disk (basic) mode) are likely to offer similar performance as they both return the dynamic files via PHP. 
+
+Note that W3 Total Cache will not cache pages with mfunc tags if you use the Page Cache: Disk (enhanced) mode.
+
+The speed of your website does depend on more factors than just page serve time so other features that the caching plugins offer (such as CDN and minification support) may swing the advantage either way.
+
+WP Hyper Cache does not support mfunc tags so only use it if you don't want to use any of the dynamic features. If using WP Hyper Cache set the Ad Injection mode to 'direct_static'.
+
+For reference: dynamic features are ad rotation, and blocking ad views by IP and referrer.
+
 = Can I just have adverts on the home page? =
 
 i.e. adverts on the home page, but not on single posts or pages.
@@ -289,6 +305,9 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 
 == Changelog ==
 
+= 0.9.6.3 =
+* Option to enable/disable front page ads in case your front and home pages are different.
+
 = 0.9.6.2 =
 * Support for W3 Total Cache and WP Cache (as well as the already supported WP Super Cache).
 
@@ -393,7 +412,7 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 
 == Upgrade Notice ==
 
-= 0.9.6.2 =
+= 0.9.6.3 =
 New split testing, ad rotation and alternate content features. If you have any problems with disappearing ads re-save them to make them appear again.
 
 = 0.8.3 =

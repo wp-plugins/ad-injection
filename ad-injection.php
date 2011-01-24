@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 0.9.6.2
+Version: 0.9.6.3
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -16,8 +16,11 @@ License: GPLv2
 //
 define('ADINJ_NO_CONFIG_FILE', 1);
 
-//
-define('ADINJ_DB_VERSION', 2);
+// DB Version
+// _ = before split testing
+// 2 = split testing support
+// 3 = added front options
+define('ADINJ_DB_VERSION', 3);
 
 // Files
 define('ADINJ_PATH', WP_PLUGIN_DIR.'/ad-injection');
@@ -451,12 +454,13 @@ function adinj_ads_completely_disabled_from_page($content=NULL){
 	}
 	
 	// check for ads on certain page types being disabled
-	if ((is_home() && adinj_ticked('exclude_home')) ||
-	(is_page() && adinj_ticked('exclude_page')) ||
-	(is_single() && adinj_ticked('exclude_single')) ||
-	(is_archive() && adinj_ticked('exclude_archive')) || 
+	if (is_front_page() && adinj_ticked('exclude_front')){ return "NOADS: excluded from front page"; }
+	if (is_home() && adinj_ticked('exclude_home')){ return "NOADS: excluded from home page"; }
+	if ((is_page() && adinj_ticked('exclude_page')) ||
+		(is_single() && adinj_ticked('exclude_single')) ||
+		(is_archive() && adinj_ticked('exclude_archive')) || 
 		is_search() || is_404()){
-		return "NOADS: excluded from this post type-".get_post_type();
+		return "NOADS: excluded from this page type: ".get_post_type();
 	}
 	
 	// if disable_adverts==1

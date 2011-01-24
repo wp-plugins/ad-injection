@@ -252,19 +252,25 @@ function adinj_options_page(){
 function adinj_top_message_box(){
 	$ops = adinj_options();
 	if (isset($_POST['adinj_action'])) {
-        echo '<div id="message" class="updated below-h2"><p><strong>';
+        echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
         echo 'All settings saved: ';
 		if (is_plugin_active('wp-super-cache/wp-cache.php')){
 			echo "You might need to <a href='options-general.php?page=wpsupercache&amp;tab=tester'>clear your WP Super Cache cache</a> for the settings to take effect.";
 		} else if (is_plugin_active('w3-total-cache/w3-total-cache.php')){
-			echo "You might need to <a href='options-general.php?page=w3tc_general'>clear your cache</a> for the settings to take effect.";
+			echo "You might need to <a href='options-general.php?page=w3tc_general'>clear your W3 Total Cache cache</a> for the settings to take effect.";
 		} else if (is_plugin_active('wp-cache/wp-cache.php')){
-			echo "You might need to <a href='options-general.php?page=wp-cache/wp-cache'>clear your cache</a> for the settings to take effect.";
+			echo "You might need to <a href='options-general.php?page=wp-cache/wp-cache'>clear your WP Cache cache</a> for the settings to take effect.";
 		} else {
 			echo "If you are using a caching plugin you might need to delete its cache for any changes to take effect.";
         }
 		echo '</strong>';
+		if ($ops['debug_mode']=='on' && $ops['ads_enabled'] == 'on'){
+			echo "<br /><b>Recommendation:</b> Turn <a href='#debugging'>debug mode off</a> once you have got your ads working.";
+		}
 		if ($ops['ad_insertion_mode']=='mfunc'){
+			if (!is_supported_caching_plugin_active()){
+				echo "<br /><b>Recommendation:</b> It looks like you don't have a supported caching plugin (WP Super Cache, W3 Total Cache or WP Cache) active. Therefore one of the <a href='#restrictions'>direct insertion modes</a> might be better for you.";
+			}
 			global $adinj_warning_msg_filewrite;
 			if (!empty($adinj_warning_msg_filewrite)){
 				echo $adinj_warning_msg_filewrite;
@@ -282,7 +288,7 @@ function adinj_top_message_box(){
 		
 	} else {
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "22nd January 2011: Yesterday saw a big update introducing support for split testing / ad rotation. And also 'alternate content' as well as other fixes and updates. Today is support for W3 Total Cache and WP Cache (although for dynamic features I recommend WP Super Cache). Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">feedback form</a>.';
+		echo "24th January 2011: Added separate option for enabling/disabling front page as well as home page (they can be different!). Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
 		echo '</strong></p></div>';
 	}
 }
@@ -301,17 +307,12 @@ function adinj_side_info_box(){
 			<li><a href="http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/" target="_new">Ad Injection at reviewmylife</a></li>
 			<li><b><a href="<?php echo adinj_feedback_url(); ?>" target="_new">Report a bug / give feedback</a></b></li>
 			</ul>
-			<h4>Coming in 2011</h4>
-			<ul>
-			<li>Per ad control over which categories and tags the ads are shown in.</li>
-			<li>Extra ad locations.</li>
-			</ul>
 			
 			<h4><font color="red">Important!</font></h4>
 			<p>You are responsible for making sure the ad settings and positioning you define are in compliance with your ad provider's terms of service! Failure to do so could get you banned by them!</p>
 		
-			<h4><font color="red">Beta version</font></h4>
-			<p>This plugin has only only recently been released. I'm actively listening to your feedback and fixing any problems, and adding new features that you request. Please let me know if you like the plugin too!</p>
+			<h4><font color="red">In developement</font></h4>
+			<p>This plugin is only a few months old. I'm actively listening to your feedback and fixing any problems, and adding new features that you request. Please let me know if you like the plugin too!</p>
 			
 			<h4>More by this author</h4>
 			<ul>
@@ -327,8 +328,10 @@ function adinj_side_info_box(){
 }
 
 function adinj_feedback_url(){
-	return "https://spreadsheets.google.com/viewform?formkey=dFUwZzBYcG1HNzNKMmJZdWFDdFhkY0E6MQ";
-	//return "https://spreadsheets.google.com/viewform?formkey=dFUwZzBYcG1HNzNKMmJZdWFDdFhkY0E6MQ&amp;entry_1=test";
+	$wp_version = get_bloginfo('version');
+	$ad_version = adinj_get_version();
+	$data = urlencode($wp_version." / ".$ad_version);
+	return "https://spreadsheets.google.com/viewform?formkey=dFUwZzBYcG1HNzNKMmJZdWFDdFhkY0E6MQ&amp;entry_3=$data";
 }
 
 function adinj_add_checkbox($name){
@@ -427,7 +430,8 @@ function adinj_get_status($name){
 	$status[] = 'black';
 	$status[] = 'Error...';
 	if ($name == 'global'){
-		if ($ops['exclude_home'] == 'on' &&
+		if ($ops['exclude_front'] == 'on' &&
+			$ops['exclude_home'] == 'on' &&
 			$ops['exclude_page'] == 'on' &&
 			$ops['exclude_single'] == 'on' &&
 			$ops['exclude_archive'] == 'on'){
@@ -520,7 +524,8 @@ function adinj_get_status($name){
 			$status[1] = 'on';
 		}
 	} else if ($name == 'widgets'){
-		if ($ops['widget_exclude_home'] == 'on' &&
+		if ($ops['widget_exclude_front'] == 'on' &&
+			$ops['widget_exclude_home'] == 'on' &&
 			$ops['widget_exclude_page'] == 'on' &&
 			$ops['widget_exclude_single'] == 'on' &&
 			$ops['widget_exclude_archive'] == 'on'){
@@ -931,6 +936,7 @@ function adinj_default_options(){
 		// Global settings
 		'ads_enabled' => 'off',
 		'ads_on_page_older_than' => '0',
+		'exclude_front' => '',
 		'exclude_home' => '',
 		'exclude_page' => '',
 		'exclude_single' => '',
@@ -1027,6 +1033,7 @@ function adinj_default_options(){
 		'bottom_tag_condition_mode' => ADINJ_ONLY_SHOW_IN, //TODO
 		'bottom_tag_condition_entries' => '', //TODO
 		// widgets
+		'widget_exclude_front' => '',
 		'widget_exclude_home' => '',
 		'widget_exclude_page' => '',
 		'widget_exclude_single' => '',
@@ -1036,7 +1043,7 @@ function adinj_default_options(){
 		'ad_referrers' => '.google., .bing., .yahoo., .ask., search?, search., /search/',
 		'block_ips' => 'on', //TODO
 		'blocked_ips' => '',
-		'block_keywords' => 'off', //TODO
+		'block_keywords' => 'off', //TODO change to blocked referrers?
 		'blocked_keywords' => '', //TODO
 		'ad_insertion_mode' => 'mfunc',
 		// ui main tab
@@ -1056,8 +1063,6 @@ function adinj_default_options(){
 		// debug
 		'debug_mode' => '',
 		// version
-		// _ = before split testing
-		// 2 = split testing support
 		'db_version' => ADINJ_DB_VERSION
 	);
 }
