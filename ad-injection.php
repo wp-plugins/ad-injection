@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 0.9.6.3
+Version: 0.9.6.4
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -20,15 +20,14 @@ define('ADINJ_NO_CONFIG_FILE', 1);
 // _ = before split testing
 // 2 = split testing support
 // 3 = added front options
-define('ADINJ_DB_VERSION', 3);
+// 4 = new character counting option
+define('ADINJ_DB_VERSION', 4);
 
 // Files
+// TODO will these paths work on windows?
 define('ADINJ_PATH', WP_PLUGIN_DIR.'/ad-injection');
-define('ADINJ_CONFIG_FILE', WP_CONTENT_DIR . '/ad-injection-config.php'); // same directory as WP Super Cache config file
-define('ADINJ_AD_PATH', WP_PLUGIN_DIR.'/ad-injection-data'); // ad store from 0.9.2
-define('ADINJ_AD_RANDOM_FILE', 'ad_random_1.txt');
-define('ADINJ_AD_TOP_FILE', 'ad_top_1.txt');
-define('ADINJ_AD_BOTTOM_FILE', 'ad_bottom_1.txt');
+define('ADINJ_CONFIG_FILE', WP_CONTENT_DIR . '/ad-injection-config.php');
+define('ADINJ_AD_PATH', WP_PLUGIN_DIR.'/ad-injection-data');
 
 // Constants
 define('ADINJ_DISABLED', 'Disabled');
@@ -129,12 +128,13 @@ function adinj_get_ad_code($adtype, $ads_db){
 	$ads_split = NULL;
 	$alt_live = NULL;
 	$alt_split = NULL;
+	$formatting = NULL;
 	if ($ops['ad_insertion_mode'] == 'mfunc'){
 		adinj_live_ads_array($adtype, $ads_db, $ads_live, $ads_split, 'string');
 		if (adinj_db_version($ads_db) >= 2){
 			adinj_live_ads_array($adtype.'_alt', $ads_db, $alt_live, $alt_split, 'string');
 		}
-		$formatting = adinj_formatting_options($adtype, 'string');
+		$formatting = adinj_formatting_options($adtype, $ads_db, 'string');
 	} else {
 		$ads_live = array();
 		$ads_split = array();
@@ -144,9 +144,11 @@ function adinj_get_ad_code($adtype, $ads_db){
 		if (adinj_db_version($ads_db) >= 2){
 			adinj_live_ads_array($adtype.'_alt', $ads_db, $alt_live, $alt_split, 'array');
 		}
-		$formatting = adinj_formatting_options($adtype, 'array');
+		$formatting = adinj_formatting_options($adtype, $ads_db, 'array');
 	}
-	if (empty($ads_live) && empty($alt_live)) return "<!--ADINJ DEBUG: ads_live and alt_live are empty-->";
+	if (empty($ads_live) && empty($alt_live)){
+		return "";
+	}
 
 	if ($ops['ad_insertion_mode'] == 'mfunc'){
 		return adinj_ad_code_eval("\n
@@ -162,8 +164,13 @@ function adinj_get_ad_code($adtype, $ads_db){
 	} else {
 		$adname = adshow_pick_value($ads_live, $ads_split);
 	}
+	$ad = $ads_db[$adname];
 	
-	$ad = adshow_add_formatting($ads_db[$adname], $formatting);
+	if (empty($ad)){
+		return "";
+	}
+	
+	$ad = adshow_add_formatting($ad, $formatting);
 	return adinj_ad_code_eval($ad);
 }
 
@@ -249,7 +256,6 @@ function adinj_live_ads_array($type, $ads_option, &$ads, &$split, $output_type="
 		$split_val = $ads_option[$ad_name.'_split'];
 		
 		if (!empty($ads_option[$ad_name]) && is_numeric($split_val) && $split_val > 0){
-			//echo "<br />$ad_name $i size:".sizeof($ads_option[$ad_name]);
 			if ($output_type == "string"){
 				if (!empty($ads)) $ads .= ",";
 				$ads .= "'".$file_stem."$i.txt'";
@@ -263,8 +269,7 @@ function adinj_live_ads_array($type, $ads_option, &$ads, &$split, $output_type="
 	}
 }
 
-function adinj_formatting_options($adtype, $output_type="string", $options = array()){
-	$ops = adinj_options();
+function adinj_formatting_options($adtype, $ops, $output_type="string"){
 	$align = "";
 	$clear = "";
 	$margin_top = "";
@@ -277,22 +282,22 @@ function adinj_formatting_options($adtype, $output_type="string", $options = arr
 		$clear = $ops['rnd_clear'];
 		$margin_top = $ops['rnd_margin_top'];
 		$margin_bottom = $ops['rnd_margin_bottom'];
-		$padding_top = $options['rnd_padding_top'];
-		$padding_bottom = $options['rnd_padding_bottom'];
+		$padding_top = $ops['rnd_padding_top'];
+		$padding_bottom = $ops['rnd_padding_bottom'];
 	} else if ($adtype == 'top' || $adtype == 'bottom'){
 		$align = $ops[$adtype.'_align'];
 		$clear = $ops[$adtype.'_clear'];
 		$margin_top = $ops[$adtype.'_margin_top'];
 		$margin_bottom = $ops[$adtype.'_margin_bottom'];
-		$padding_top = $options[$adtype.'_padding_top'];
-		$padding_bottom = $options[$adtype.'_padding_bottom'];
-	} else if ($adtype == 'widget'){
-		$align = $options['align'];
-		$clear = $options['clear'];
-		$margin_top = $options['margin_top'];
-		$margin_bottom = $options['margin_bottom'];
-		$padding_top = $options['padding_top'];
-		$padding_bottom = $options['padding_bottom'];
+		$padding_top = $ops[$adtype.'_padding_top'];
+		$padding_bottom = $ops[$adtype.'_padding_bottom'];
+	} else if (preg_match("/widget_[\d+]/i", $adtype)){
+		$align = $ops['align'];
+		$clear = $ops['clear'];
+		$margin_top = $ops['margin_top'];
+		$margin_bottom = $ops['margin_bottom'];
+		$padding_top = $ops['padding_top'];
+		$padding_bottom = $ops['padding_bottom'];
 	}
 	
 	if (adinj_disabled($align)) $align = "";
@@ -337,53 +342,6 @@ function adinj_ad_code_include(){
 ";
 	}
 	return adinj_ad_code_eval($ad);
-}
-
-//TODO delete this
-function adinj_add_tags($ad, $prefix, $func=NULL){
-	$ops = adinj_options();
-	if (!adinj_disabled($ops[$prefix . 'align']) ||
-		!adinj_disabled($ops[$prefix . 'clear']) ||
-		!adinj_disabled($ops[$prefix . 'margin_top']) ||
-		!adinj_disabled($ops[$prefix . 'margin_bottom']) ||
-		!adinj_disabled($ops[$prefix . 'padding_top']) ||
-		!adinj_disabled($ops[$prefix . 'padding_bottom'])) {
-		$clear = "";
-		$top = "";
-		$bottom = "";
-		$ptop = "";
-		$pbottom = "";
-		if (!adinj_disabled($ops[$prefix . 'clear'])) $clear="clear:" . $ops[$prefix . 'clear'] . ";";
-		if (!adinj_disabled($ops[$prefix . 'margin_top'])) $top="margin-top:" . $ops[$prefix . 'margin_top'] . "px;";
-		if (!adinj_disabled($ops[$prefix . 'margin_bottom'])) $bottom="margin-bottom:" . $ops[$prefix . 'margin_bottom'] . "px;";
-		if (!adinj_disabled($ops[$prefix . 'padding_top'])) $ptop="padding-top:" . $ops[$prefix . 'padding_top'] . "px;";
-		if (!adinj_disabled($ops[$prefix . 'padding_bottom'])) $pbottom="padding-bottom:" . $ops[$prefix . 'padding_bottom'] . "px;";
-		$cssrules = $clear . $top . $bottom . $ptop . $pbottom;
-		
-		if ($ops[$prefix . 'align'] == 'left'){
-			$div = "<div style='float:left;" . $cssrules . "'>ADCODE</div><br clear='all' />";
-		} else if ($ops[$prefix . 'align'] == 'center'){
-			$div = "<div style='" . $cssrules . "'><center>ADCODE</center></div>";
-		} else if ($ops[$prefix . 'align'] == 'right'){
-			$div = "<div style='float:right;" . $cssrules . "'>ADCODE</div><br clear='all' />";
-		} else if ($ops[$prefix . 'align'] == 'float left'){
-			$div = "<div style='float:left;" . $cssrules . "margin-right:5px;'>ADCODE</div>";
-		} else if ($ops[$prefix . 'align'] == 'float right'){
-			$div = "<div style='float:right;" . $cssrules . "margin-left:5px;'>ADCODE</div>";
-		} else {
-			$div = "<div style='" . $cssrules . "'>ADCODE</div>";
-		}
-		if (empty($func)){
-			return str_replace("ADCODE", $ad, $div);
-		} else {
-			$ad = str_replace("ADCODE", "\$ad", $div);
-			return "function $func(\$ad) { return \"$ad\"; }";
-		}
-	}
-	if (!empty($func)){
-		return "function $func(\$ad){return \$ad;}";
-	}
-	return $ad;
 }
 
 function read_ad_from_file($ad_path){
@@ -434,7 +392,6 @@ function adinj($content, $message){
 <!--
 [ADINJ DEBUG]
 $message
-content length=".strlen($content)."
 \$adinj_total_rand_ads_used=$adinj_total_rand_ads_used
 \$adinj_total_all_ads_used=$adinj_total_all_ads_used
 paragraphtostartads=$para (fyi: -1 is disabled)
@@ -563,11 +520,12 @@ function adinj_inject_hook($content){
 
 	$ops = adinj_options();
 	
-	if ($ops['ad_insertion_mode'] == 'direct_dynamic'){
+	$debug_on = $ops['debug_mode'];
+	
+	if ($debug_on && $ops['ad_insertion_mode'] == 'direct_dynamic'){
 		$showads = adshow_show_adverts();
 		if ($showads !== true){
-			return adinj($content, "NOADS: ad blocked at run time reason=$showads");
-			// TODO alt content
+			$debug .= "\nNOADS: ad blocked at run time reason=$showads";
 		}
 	}
 
@@ -579,8 +537,17 @@ function adinj_inject_hook($content){
 		if(stripos($content, "<!--adfooter-->") !== false) return adinj($content.$ad_include.adinj_ad_code_bottom(), "Ads=adfooter");
 	}
 	
+	
+	
+	$length = 0;
+	if ($ops['content_length_unit'] == 'all'){
+		$length = strlen($content);
+		if ($debug_on) $debug .= "\nlength = $length (including HTML chars)";
+	} else {
+		$length = strlen(strip_tags($content));
+		if ($debug_on) $debug .= "\nlength = $length (viewable chars only)";
+	}
 	# Insert top and bottom ads if necesary
-	$length = strlen($content);
 	if(is_page() || is_single()){
 		if (adinj_do_rule_if($ops['top_ad_if_longer_than'], '<', $length)){
 			$content = $ad_include.adinj_ad_code_top().$content;
@@ -598,7 +565,6 @@ function adinj_inject_hook($content){
 	
 	if ($ad_include !== false) $content = $ad_include.$content;
 	
-	$debug_on = $ops['debug_mode'];
 	if (!$debug_on) $debugtags=false;
 	
 	$content_adfree_header = "";
@@ -639,7 +605,7 @@ function adinj_inject_hook($content){
 	$paragraphmarker = "</p>";
 	if(stripos($content, $paragraphmarker) === false) return adinj($content, "no &lt;/p&gt; tags");
 	
-	if ($debug_on) $debug = "\nTags=". htmlentities($debugtags);  
+	if ($debug_on) $debug .= "\nTags=". htmlentities($debugtags);  
 	
 	// Generate a list of all potential injection points
 	if ($debug_on) $debug .= "\nPotential positions: ";

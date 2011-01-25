@@ -132,9 +132,11 @@ function adinj_write_config_file(){
 	$debug_mode = adinj_ticked('debug_mode')?'true':'false';
 	
 	// TODO remove these from config file later...
-	$rnd_func = adinj_add_tags(NULL, 'rnd_', 'adinj_config_add_tags_rnd');
-	$top_func = adinj_add_tags(NULL, 'top_', 'adinj_config_add_tags_top');
-	$bottom_func = adinj_add_tags(NULL, 'bottom_', 'adinj_config_add_tags_bottom');
+	$legacy_funcs = '
+function adinj_config_add_tags_rnd($ad) { return ""; }
+function adinj_config_add_tags_top($ad) { return ""; }
+function adinj_config_add_tags_bottom($ad) { return ""; }
+';
 	
 	$config = <<<CONFIG
 <?php
@@ -156,9 +158,8 @@ function adinj_config_blocked_keywords() { return array($blocked_keywords); }
 
 function adinj_config_debug_mode() { return $debug_mode; }
 
-$rnd_func
-$top_func
-$bottom_func
+// Don't use these - they will be deleted soon
+$legacy_funcs
 
 ?>
 CONFIG;
@@ -288,7 +289,7 @@ function adinj_top_message_box(){
 		
 	} else {
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "24th January 2011: Added separate option for enabling/disabling front page as well as home page (they can be different!). Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
+		echo "25th January 2011: Widget padding fixes, and a new option to specify how the page length is calculated. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
 		echo '</strong></p></div>';
 	}
 }
@@ -575,32 +576,32 @@ function adinj_dot($colour){
 	return '<span style="color:'.$colour.'">&#x25cf;</span>';
 }
 
-function adinj_selection_box($name, $values, $type=NULL, $options=NULL, $selected_value_name=NULL){
-	echo "<select name='$name'>";
-	
-	$ops = "";
-	if ($options != NULL){
-		$ops = $options;
-	} else {
-		$ops = adinj_options();
+function adinj_selection_box($name, $values, $type=NULL, $selected_value=NULL){
+	$associative = false;
+	if (!array_key_exists(0, $values)){
+		// Very naive test but works for me.
+		$associative = true;
 	}
-	
-	$selected_value = "";
-	if ($selected_value_name != NULL){
-		$selected_value = $ops[$selected_value_name];
-	} else {
+
+	if ($selected_value == NULL){
+		$ops = adinj_options();
 		$selected_value = $ops[$name];
 	}
 
-	foreach ($values as $value){
-		echo "<option value=\"$value\" ";
-		if($selected_value == "$value") echo 'selected="selected"';
-		if ($type==NULL && is_numeric($value)){
+	echo "<select name='$name'>";
+	foreach ($values as $key=>$value){
+		$option_value = $value;
+		if ($associative){
+			$option_value = $key;
+		}
+		echo "<option value=\"$option_value\" ";
+		if($selected_value == "$option_value") echo 'selected="selected"';
+		if ($type==NULL && is_numeric($option_value)){
 			$typetxt = "(chars)";
 		} else {
 			$typetxt = $type;
 		}
-		if (adinj_disabled($value)) $typetxt = "";
+		if (adinj_disabled($option_value)) $typetxt = "";
 		echo ">$value $typetxt</option>";
 	}
 	echo "</select>";
@@ -613,7 +614,6 @@ function adinj_condition_table($name, $description, $type){
 	<tr><td>
 	
 	<textarea name="<?php echo $name; ?>_condition_entries" rows="2" cols="40"><?php echo $options[$name.'_condition_entries']; ?></textarea>
-	
 	
 	</td><td style="vertical-align:top">
 	
@@ -705,14 +705,14 @@ function adinj_add_margin_top_bottom_options($prefix, $options=NULL, $topname=NU
 	_e("Margin top", 'adinj');
 	echo "<br />";
 	adinj_selection_box($tname,
-		array(ADINJ_DISABLED, 0, 1, 2, 3, 4, 5, 7, 10, 15, 20, 30), "(px)", $options, $tdefault);
+		array(ADINJ_DISABLED, 0, 1, 2, 3, 4, 5, 7, 10, 15, 20, 30), "(px)", $options[$tdefault]);
 	
 	echo "<br />";
 	
 	_e("Margin bottom", 'adinj');
 	echo "<br />";
 	adinj_selection_box($bname,
-		array(ADINJ_DISABLED, 0, 1, 2, 3, 4, 5, 7, 10, 15, 20, 30), "(px)", $options, $bdefault);	
+		array(ADINJ_DISABLED, 0, 1, 2, 3, 4, 5, 7, 10, 15, 20, 30), "(px)", $options[$bdefault]);	
 }
 
 function adinj_add_padding_top_bottom_options($prefix, $options=NULL, $topname=NULL, $bottomname=NULL){
@@ -732,14 +732,14 @@ function adinj_add_padding_top_bottom_options($prefix, $options=NULL, $topname=N
 	_e("Padding top", 'adinj');
 	echo "<br />";
 	adinj_selection_box($tname,
-		array(ADINJ_DISABLED, 0, 1, 2, 3, 4, 5, 7, 10, 15, 20, 30), "(px)", $options, $tdefault);
+		array(ADINJ_DISABLED, 0, 1, 2, 3, 4, 5, 7, 10, 15, 20, 30), "(px)", $options[$tdefault]);
 	
 	echo "<br />";
 	
 	_e("Padding bottom", 'adinj');
 	echo "<br />";
 	adinj_selection_box($bname,
-		array(ADINJ_DISABLED, 0, 1, 2, 3, 4, 5, 7, 10, 15, 20, 30), "(px)", $options, $bdefault);	
+		array(ADINJ_DISABLED, 0, 1, 2, 3, 4, 5, 7, 10, 15, 20, 30), "(px)", $options[$bdefault]);	
 }
 
 function adinj_get_version(){
@@ -900,6 +900,11 @@ function adinj_upgrade_db(){
 		$new_options['block_ips'] = 'on';
 	}
 	
+	if ($stored_dbversion < 4){
+		// Maintain previous behaviour for users who upgrade
+		$new_options['content_length_unit'] = 'all';
+	}
+	
 	// 3. Bump up db version number.
 	$new_options['db_version'] = $new_dbversion;
 	
@@ -945,6 +950,7 @@ function adinj_default_options(){
 		'global_category_condition_entries' => '',
 		'global_tag_condition_mode' => ADINJ_ONLY_SHOW_IN,
 		'global_tag_condition_entries' => '',
+		'content_length_unit' => 'viewable',
 		// Random ads
 		'ad_code_random_1' => '',
 		'ad_code_random_2' => '',
@@ -1039,13 +1045,13 @@ function adinj_default_options(){
 		'widget_exclude_single' => '',
 		'widget_exclude_archive' => '',
 		// dynamic features
+		'ad_insertion_mode' => 'mfunc',
 		'sevisitors_only' => 'off',
 		'ad_referrers' => '.google., .bing., .yahoo., .ask., search?, search., /search/',
-		'block_ips' => 'on', //TODO
-		'blocked_ips' => '',
 		'block_keywords' => 'off', //TODO change to blocked referrers?
 		'blocked_keywords' => '', //TODO
-		'ad_insertion_mode' => 'mfunc',
+		'block_ips' => 'on', //TODO
+		'blocked_ips' => '',
 		// ui main tab
 		'ui_global_hide' => 'false',
 		'ui_random_hide' => 'false',

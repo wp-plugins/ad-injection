@@ -4,6 +4,8 @@ Part of the Ad Injection plugin for WordPress
 http://www.reviewmylife.co.uk/
 */
 
+// 1 = original
+// 2 = split testing / alt content
 define('ADINJ_WIDGET_DB_VERSION', 2);
 
 class Ad_Injection_Widget extends WP_Widget {

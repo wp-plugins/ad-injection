@@ -32,12 +32,38 @@ function adinj_tab_main(){
 	<input type="radio" name="ads_enabled" value="on" <?php if ($ops['ads_enabled']=='on') echo 'checked="checked"'; ?> /> <b>On: <?php _e('Ads enabled', 'adinj') ?></b><br />
 	<input type="radio" name="ads_enabled" value="off" <?php if ($ops['ads_enabled']=='off' || $ops['ads_enabled']=='') echo 'checked="checked"'; ?> /> <b>Off</b><br />
 	<input type="radio" name="ads_enabled" value="test" <?php if ($ops['ads_enabled']=='test') echo 'checked="checked"'; ?> /> <b>Test mode</b> - Only show ads to admin.<br />
-	<span style="font-size:10px;color:red;">Warning: Turn any caching plugin *off* before using test mode. If you leave them on the test adverts will be cached and shown to your real visitors.</span><br />
+	
+	<script type="text/javascript">
+	jQuery(document).ready(function(){
+	jQuery('input[name=ads_enabled]:radio').change(function() {
+		if (jQuery('input[name=ads_enabled]:checked').val() == "test"){
+			jQuery('#test_mode_warning').slideDown(500);
+		} else {
+			jQuery('#test_mode_warning').slideUp(500);
+		}
+		return true;
+		});
+	});
+	</script>
+	
+	<?php if ($ops['ads_enabled'] != 'test') { ?>
+	<script type="text/javascript">
+	document.write('<style type="text/css">#test_mode_warning { display: none; }</style>');
+	</script>
+	<?php }  ?>
+	
+	<div id="test_mode_warning"><span style="font-size:10px;color:red;">Warning: Turn any caching plugin *off* before using test mode. If you leave the caching plugin on, the test adverts will be cached and shown to your real visitors.</span><br /></div>
 
-	<table border="0">
-	<tr><td>
-	<p><?php _e("Only show ads on pages older than ", 'adinj') ?></p>
-	</td><td>
+	<p></p>
+	
+	<style type="text/css">
+	.adinjtable td { vertical-align: top; }
+	</style>
+	
+	<table border="0" class="adinjtable">
+	<tr>
+	<td><p><?php _e("Only show ads on pages older than ", 'adinj') ?></p></td>
+	<td>
 	<p>
 	<select name='ads_on_page_older_than'>
 	<?php
@@ -50,9 +76,9 @@ function adinj_tab_main(){
 	?>
 	</select><?php _e(" (days)", 'adinj') ?> - only for single posts and pages</p>
 	</td></tr>
-	<tr><td style="vertical-align:top">
-	Don't show ads on these types:
-	</td><td>
+	<tr>
+	<td>Don't show ads on these types:</td>
+	<td>
 	<?php adinj_add_checkbox('exclude_front') ?>front - <?php echo get_bloginfo('url'); ?><br />
 	<?php adinj_add_checkbox('exclude_home') ?>home - latest posts page (may be same as front)<br />
 	<?php
@@ -64,9 +90,18 @@ function adinj_tab_main(){
 	<?php adinj_add_checkbox('exclude_archive') ?>archive - only <a href="#widgets">widgets</a> currently appear on archives<br />
 	</td></tr>
 	<tr><td colspan="2"><p><span style="font-size:10px;">If you have <a href='options-reading.php'>set your front page</a> to be a static 'page' rather than your latest posts, the 'page' tick box will also apply to the front page.</span></p></td></tr>
+	<tr>
+	<td>Character counting method:</td>
+	<td>
+	<?php
+		adinj_selection_box("content_length_unit",
+			array('viewable' => 'viewable characters', 'all' => 'all characters'));
+	?>
+	</td></tr>
+	<tr><td colspan="2"><p><span style="font-size:10px;">When defining conditions that refer to the length of the content; do you only want to only include viewable characters, or all characters (which includes HTML tags)?</span></p></td></tr>
 	</table>
 	
-	<b>Category and tag conditions</b>
+	<p><b>Category and tag conditions</b></p>
 	
 	<?php adinj_condition_table('global_category', 'category slugs. e.g: cat1, cat2, cat3', 'category'); ?>
 	
@@ -106,7 +141,7 @@ function adinj_tab_main(){
 	<input type="submit" style="float:right" name="adinj_action" value="<?php _e('Save all settings', 'adinj') ?>" />
 	<h3><a name="random_single"></a><?php _e("Single posts and pages: Randomly Injected ad settings", 'adinj') ?></h3>
 	<div class="inside" style="margin:10px">
-	<p>These random ad injection settings are specific to single posts and pages.</p>
+	<p>These random ad injection settings are specific to single posts and pages only. To configure the number of home page ads go to the next section.</p>
 	
 	<table border="0">
 	
@@ -130,49 +165,53 @@ function adinj_tab_main(){
 	</select> <?php echo adinj_getdefault('max_num_of_ads'); ?><br />
 	</td></tr>
 	
-	<tr><td>
+	<tr><td colspan="2">
+	<p></p>
+	<table>
+	<tr>
+	<td>Random ad limit:</td>
+	<td><center><b>0</b></center></td>
+	<td><center><b>1</b></center></td>
+	<td><center><b>2</b></center></td>
+	<td><center><b>3</b></center></td>
+	</tr>
+	<tr>
+	<td>If page shorter than:</td>
+	<td>
 	<?php
-		_e("No random ads if page shorter than: ", 'adinj');
-		echo '</td><td>';
 		adinj_selection_box("no_random_ads_if_shorter_than",
 			array(ADINJ_RULE_DISABLED, 100, 200, 300, 500, 1000, 1500, 2000, 2500, 3000));
-			echo adinj_getdefault('no_random_ads_if_shorter_than');
 	?>
-	</td></tr>
-	
-	<tr><td>
+	</td>
+	<td>
 	<?php
-		_e("Limit of 1 ad if page shorter than: ", 'adinj');
-		echo '</td><td>';
 		adinj_selection_box("one_ad_if_shorter_than",
 			array(ADINJ_RULE_DISABLED, 100, 200, 300, 500, 1000, 1500, 2000, 2500, 3000));
-			echo adinj_getdefault('one_ad_if_shorter_than');
 	?>
-	</td></tr>
-	
-	<tr><td>
+	</td>
+	<td>
 	<?php
-		_e("Limit of 2 ads if page shorter than: ", 'adinj');
-		echo '</td><td>';
 		adinj_selection_box("two_ads_if_shorter_than",
 			array(ADINJ_RULE_DISABLED, 100, 200, 300, 500, 1000, 1500, 2000, 2500, 3000, 5000, 10000));
-			echo adinj_getdefault('two_ads_if_shorter_than');
 	?>
-	</td></tr>
-
-	<tr><td>
+	</td>
+	<td>
 	<?php
-		_e("Limit of 3 ads if page shorter than: ", 'adinj');
-		echo '</td><td>';
 		adinj_selection_box("three_ads_if_shorter_than",
 			array(ADINJ_RULE_DISABLED, 100, 200, 300, 500, 1000, 1500, 2000, 2500, 3000, 5000, 10000, 20000));
-			echo adinj_getdefault('three_ads_if_shorter_than');
 	?>
-	</td></tr>
+	</td>
+	</tr>
 	</table>
 	
 	<br clear="all" />
-	<p><span style="font-size:10px;"><b>Docs:</b> The above directives are processed in order from top to bottom.</span></p>
+	<p><span style="font-size:10px;"><b>Docs:</b> The 'random ad limit' rules are processed in order from left to right.</span></p>
+	
+	</td></tr>
+
+	</table>
+	
+	
 	
 
 	<p></p>

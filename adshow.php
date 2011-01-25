@@ -68,6 +68,7 @@ function adinj_config_debug_mode() {
 
 //////////////////////////////////////////////////////////////////////////////
 
+// TODO delete
 if (!function_exists('adshow_display_ad_file')){
 function adshow_display_ad_file($adfile){
 	if (!adshow_functions_exist()){ return false; }
@@ -96,6 +97,7 @@ If you have just upgraded you may need to re-save your ads to regenerate the ad 
 }
 }
 
+// TODO delete
 if (!function_exists('adshow_display_ad_full_path')){
 function adshow_display_ad_full_path($ad_path){
 	if (!adshow_functions_exist()){ return false; }
@@ -174,11 +176,14 @@ If you have just upgraded you may need to re-save your ads to regenerate the ad 
 
 if (!function_exists('adshow_pick_value')){
 function adshow_pick_value($values, $frequency){
+	if (empty($values)){
+		return "";
+	}
 	if (!is_array($values)){
 		// single value passed in
 		return $values;
 	}
-	$val = NULL;
+	$val = "";
 
 	// values is an array
 	if (empty($frequency)){
@@ -189,7 +194,7 @@ function adshow_pick_value($values, $frequency){
 		$count = sizeof($values);
 		if ($count != sizeof($frequency)){
 			echo "<!--ADINJ DEBUG: size of arrays don't match ".$count."!=".sizeof($frequency)."-->\n";
-			return NULL;
+			return "";
 		}
 		$total = array_sum($frequency);
 		$rand = rand(0, $total);
