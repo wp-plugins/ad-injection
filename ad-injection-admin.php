@@ -56,9 +56,9 @@ function adinj_save_options(){
 			}
 		}
 		
-		extract_text_args('ad_code_random_', $ops, 1, 5, ADINJ_AD_PATH.'/ad_random_');
-		extract_text_args('ad_code_top_', $ops, 1, 5, ADINJ_AD_PATH.'/ad_top_');
-		extract_text_args('ad_code_bottom_', $ops, 1, 5, ADINJ_AD_PATH.'/ad_bottom_');
+		extract_text_args('ad_code_random_', $ops, 1, 10, ADINJ_AD_PATH.'/ad_random_');
+		extract_text_args('ad_code_top_', $ops, 1, 10, ADINJ_AD_PATH.'/ad_top_');
+		extract_text_args('ad_code_bottom_', $ops, 1, 10, ADINJ_AD_PATH.'/ad_bottom_');
 		
 		extract_text_args('ad_code_random_alt_', $ops, 1, 2, ADINJ_AD_PATH.'/ad_random_alt_');
 		extract_text_args('ad_code_top_alt_', $ops, 1, 2, ADINJ_AD_PATH.'/ad_top_alt_');
@@ -83,6 +83,9 @@ function adinj_save_options(){
 		case 'Delete settings from DB':
 		adinj_checkNonce();
 		delete_option('adinj_options');
+		adinj_install_db();
+		adinj_options(1);
+		break;
 		
 		case 'Delete widget settings from DB':
 		adinj_checkNonce();
@@ -289,7 +292,7 @@ function adinj_top_message_box(){
 		
 	} else {
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "25th January 2011: Widget padding fixes, and a new option to specify how the page length is calculated. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
+		echo "4th February 2011: There is a new content length counting method - you can now restrict ads by number of 'words'. The option is in the global settings. Also fixes for UTF-8 characters and search/404 restriction options. Plus ad pool size for top/random/bottom increased to 10. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
 		echo '</strong></p></div>';
 	}
 }
@@ -435,7 +438,9 @@ function adinj_get_status($name){
 			$ops['exclude_home'] == 'on' &&
 			$ops['exclude_page'] == 'on' &&
 			$ops['exclude_single'] == 'on' &&
-			$ops['exclude_archive'] == 'on'){
+			$ops['exclude_archive'] == 'on' &&
+			$ops['exclude_search'] == 'on' &&
+			$ops['exclude_404'] == 'on'){
 			$status[0] = 'red';
 			$status[1] = 'excluded from all';
 			return $status;
@@ -529,7 +534,9 @@ function adinj_get_status($name){
 			$ops['widget_exclude_home'] == 'on' &&
 			$ops['widget_exclude_page'] == 'on' &&
 			$ops['widget_exclude_single'] == 'on' &&
-			$ops['widget_exclude_archive'] == 'on'){
+			$ops['widget_exclude_archive'] == 'on' &&
+			$ops['widget_exclude_search'] == 'on' &&
+			$ops['widget_exclude_404'] == 'on'){
 			$status[0] = 'red';
 			$status[1] = 'exclude from all';
 		} else {
@@ -576,7 +583,7 @@ function adinj_dot($colour){
 	return '<span style="color:'.$colour.'">&#x25cf;</span>';
 }
 
-function adinj_selection_box($name, $values, $type=NULL, $selected_value=NULL){
+function adinj_selection_box($name, $values, $type="", $selected_value=NULL){
 	$associative = false;
 	if (!array_key_exists(0, $values)){
 		// Very naive test but works for me.
@@ -595,13 +602,9 @@ function adinj_selection_box($name, $values, $type=NULL, $selected_value=NULL){
 			$option_value = $key;
 		}
 		echo "<option value=\"$option_value\" ";
-		if($selected_value == "$option_value") echo 'selected="selected"';
-		if ($type==NULL && is_numeric($option_value)){
-			$typetxt = "(chars)";
-		} else {
-			$typetxt = $type;
-		}
-		if (adinj_disabled($option_value)) $typetxt = "";
+		if($selected_value == $option_value) echo 'selected="selected"';
+		$typetxt = $type;
+		if (adinj_disabled($option_value) || $option_value == ADINJ_ALWAYS_SHOW) $typetxt = "";
 		echo ">$value $typetxt</option>";
 	}
 	echo "</select>";
@@ -630,8 +633,9 @@ function adinj_condition_table($name, $description, $type){
 		<?php 
 		$categories = get_categories(); 
 		foreach ($categories as $category) {
-			$option = '<option value="'.$category->category_nicename.'">';
-			$option .= $category->category_nicename;
+			$cat = rawurldecode($category->category_nicename);
+			$option = '<option value="'.$cat.'">';
+			$option .= $cat;
 			$option .= ' ('.$category->category_count.')';
 			$option .= '</option>';
 			echo $option;
@@ -648,8 +652,9 @@ function adinj_condition_table($name, $description, $type){
 		<?php 
 		$tags = get_tags(); 
 		foreach ($tags as $tag) {
-			$option = '<option value="'.$tag->slug.'">';
-			$option .= $tag->slug;
+			$tagname = rawurldecode($tag->slug);
+			$option = '<option value="'.$tagname.'">';
+			$option .= $tagname;
 			$option .= ' ('.$tag->count.')';
 			$option .= '</option>';
 			echo $option;
@@ -905,6 +910,14 @@ function adinj_upgrade_db(){
 		$new_options['content_length_unit'] = 'all';
 	}
 	
+	if ($stored_dbversion < 5){
+		// Maintain previous behaviour for users who upgrade
+		$new_options['exclude_search'] = 'on';
+		$new_options['exclude_404'] = 'on';
+		$new_options['widget_exclude_search'] = 'on';
+		$new_options['widget_exclude_404'] = 'on';
+	}
+	
 	// 3. Bump up db version number.
 	$new_options['db_version'] = $new_dbversion;
 	
@@ -918,23 +931,6 @@ function adinj_upgrade_db(){
 	}
 }
 
-// If the options in the database are out of sync with our default options
-// then the database options will need upgrading
-function adinj_options_need_upgrading($stored_options){
-	$default_options = adinj_default_options();
-	foreach ($default_options as $key => $value){
-		if (!array_key_exists($key, $stored_options)){
-			return true;
-		}
-	}
-	foreach ($stored_options as $key => $value){
-		if (!array_key_exists($key, $default_options)){
-			return true;
-		}
-	}
-	return false;
-}
-
 // All these stored in a single DB option row
 function adinj_default_options(){
 	return array(
@@ -946,22 +942,34 @@ function adinj_default_options(){
 		'exclude_page' => '',
 		'exclude_single' => '',
 		'exclude_archive' => '',
+		'exclude_search' => 'on',
+		'exclude_404' => 'on',
 		'global_category_condition_mode' => ADINJ_ONLY_SHOW_IN,
 		'global_category_condition_entries' => '',
 		'global_tag_condition_mode' => ADINJ_ONLY_SHOW_IN,
 		'global_tag_condition_entries' => '',
-		'content_length_unit' => 'viewable',
+		'content_length_unit' => 'words',
 		// Random ads
 		'ad_code_random_1' => '',
 		'ad_code_random_2' => '',
 		'ad_code_random_3' => '',
 		'ad_code_random_4' => '',
 		'ad_code_random_5' => '',
+		'ad_code_random_6' => '',
+		'ad_code_random_7' => '',
+		'ad_code_random_8' => '',
+		'ad_code_random_9' => '',
+		'ad_code_random_10' => '',
 		'ad_code_random_1_split' => '100',
 		'ad_code_random_2_split' => '100',
 		'ad_code_random_3_split' => '100',
 		'ad_code_random_4_split' => '100',
 		'ad_code_random_5_split' => '100',
+		'ad_code_random_6_split' => '100',
+		'ad_code_random_7_split' => '100',
+		'ad_code_random_8_split' => '100',
+		'ad_code_random_9_split' => '100',
+		'ad_code_random_10_split' => '100',
 		'ad_code_random_alt_1' => '',
 		'ad_code_random_alt_2' => '',
 		'ad_code_random_alt_1_split' => '100',
@@ -994,11 +1002,21 @@ function adinj_default_options(){
 		'ad_code_top_3' => '',
 		'ad_code_top_4' => '',
 		'ad_code_top_5' => '',
+		'ad_code_top_6' => '',
+		'ad_code_top_7' => '',
+		'ad_code_top_8' => '',
+		'ad_code_top_9' => '',
+		'ad_code_top_10' => '',
 		'ad_code_top_1_split' => '100',
 		'ad_code_top_2_split' => '100',
 		'ad_code_top_3_split' => '100',
 		'ad_code_top_4_split' => '100',
 		'ad_code_top_5_split' => '100',
+		'ad_code_top_6_split' => '100',
+		'ad_code_top_7_split' => '100',
+		'ad_code_top_8_split' => '100',
+		'ad_code_top_9_split' => '100',
+		'ad_code_top_10_split' => '100',
 		'ad_code_top_alt_1' => '',
 		'ad_code_top_alt_2' => '',
 		'ad_code_top_alt_1_split' => '100',
@@ -1019,11 +1037,21 @@ function adinj_default_options(){
 		'ad_code_bottom_3' => '',
 		'ad_code_bottom_4' => '',
 		'ad_code_bottom_5' => '',
+		'ad_code_bottom_6' => '',
+		'ad_code_bottom_7' => '',
+		'ad_code_bottom_8' => '',
+		'ad_code_bottom_9' => '',
+		'ad_code_bottom_10' => '',
 		'ad_code_bottom_1_split' => '100',
 		'ad_code_bottom_2_split' => '100',
 		'ad_code_bottom_3_split' => '100',
 		'ad_code_bottom_4_split' => '100',
 		'ad_code_bottom_5_split' => '100',
+		'ad_code_bottom_6_split' => '100',
+		'ad_code_bottom_7_split' => '100',
+		'ad_code_bottom_8_split' => '100',
+		'ad_code_bottom_9_split' => '100',
+		'ad_code_bottom_10_split' => '100',
 		'ad_code_bottom_alt_1' => '',
 		'ad_code_bottom_alt_2' => '',
 		'ad_code_bottom_alt_1_split' => '100',
@@ -1044,6 +1072,8 @@ function adinj_default_options(){
 		'widget_exclude_page' => '',
 		'widget_exclude_single' => '',
 		'widget_exclude_archive' => '',
+		'widget_exclude_search' => '',
+		'widget_exclude_404' => '',
 		// dynamic features
 		'ad_insertion_mode' => 'mfunc',
 		'sevisitors_only' => 'off',

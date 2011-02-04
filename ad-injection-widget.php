@@ -6,7 +6,8 @@ http://www.reviewmylife.co.uk/
 
 // 1 = original
 // 2 = split testing / alt content
-define('ADINJ_WIDGET_DB_VERSION', 2);
+// 3 = increase db rotation slots to 10 - no UI support yet
+define('ADINJ_WIDGET_DB_VERSION', 3);
 
 class Ad_Injection_Widget extends WP_Widget {
 	function Ad_Injection_Widget() {
@@ -22,7 +23,9 @@ class Ad_Injection_Widget extends WP_Widget {
 			(is_home() && adinj_ticked('widget_exclude_home')) ||
 			(is_page() && adinj_ticked('widget_exclude_page')) ||
 			(is_single() && adinj_ticked('widget_exclude_single')) ||
-			(is_archive() && adinj_ticked('widget_exclude_archive'))){
+			(is_archive() && adinj_ticked('widget_exclude_archive')) ||
+			(is_search() && adinj_ticked('widget_exclude_search')) ||
+			(is_404() && adinj_ticked('widget_exclude_404'))){
 			return;
 		}
 
@@ -82,6 +85,20 @@ class Ad_Injection_Widget extends WP_Widget {
 			'advert_2_split' => '100',
 			'advert_3' => '', 
 			'advert_3_split' => '100',
+			'advert_4' => '', 
+			'advert_4_split' => '100',
+			'advert_5' => '', 
+			'advert_5_split' => '100',
+			'advert_6' => '', 
+			'advert_6_split' => '100',
+			'advert_7' => '', 
+			'advert_7_split' => '100',
+			'advert_8' => '', 
+			'advert_8_split' => '100',
+			'advert_9' => '', 
+			'advert_9_split' => '100',
+			'advert_10' => '', 
+			'advert_10_split' => '100',
 			'advert_alt_1' => '', 
 			'advert_alt_1_split' => '100', 
 			'advert_alt_2' => '', 
@@ -98,7 +115,7 @@ class Ad_Injection_Widget extends WP_Widget {
 			'ui_alt_1_show' => 'false',
 			'ui_alt_2_show' => 'false',
 			//
-			'db_version' => '2'
+			'db_version' => ADINJ_WIDGET_DB_VERSION
 			);
 	}
 	

@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 0.9.6.4
+Version: 0.9.6.5
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -21,7 +21,8 @@ define('ADINJ_NO_CONFIG_FILE', 1);
 // 2 = split testing support
 // 3 = added front options
 // 4 = new character counting option
-define('ADINJ_DB_VERSION', 4);
+// 5 = search/404 exclusion, increase db ad rotations to 10
+define('ADINJ_DB_VERSION', 5);
 
 // Files
 // TODO will these paths work on windows?
@@ -384,10 +385,16 @@ function adinj_adverts_disabled_flag(){
 function adinj($content, $message){
 	if (!adinj_ticked('debug_mode')) return $content;
 	global $adinj_total_rand_ads_used, $adinj_total_all_ads_used;
-	$path = ADINJ_AD_PATH;
 	$ops = adinj_options();
 	$para = adinj_paragraph_to_start_ads();
 	$mode = $ops['ad_insertion_mode'];
+	$posttype = get_post_type();
+	if(is_single() || is_page()) {
+		$currentdate = time();
+		$postdate = get_the_time('U');
+		$currentday = $currentdate / 24 / 60 / 60;
+		$postday = $postdate / 24 / 60 / 60;
+	}
 	return $content."
 <!--
 [ADINJ DEBUG]
@@ -395,8 +402,10 @@ $message
 \$adinj_total_rand_ads_used=$adinj_total_rand_ads_used
 \$adinj_total_all_ads_used=$adinj_total_all_ads_used
 paragraphtostartads=$para (fyi: -1 is disabled)
+posttype=$posttype
+currentdate=$currentdate ($currentday)
+postdate=$postdate ($postday)
 injection mode=$mode
-ADINJ_AD_PATH=$path
 //-->\n";
 }
 
@@ -413,10 +422,11 @@ function adinj_ads_completely_disabled_from_page($content=NULL){
 	// check for ads on certain page types being disabled
 	if (is_front_page() && adinj_ticked('exclude_front')){ return "NOADS: excluded from front page"; }
 	if (is_home() && adinj_ticked('exclude_home')){ return "NOADS: excluded from home page"; }
+	if (is_search() && adinj_ticked('exclude_search')){ return "NOADS: excluded from search pages"; }
+	if (is_404() && adinj_ticked('exclude_404')){ return "NOADS: excluded from 404 pages"; }
 	if ((is_page() && adinj_ticked('exclude_page')) ||
 		(is_single() && adinj_ticked('exclude_single')) ||
-		(is_archive() && adinj_ticked('exclude_archive')) || 
-		is_search() || is_404()){
+		(is_archive() && adinj_ticked('exclude_archive'))){
 		return "NOADS: excluded from this page type: ".get_post_type();
 	}
 	
@@ -426,10 +436,10 @@ function adinj_ads_completely_disabled_from_page($content=NULL){
 	// no ads on old posts/pages if rule is enabled
 	if((is_page() || is_single()) && !adinj_is_old_post()) return "NOADS: !is_old_post";
 
-	$category_ok = adinj_allowed_in_category('global');	
+	$category_ok = adinj_allowed_in_category('global', $ops);	
 	if (!$category_ok) return "NOADS: blocked from category";
 	
-	$tag_ok = adinj_allowed_in_tag('global');	
+	$tag_ok = adinj_allowed_in_tag('global', $ops);	
 	if (!$tag_ok) return "NOADS: blocked from tag";
 	
 	// manual ad disabling tags
@@ -442,8 +452,7 @@ function adinj_ads_completely_disabled_from_page($content=NULL){
 	return false;
 }
 
-function adinj_allowed_in_category($scope){
-	$ops = adinj_options();
+function adinj_allowed_in_category($scope, $ops){
 	$cat_list = $ops[$scope.'_category_condition_entries'];
 	$cat_array = preg_split("/[\s,]+/", $cat_list, -1, PREG_SPLIT_NO_EMPTY);
 	if (empty($cat_array)) return true;
@@ -453,8 +462,9 @@ function adinj_allowed_in_category($scope){
 	$postcategories = get_the_category($post->ID);
 	if (is_array($postcategories)){
 		foreach($postcategories as $cat) {
-			$postcat = $cat->category_nicename;
-			if (in_array($postcat, $cat_array)){
+			$slug = $cat->category_nicename;
+			$decodedslug = rawurldecode($slug); //allow UTF-8 encoded cats
+			if (in_array($slug, $cat_array) || in_array($decodedslug, $cat_array)){
 				if ($cat_mode == ADINJ_ONLY_SHOW_IN){
 					return true;
 				} else if ($cat_mode == ADINJ_NEVER_SHOW_IN){
@@ -472,8 +482,7 @@ function adinj_allowed_in_category($scope){
 	return true;
 }
 
-function adinj_allowed_in_tag($scope){
-	$ops = adinj_options();
+function adinj_allowed_in_tag($scope, $ops){
 	$tag_list = $ops[$scope.'_tag_condition_entries'];
 	$tag_array = preg_split("/[\s,]+/", $tag_list, -1, PREG_SPLIT_NO_EMPTY);
 	if (empty($tag_array)) return true;
@@ -483,8 +492,9 @@ function adinj_allowed_in_tag($scope){
 	$posttags = get_the_tags($post->ID);
 	if (is_array($posttags)){
 		foreach($posttags as $tag) {
-			$posttag = $tag->slug;
-			if (in_array($posttag, $tag_array)){
+			$slug = $tag->slug;
+			$decodedslug = rawurldecode($slug); //allow UTF-8 encoded tags
+			if (in_array($slug, $tag_array) || in_array($decodedslug, $tag_array)){
 				if ($tag_mode == ADINJ_ONLY_SHOW_IN){
 					return true;
 				} else if ($tag_mode == ADINJ_NEVER_SHOW_IN){
@@ -508,7 +518,7 @@ function adinj_inject_hook($content){
 	
 	adinj_upgrade_db_if_necessary();
 	
-	if(is_page() || is_single()){
+	if(!is_archive && (is_page() || is_single())){
 		// TODO hack for no random ads bug
 		$adinj_total_rand_ads_used = 0;
 	}
@@ -521,6 +531,7 @@ function adinj_inject_hook($content){
 	$ops = adinj_options();
 	
 	$debug_on = $ops['debug_mode'];
+	$debug = "";
 	
 	if ($debug_on && $ops['ad_insertion_mode'] == 'direct_dynamic'){
 		$showads = adshow_show_adverts();
@@ -537,15 +548,16 @@ function adinj_inject_hook($content){
 		if(stripos($content, "<!--adfooter-->") !== false) return adinj($content.$ad_include.adinj_ad_code_bottom(), "Ads=adfooter");
 	}
 	
-	
-	
 	$length = 0;
 	if ($ops['content_length_unit'] == 'all'){
 		$length = strlen($content);
 		if ($debug_on) $debug .= "\nlength = $length (including HTML chars)";
-	} else {
+	} else if ($ops['content_length_unit'] == 'viewable'){
 		$length = strlen(strip_tags($content));
 		if ($debug_on) $debug .= "\nlength = $length (viewable chars only)";
+	} else {
+		$length = str_word_count(strip_tags($content));
+		if ($debug_on) $debug .= "\nlength = $length (number of words)";
 	}
 	# Insert top and bottom ads if necesary
 	if(is_page() || is_single()){
@@ -612,8 +624,9 @@ function adinj_inject_hook($content){
 	$potential_inj_positions = array();
 	$prevpos = -1;
 	while(($prevpos = stripos($content, $paragraphmarker, $prevpos+1)) !== false){
-		$potential_inj_positions[] = $prevpos + strlen($paragraphmarker);
-		if ($debug_on) $debug .= $prevpos.", ";
+		$potentialposition = $prevpos + strlen($paragraphmarker);
+		$potential_inj_positions[] = $potentialposition;
+		if ($debug_on) $debug .= "$potentialposition, ";
 	}
 
 	if ($debug_on) $debug .= "\npotential_inj_positions:".sizeof($potential_inj_positions);
@@ -652,9 +665,6 @@ function adinj_inject_hook($content){
 			} else {
 				$inj_positions = array_merge($inj_positions, $rand_positions);
 			}
-			foreach($inj_positions as $pos){
-				if ($debug_on) $debug = $pos . ", " . $debug;
-			}
 		} else {
 			// Multiple ads may be inserted at the same position
 			$injections = 0;
@@ -668,6 +678,9 @@ function adinj_inject_hook($content){
 	
 	if (sizeof($inj_positions) == 0){
 		return adinj($content_adfree_header.$content.$content_adfree_footer, "Error: No ad injection positions: " . $debug);
+	}
+	foreach($inj_positions as $pos){
+		if ($debug_on) $debug = "$pos, $debug";
 	}
 	
 	// Sort positions
@@ -768,16 +781,16 @@ function adinj_ticked($option){
 }
 
 function adinj_upgrade_db_if_necessary(){
-	$stored_options = adinj_options();
-	if(empty($stored_options)){
+	$cached_options = adinj_options();
+	if(empty($cached_options)){
 		// 1st Install.
 		adinj_install_db();
 		return;
 	}
 
-	$stored_dbversion = adinj_db_version($stored_options);
+	$cached_dbversion = adinj_db_version($cached_options);
 	
-	if (ADINJ_DB_VERSION != $stored_dbversion){
+	if (ADINJ_DB_VERSION != $cached_dbversion){
 		require_once(ADINJ_PATH . '/ad-injection-admin.php');
 		adinj_upgrade_db();
 	}

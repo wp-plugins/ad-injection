@@ -38,7 +38,7 @@ DOCS;
 	<?php
 	adinj_postbox_start(__("Random adverts", 'adinj'), 'multiple_random');
 	echo '<table border="0" cellspacing="5" class="adinjtable">';
-	for ($i=1; $i<=5; ++$i){
+	for ($i=1; $i<=10; ++$i){
 		adinj_add_row_with_text_box('ad_code_random_', $i, 'Ad code', $total_rand_split);
 	}
 	adinj_add_row_with_text_box('ad_code_random_alt_', 1, 'Alt content', $total_rand_alt_split);
@@ -49,7 +49,7 @@ DOCS;
 	
 	adinj_postbox_start(__("Top adverts", 'adinj'), 'multiple_top');
 	echo '<table border="0" cellspacing="5" class="adinjtable">';
-	for ($i=1; $i<=5; ++$i){
+	for ($i=1; $i<=10; ++$i){
 		adinj_add_row_with_text_box('ad_code_top_', $i, 'Ad code', $total_top_split);
 	}
 	adinj_add_row_with_text_box('ad_code_top_alt_', 1, 'Alt content', $total_top_alt_split);
@@ -60,7 +60,7 @@ DOCS;
 	
 	adinj_postbox_start(__("Bottom adverts", 'adinj'), 'multiple_bottom');
 	echo '<table border="0" cellspacing="5" class="adinjtable">';
-	for ($i=1; $i<=5; ++$i){
+	for ($i=1; $i<=10; ++$i){
 		adinj_add_row_with_text_box('ad_code_bottom_', $i, 'Ad code', $total_bottom_split);
 	}
 	adinj_add_row_with_text_box('ad_code_bottom_alt_', 1, 'Alt content', $total_bottom_alt_split);

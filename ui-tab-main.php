@@ -88,17 +88,19 @@ function adinj_tab_main(){
 	<?php adinj_add_checkbox('exclude_page') ?>page - <?php echo $count_pages->publish; ?> page(s)<br />
 	<?php adinj_add_checkbox('exclude_single') ?>single -<?php echo $count_posts->publish; ?> single blog post(s)<br />
 	<?php adinj_add_checkbox('exclude_archive') ?>archive - only <a href="#widgets">widgets</a> currently appear on archives<br />
+	<?php adinj_add_checkbox('exclude_search') ?>search pages - widgets only for now<br />
+	<?php adinj_add_checkbox('exclude_404') ?>404 error pages - widgets only for now<br />
 	</td></tr>
 	<tr><td colspan="2"><p><span style="font-size:10px;">If you have <a href='options-reading.php'>set your front page</a> to be a static 'page' rather than your latest posts, the 'page' tick box will also apply to the front page.</span></p></td></tr>
 	<tr>
-	<td>Character counting method:</td>
+	<td>Content length counting method:</td>
 	<td>
 	<?php
 		adinj_selection_box("content_length_unit",
-			array('viewable' => 'viewable characters', 'all' => 'all characters'));
+			array('viewable' => 'viewable chars', 'all' => 'all chars', 'words' => 'words'));
 	?>
 	</td></tr>
-	<tr><td colspan="2"><p><span style="font-size:10px;">When defining conditions that refer to the length of the content; do you only want to only include viewable characters, or all characters (which includes HTML tags)?</span></p></td></tr>
+	<tr><td colspan="2"><p><span style="font-size:10px;">When defining conditions that refer to the length of the content; do you want to count viewable characters, all characters (which includes HTML tags), or number of words?</span></p></td></tr>
 	</table>
 	
 	<p><b>Category and tag conditions</b></p>
@@ -179,26 +181,27 @@ function adinj_tab_main(){
 	<td>If page shorter than:</td>
 	<td>
 	<?php
-		adinj_selection_box("no_random_ads_if_shorter_than",
-			array(ADINJ_RULE_DISABLED, 100, 200, 300, 500, 1000, 1500, 2000, 2500, 3000));
+	$unit = adinj_counting_unit_description();
+	adinj_selection_box("no_random_ads_if_shorter_than",
+		array(ADINJ_RULE_DISABLED, 100, 200, 300, 500, 1000, 1500, 2000, 2500, 3000), $unit);
 	?>
 	</td>
 	<td>
 	<?php
-		adinj_selection_box("one_ad_if_shorter_than",
-			array(ADINJ_RULE_DISABLED, 100, 200, 300, 500, 1000, 1500, 2000, 2500, 3000));
+	adinj_selection_box("one_ad_if_shorter_than",
+		array(ADINJ_RULE_DISABLED, 100, 200, 300, 500, 1000, 1500, 2000, 2500, 3000), $unit);
 	?>
 	</td>
 	<td>
 	<?php
-		adinj_selection_box("two_ads_if_shorter_than",
-			array(ADINJ_RULE_DISABLED, 100, 200, 300, 500, 1000, 1500, 2000, 2500, 3000, 5000, 10000));
+	adinj_selection_box("two_ads_if_shorter_than",
+		array(ADINJ_RULE_DISABLED, 100, 200, 300, 500, 1000, 1500, 2000, 2500, 3000, 5000, 10000), $unit);
 	?>
 	</td>
 	<td>
 	<?php
-		adinj_selection_box("three_ads_if_shorter_than",
-			array(ADINJ_RULE_DISABLED, 100, 200, 300, 500, 1000, 1500, 2000, 2500, 3000, 5000, 10000, 20000));
+	adinj_selection_box("three_ads_if_shorter_than",
+		array(ADINJ_RULE_DISABLED, 100, 200, 300, 500, 1000, 1500, 2000, 2500, 3000, 5000, 10000, 20000), $unit);
 	?>
 	</td>
 	</tr>
@@ -241,12 +244,13 @@ function adinj_tab_main(){
 	
 	
 	<?php adinj_postbox_start(__("Optional top advert (single posts and pages only)", 'adinj'), 'topad'); ?>
+
+	<p><span style="font-size:10px;"><b>Purpose:</b> This ad is placed above your main post/page content (this is not a 'header' ad).</span></p>
 	
 	<?php
-		_e("Only show top ad on pages longer than: ", 'adinj');
-		adinj_selection_box("top_ad_if_longer_than",
-			array(ADINJ_DISABLED, ADINJ_ALWAYS_SHOW, 100, 200, 300, 500, 1000, 1500, 2000, 2500, 3000, 5000, 10000, 20000));
-			
+	_e("Only show top ad on pages longer than: ", 'adinj');
+	adinj_selection_box("top_ad_if_longer_than",
+		array(ADINJ_DISABLED, ADINJ_ALWAYS_SHOW, 100, 200, 300, 500, 1000, 1500, 2000, 2500, 3000, 5000, 10000, 20000), $unit);			
 	?>
 
 	<br clear="all" />
@@ -270,10 +274,12 @@ function adinj_tab_main(){
 	
 	<?php adinj_postbox_start(__("Optional bottom advert (single posts and pages only)", 'adinj'), 'bottomad'); ?>
 
+	<p><span style="font-size:10px;"><b>Purpose:</b> This ad is placed below your main post/page content (this is not a 'footer' ad).</span></p>
+	
 	<?php
-		_e("Only show bottom ad on pages longer than: ", 'adinj');
-		adinj_selection_box("bottom_ad_if_longer_than",
-			array(ADINJ_DISABLED, ADINJ_ALWAYS_SHOW, 100, 200, 300, 500, 1000, 1500, 2000, 2500, 3000, 5000, 10000, 20000));
+	_e("Only show bottom ad on pages longer than: ", 'adinj');
+	adinj_selection_box("bottom_ad_if_longer_than",
+		array(ADINJ_DISABLED, ADINJ_ALWAYS_SHOW, 100, 200, 300, 500, 1000, 1500, 2000, 2500, 3000, 5000, 10000, 20000), $unit);
 	?>
 	
 	<br clear="all"/>
@@ -309,7 +315,9 @@ function adinj_tab_main(){
 	<?php adinj_add_checkbox('widget_exclude_home') ?>home - latest posts page (may be same as front)<br />
 	<?php adinj_add_checkbox('widget_exclude_page') ?>page - <?php echo $count_pages->publish; ?> page(s)<br />
 	<?php adinj_add_checkbox('widget_exclude_single') ?>single - <?php echo $count_posts->publish; ?> single blog post(s)<br />
-	<?php adinj_add_checkbox('widget_exclude_archive') ?>archive - includes category, tag, author, and date pages types<br />
+	<?php adinj_add_checkbox('widget_exclude_archive') ?>archive - category, tag, author, and date pages types<br />
+	<?php adinj_add_checkbox('widget_exclude_search') ?>search pages<br />
+	<?php adinj_add_checkbox('widget_exclude_404') ?>404 error pages<br />
 	</td></tr>
 	<tr><td colspan="2"><p><span style="font-size:10px;">If you have <a href='options-reading.php'>set your front page</a> to be a static 'page' rather than your latest posts, the 'page' tick box will also apply to the front page.</span></p></td></tr>
 	
@@ -462,6 +470,18 @@ function adinj_tab_main(){
 	adinj_docs();
 }
 
+function adinj_counting_unit_description(){
+	$ops = adinj_options();
+	$unit = $ops['content_length_unit'];
+	if ($unit == 'all'){
+		return '(all chars)';
+	} else if ($unit == 'viewable'){
+		return '(chars)';
+	} else {
+		return '(words)';
+	}
+}
+
 function adinj_wp_super_cache_msg(){
 	?>
 	<p>With WP Super Cache version 0.9.9.8+ you can use the fastest 'mod rewrite rules' caching mode. With older versions of WP Super Cache you'll have to use the slower 'legacy mode'.</p>
@@ -528,6 +548,8 @@ function adinj_side_status_box(){
 			<br />&nbsp;&nbsp;<?php echo adinj_green_or_red_dot('exclude_page'); ?> page
 			<br />&nbsp;&nbsp;<?php echo adinj_green_or_red_dot('exclude_single'); ?> single
 			<br />&nbsp;&nbsp;<?php echo adinj_green_or_red_dot('exclude_archive'); ?> archive
+			<br />&nbsp;&nbsp;<?php echo adinj_green_or_red_dot('exclude_search'); ?> search
+			<br />&nbsp;&nbsp;<?php echo adinj_green_or_red_dot('exclude_404'); ?> 404
 			</td></tr>
 		
 			<tr><td style="text-align:right">
@@ -571,6 +593,8 @@ function adinj_side_status_box(){
 			<br />&nbsp;&nbsp;<?php echo adinj_green_or_red_dot('widget_exclude_page'); ?> page
 			<br />&nbsp;&nbsp;<?php echo adinj_green_or_red_dot('widget_exclude_single'); ?> single
 			<br />&nbsp;&nbsp;<?php echo adinj_green_or_red_dot('widget_exclude_archive'); ?> archive
+			<br />&nbsp;&nbsp;<?php echo adinj_green_or_red_dot('widget_exclude_search'); ?> search
+			<br />&nbsp;&nbsp;<?php echo adinj_green_or_red_dot('widget_exclude_404'); ?> 404
 			<?php } ?>
 			</td></tr>
 			
@@ -627,7 +651,7 @@ function adinj_debug_information(){
 			}
 			echo "$key";
 			echo "</td><td>";
-			$value = htmlentities($value);
+			$value = htmlspecialchars($value);
 			echo "$value";
 			echo "</td><td>";
 			echo $default_options[$key];
@@ -657,10 +681,10 @@ function adinj_debug_information(){
 			echo '<td style="vertical-align:top">';
 			if (is_array($val)){
 				foreach($val as $subkey=>$subval){
-					echo $subkey.':'.htmlentities($subval).'<br />';
+					echo $subkey.':'.htmlspecialchars($subval).'<br />';
 				}
 			} else {
-				echo htmlentities($val);
+				echo htmlspecialchars($val);
 			}
 			echo '</td></tr>';
 			++$count;
