@@ -204,7 +204,35 @@ function adinj_chmod($path, $permission){
 function adinj_get_logo(){
 	return '<a href="http://www.reviewmylife.co.uk/" target="_new"><img src="'. WP_PLUGIN_URL . '/ad-injection/rml-micro-logo.png" width="16" height="16" border="0" alt="reviewmylife" /></a>';
 }
-	
+
+// only for Ad Injection admin pages
+function adinj_admin_print_scripts_main(){
+	adinj_admin_print_scripts_widgets();
+}
+
+// only for widgets.php
+function adinj_admin_print_scripts_widgets(){
+	echo "<!--start of Ad Injection scripts-->";
+	adinj_javascript_addtext();
+echo <<<HTML
+	<script type="text/javascript">
+	function adinj_toggle_click(show_setting_id, toggle_button_id, toggle_box_id){
+		jQuery('#'+show_setting_id).val(jQuery('#'+toggle_box_id).is(":hidden"));
+		adinj_button_update(show_setting_id, toggle_button_id);
+		jQuery('#'+toggle_box_id).slideToggle(300);
+	}
+	function adinj_button_update(show_setting_id, toggle_button_id){
+		if (jQuery('#'+show_setting_id).val() == 'true'){
+			jQuery('#'+toggle_button_id).text('-');
+		} else {
+			jQuery('#'+toggle_button_id).text('+');
+		}
+	}
+	</script>
+	<!--end of Ad Injection scripts-->
+HTML;
+}
+
 function adinj_options_page(){
 	if (isset($_POST['adinj_action'])){
 		adinj_save_options();
@@ -292,7 +320,7 @@ function adinj_top_message_box(){
 		
 	} else {
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "4th February 2011: There is a new content length counting method - you can now restrict ads by number of 'words'. The option is in the global settings. Also fixes for UTF-8 characters and search/404 restriction options. Plus ad pool size for top/random/bottom increased to 10. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
+		echo "11th February 2011: New category, tag and author restriction for widgets. This means you can configure different widgets for different page types. Widget ad pool increased to 10. New author restriction for global settings. Plus other bug fixes and UI tweaks. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
 		echo '</strong></p></div>';
 	}
 }
@@ -368,6 +396,7 @@ function adinj_admin_tabs( $current = 0 ) {
 	echo '</h2></div>';
 }
 
+// TODO replace with new Javascript
 function adinj_postbox_start($title, $anchor, $width='650px'){
 	$ops = adinj_options();
 	?>
@@ -391,7 +420,7 @@ echo <<<HTML
 	function $anchorclick(){
 		jQuery('#$anchorhide').val(!jQuery('.$anchor-box').is(":hidden"));
 		$anchorupdate();
-		jQuery('.$anchor-box').slideToggle(1000);
+		jQuery('.$anchor-box').slideToggle(300);
 		return false;
 	}
 	
@@ -610,62 +639,93 @@ function adinj_selection_box($name, $values, $type="", $selected_value=NULL){
 	echo "</select>";
 }
 
-function adinj_condition_table($name, $description, $type){
-	$options = adinj_options();
+function adinj_javascript_addtext(){
+	?>
+	<script type="text/javascript">
+	function adinj_addtext(element, value) {
+		if (value.length == 0) return;
+		separator = ', ';
+		if (element.value.length == 0){
+			separator = '';
+		}
+		element.value += (separator + value);
+	}
+	</script>
+	<?php
+}
+
+// TODO replace previous show/hide code with this
+function adinj_add_show_hide_section($anchor, $show_op, $show_field_name, $ops){
+		$show_setting_id = $anchor.'_show';
+		$show_value = $ops[$show_op];
+		
+	echo <<<HTML
+		<input type='hidden' id="$show_setting_id" name="$show_field_name" value='$show_value' />
+		<a href='#' onclick="javascript:adinj_toggle_click('$show_setting_id', '$anchor-button', '$anchor-box');return false;" style='float:left;display:none;width:10px;' id='$anchor-button' class='button'>+/-</a>
+		<br clear="all" />
+		
+		<script type="text/javascript">
+		jQuery(document).ready(function(){
+			adinj_button_update('$show_setting_id', '$anchor-button');
+			jQuery('a#$anchor-button').show();
+			if ('$show_value' == 'false') jQuery('#$anchor-box').hide();
+		});
+		</script>
+		
+		<div id="$anchor-box">
+HTML;
+	}
+
+function adinj_condition_table($name, $description, $type, $ops, $dropdown_fieldname=NULL, $textarea_fieldname=NULL){
+	if ($dropdown_fieldname == NULL){
+		$dropdown_fieldname = $name."_condition_mode";
+	}
+	if ($textarea_fieldname == NULL){
+		$textarea_fieldname = $name."_condition_entries";
+	}
 	?>
 	<table border="0">
 	<tr><td>
 	
-	<textarea name="<?php echo $name; ?>_condition_entries" rows="2" cols="40"><?php echo $options[$name.'_condition_entries']; ?></textarea>
+	<textarea name="<?php echo $textarea_fieldname; ?>" rows="2" cols="40"><?php echo $ops[$name.'_condition_entries']; ?></textarea>
 	
 	</td><td style="vertical-align:top">
 	
 	<?php
-		adinj_selection_box($name."_condition_mode",
-			array('Only show in', 'Never show in'));
+		adinj_selection_box($dropdown_fieldname,
+			array('Only show in', 'Never show in'), "", $ops[$name.'_condition_mode']);
 	?>
 	
 	<br />
-	
-		<?php if ($type == 'category') { ?>
-	<select name="<?php echo $name; ?>_dropdown" onchange='adinj_addtext(<?php echo $name; ?>_condition_entries, this.options[this.selectedIndex].value);'>
+	<select name="<?php echo $name; ?>_dropdown" onchange='adinj_addtext(getElementsByName("<?php echo $textarea_fieldname; ?>")[0], this.options[this.selectedIndex].value);'>
 		<option value=""><?php echo 'Add ' . $type; ?></option> 
-		<?php 
+	
+	<?php 
+	if ($type == 'category') { 
 		$categories = get_categories(); 
-		foreach ($categories as $category) {
-			$cat = rawurldecode($category->category_nicename);
-			$option = '<option value="'.$cat.'">';
-			$option .= $cat;
-			$option .= ' ('.$category->category_count.')';
-			$option .= '</option>';
-			echo $option;
+		foreach ($categories as $cat) {
+			$nicename = rawurldecode($cat->category_nicename);
+			echo '<option value="'.$nicename.'">'.$nicename.' ('.$cat->category_count.')</option>';
 		}
-		?>
-	</select>
-	<NOSCRIPT><br /><span style="font-size:10px">As JavaScript is disabled you will have to manually type in the values.</span></NOSCRIPT>
-
-	<?php } else if ($type == 'tag') { ?>
-	
-	<select name="<?php echo $name; ?>_dropdown" onchange='adinj_addtext(document.adinjform.<?php echo $name; ?>_condition_entries, this.options[this.selectedIndex].value);'>
-	
-		<option value=""><?php echo 'Add ' . $type; ?></option> 
-		<?php 
+	} else if ($type == 'tag') { 
 		$tags = get_tags(); 
 		foreach ($tags as $tag) {
-			$tagname = rawurldecode($tag->slug);
-			$option = '<option value="'.$tagname.'">';
-			$option .= $tagname;
-			$option .= ' ('.$tag->count.')';
-			$option .= '</option>';
-			echo $option;
+			$slug = rawurldecode($tag->slug);
+			echo '<option value="'.$slug.'">'.$slug.' ('.$tag->count.')</option>';
 		}
-		?>
+	} else if ($type == 'author') { 
+		$authors = adinj_get_authors();
+		foreach ($authors as $author) {
+			$login = $author->user_login;
+			$displayname = $author->display_name;
+			echo '<option value="'.$login.'">'.$login.' ('.$displayname.')</option>';
+		}
+	} else {
+		echo 'ADINJ DEBUG Type not defined: ' . $type;
+	}?>
+	
 	</select>
 	<NOSCRIPT><br /><span style="font-size:10px">As JavaScript is disabled you will have to manually type in the values.</span></NOSCRIPT>
-	
-	<?php } else {
-		echo 'Type not defined: ' . $type;
-	}?>
 	
 	</td></tr>
 	<tr><td colspan="2">
@@ -673,6 +733,13 @@ function adinj_condition_table($name, $description, $type){
 	</td></tr>
 	</table>
 	<?php
+}
+
+// TODO Currently gets all users
+function adinj_get_authors(){
+	global $wpdb;
+	$authors = $wpdb->get_results( "SELECT user_login, display_name from $wpdb->users" );
+	return $authors;
 }
 
 function adinj_add_alignment_options($prefix){
@@ -948,6 +1015,8 @@ function adinj_default_options(){
 		'global_category_condition_entries' => '',
 		'global_tag_condition_mode' => ADINJ_ONLY_SHOW_IN,
 		'global_tag_condition_entries' => '',
+		'global_author_condition_mode' => ADINJ_ONLY_SHOW_IN,
+		'global_author_condition_entries' => '',
 		'content_length_unit' => 'words',
 		// Random ads
 		'ad_code_random_1' => '',
@@ -1092,6 +1161,8 @@ function adinj_default_options(){
 		'ui_debugging_hide' => 'true',
 		'ui_docs_hide' => 'false',
 		'ui_testads_hide' => 'false',
+		//
+		'ui_conditions_show' => 'false',
 		// ui ad rotation tab
 		'ui_multiple_random_hide' => 'false',
 		'ui_multiple_top_hide' => 'false',

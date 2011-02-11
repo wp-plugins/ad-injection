@@ -4,7 +4,7 @@ Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-w
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, widgets, sidebar, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog, ad rotation, A:B testing, split testing, WP Super Cache, W3 Total Cache, WP Cache
 Requires at least: 2.8.6
 Tested up to: 3.1
-Stable tag: 0.9.6.5
+Stable tag: 0.9.6.6
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
@@ -18,6 +18,7 @@ Ad Injection injects any kind of advert (e.g. Google AdSense, Amazon Associates,
 * Alternate content which can be defined for users who are dynamically blocked (by IP or referrer) from seeing adverts.
 * Choose which paragraph to start the random ads via the UI.
 * Dynamic features will work with W3 Total Cache and WP Cache as well as the previously suppoted WP Super Cache.
+* Widgets can be conditionally included on pages by category, tag, and author.
 
 = Automatic advert injection =
 
@@ -225,6 +226,18 @@ Don't worry - everything will still work except for:
 
 If you aren't interested in these features then it doesn't matter! Just make sure you tick the box to say that you to use 'Direct static ad insertion' on the Ad Injection settings screen.
 
+= How can I show different ads for different post authors? =
+
+This is something I hope to build into the UI at some point. But in the mean time you can use PHP in the ad code boxes to do this: e.g.
+
+`<?php
+$author = get_the_author();
+if ($author == "john"){ ?>
+This is John's Ad.
+<?php } else if ($author == "paul") { ?>
+This is Paul's Ad.
+<?php } ?>`
+
 = Are there any known plugin conflicts? =
 
 **WP Minify**
@@ -304,6 +317,13 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 3. Can choose to show the ads only to search engine visitors, or define IP addresses that ads aren't shown to.
 
 == Changelog ==
+
+= 0.9.6.6 =
+* Widgets can be conditionally included on pages by category, tag, and author.
+* Widget ad pool size increased to 10.
+* Fix for using just bottom ad in mfunc mode.
+* Less JavaScript on admin pages.
+* Global author exclude option.
 
 = 0.9.6.5 =
 * Add 'words' to content length counting options.
@@ -423,8 +443,8 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 
 == Upgrade Notice ==
 
-= 0.9.6.5 =
-'word' length restrictions, UTF-8 fixes, search/404 restriction options, and top/random/bottom ad pool size increased to 10.
+= 0.9.6.6 =
+Widget condition options - category, tag and author. Plus other fixes.
 
 = 0.8.3 =
 First public release.

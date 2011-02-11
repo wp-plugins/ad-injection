@@ -9,16 +9,6 @@ if (!is_admin()) return;
 function adinj_tab_main(){
 	$ops = adinj_options();
 	?>
-	<script type="text/javascript">
-	function adinj_addtext(element, value) {
-		if (value.length == 0) return;
-		separator = ', ';
-		if (element.value.length == 0){
-			separator = '';
-		}
-		element.value += (separator + value);
-	}
-	</script>
 	
 	<p><a href="#random">Random ads</a> | <a href="#topad">Top</a> | <a href="#bottomad">Bottom</a> | <a href="#widgets">Widgets</a> | <a href="#restrictions">Ad insert mode/dynamic restrictions</a> | <a href="#debugging">Debug</a> | <a href="#docs">Quick Start</a> | <a href="#testads">Test ads</a></p>
 	
@@ -103,13 +93,16 @@ function adinj_tab_main(){
 	<tr><td colspan="2"><p><span style="font-size:10px;">When defining conditions that refer to the length of the content; do you want to count viewable characters, all characters (which includes HTML tags), or number of words?</span></p></td></tr>
 	</table>
 	
-	<p><b>Category and tag conditions</b></p>
+	<b>Category tag, and author conditions</b>
+	<?php
+	adinj_add_show_hide_section('ad_conditions_'.uniqid(), 'ui_conditions_show', 'ui_conditions_show', $ops);
+	adinj_condition_table('global_category', 'category slugs. e.g: cat1, cat2, cat3', 'category', $ops);
+	adinj_condition_table('global_tag', 'tag slugs. e.g: tag1, tag2, tag3', 'tag', $ops);
+	adinj_condition_table('global_author', 'author nicknames. e.g: john, paul', 'author', $ops);
+	echo '</div>';
 	
-	<?php adinj_condition_table('global_category', 'category slugs. e.g: cat1, cat2, cat3', 'category'); ?>
-	
-	<?php adinj_condition_table('global_tag', 'tag slugs. e.g: tag1, tag2, tag3', 'tag'); ?>
-	
-	<?php adinj_postbox_end(); ?>
+	adinj_postbox_end();
+	?>
 	
 
 	<?php adinj_postbox_start(__("Randomly Injected ad code", 'adinj'), 'random'); ?>
@@ -147,11 +140,7 @@ function adinj_tab_main(){
 	
 	<table border="0">
 	
-	<tr><td>
-	<?php _e("Allow multiple ads to be injected at the same positions.", 'adinj') ?>
-	</td><td>
-	<?php adinj_add_checkbox('multiple_ads_at_same_position') ?> (default is to inject ads at unique positions)
-	</td></tr>
+	
 
 	
 	<tr><td>
@@ -165,6 +154,12 @@ function adinj_tab_main(){
 	}
 	?>
 	</select> <?php echo adinj_getdefault('max_num_of_ads'); ?><br />
+	</td></tr>
+	
+	<tr><td>
+	<?php _e("Allow multiple ads to be injected at the same positions.", 'adinj') ?>
+	</td><td>
+	<?php adinj_add_checkbox('multiple_ads_at_same_position') ?> (default is to inject ads at unique positions)
 	</td></tr>
 	
 	<tr><td colspan="2">
@@ -205,6 +200,8 @@ function adinj_tab_main(){
 	?>
 	</td>
 	</tr>
+	
+	
 	</table>
 	
 	<br clear="all" />
@@ -315,7 +312,7 @@ function adinj_tab_main(){
 	<?php adinj_add_checkbox('widget_exclude_home') ?>home - latest posts page (may be same as front)<br />
 	<?php adinj_add_checkbox('widget_exclude_page') ?>page - <?php echo $count_pages->publish; ?> page(s)<br />
 	<?php adinj_add_checkbox('widget_exclude_single') ?>single - <?php echo $count_posts->publish; ?> single blog post(s)<br />
-	<?php adinj_add_checkbox('widget_exclude_archive') ?>archive - category, tag, author, and date pages types<br />
+	<?php adinj_add_checkbox('widget_exclude_archive') ?>archive - category, tag, author, and date types<br />
 	<?php adinj_add_checkbox('widget_exclude_search') ?>search pages<br />
 	<?php adinj_add_checkbox('widget_exclude_404') ?>404 error pages<br />
 	</td></tr>
@@ -699,7 +696,6 @@ function adinj_debug_information(){
 	echo 'ADINJ_PATH='.ADINJ_PATH.'<br />';
 	echo 'ADINJ_CONFIG_FILE='.ADINJ_CONFIG_FILE.'<br />';
 	echo 'ADINJ_AD_PATH='.ADINJ_AD_PATH.'<br />';
-	
 	echo 'Plugin version='.adinj_get_version();
 	echo '</blockquote>';
 	
@@ -818,7 +814,7 @@ function adinj_docs(){
 &lt;/div&gt;</textarea></p>
 
 <div style="background-color:#cccc99; width:468px; height:15px;">
-<font size="-2"><b>TEST ADVERT 160x90</b> <a href="http://www.reviewmylife.co.uk/">reviewmylife.co.uk</a></font>
+<font size="-2"><b>TEST ADVERT 468x15</b> <a href="http://www.reviewmylife.co.uk/">reviewmylife.co.uk</a></font>
 </div><p></p>
 
 <h4><a name="336x280"></a>336x280 large rectangle</h4>

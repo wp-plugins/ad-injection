@@ -81,7 +81,7 @@ echo <<<EOT
 	<span style="font-size:10px;"><b>$title $num</b></span><br />
 	<textarea name="$name" rows="8" cols="60">$ops[$name]</textarea>
 	</td><td>
-	<textarea name="$namesplit" rows="1" cols="7">$ops[$namesplit]</textarea>
+	<input name="$namesplit" size="7" value="$ops[$namesplit]" />
 	<br />
 	$percent
 	</td></tr>

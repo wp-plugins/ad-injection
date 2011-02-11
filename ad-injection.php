@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 0.9.6.5
+Version: 0.9.6.6
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -49,7 +49,10 @@ if (is_admin()){
 }
 
 function adinj_admin_menu_hook(){
-	add_options_page('Ad Injection', 'Ad Injection', 'manage_options', basename(__FILE__), 'adinj_options_page');
+	$options_page = add_options_page('Ad Injection', 'Ad Injection', 'manage_options', basename(__FILE__), 'adinj_options_page');
+	add_action("admin_print_scripts-".$options_page, "adinj_admin_print_scripts_main");
+	add_action("admin_print_scripts-widgets.php", "adinj_admin_print_scripts_widgets");
+	
 }
 
 function adinj_options_link_hook($links, $file) {
@@ -439,8 +442,11 @@ function adinj_ads_completely_disabled_from_page($content=NULL){
 	$category_ok = adinj_allowed_in_category('global', $ops);	
 	if (!$category_ok) return "NOADS: blocked from category";
 	
-	$tag_ok = adinj_allowed_in_tag('global', $ops);	
+	$tag_ok = adinj_allowed_in_tag('global', $ops);
 	if (!$tag_ok) return "NOADS: blocked from tag";
+	
+	$author_ok = adinj_allowed_in_author('global', $ops);	
+	if (!$author_ok) return "NOADS: blocked from author";
 	
 	// manual ad disabling tags
 	if ($content == NULL) return false;
@@ -452,19 +458,12 @@ function adinj_ads_completely_disabled_from_page($content=NULL){
 	return false;
 }
 
-function adinj_allowed_in_category($scope, $ops){
-	$cat_list = $ops[$scope.'_category_condition_entries'];
-	$cat_array = preg_split("/[\s,]+/", $cat_list, -1, PREG_SPLIT_NO_EMPTY);
-	if (empty($cat_array)) return true;
-	
-	$cat_mode = $ops[$scope.'_category_condition_mode'];
-	global $post;
-	$postcategories = get_the_category($post->ID);
-	if (is_array($postcategories)){
-		foreach($postcategories as $cat) {
-			$slug = $cat->category_nicename;
-			$decodedslug = rawurldecode($slug); //allow UTF-8 encoded cats
-			if (in_array($slug, $cat_array) || in_array($decodedslug, $cat_array)){
+function adinj_allowed_in_list($all_entries, $config_entries, $cat_mode, $func){
+	if (is_array($all_entries)){
+		foreach($all_entries as $entry) {
+			$string = $func($entry);
+			$decoded = rawurldecode($string); //allow UTF-8 encoded strings
+			if (in_array($string, $config_entries) || in_array($decoded, $config_entries)){
 				if ($cat_mode == ADINJ_ONLY_SHOW_IN){
 					return true;
 				} else if ($cat_mode == ADINJ_NEVER_SHOW_IN){
@@ -478,38 +477,44 @@ function adinj_allowed_in_category($scope, $ops){
 	} else if ($cat_mode == ADINJ_NEVER_SHOW_IN){
 		return true;
 	}
-	echo ("<!--ADINJ DEBUG: error in adinj_allowed_in_category-->");
+	echo ("<!--ADINJ DEBUG: error in adinj_allowed_in_list-->");
 	return true;
 }
 
-function adinj_allowed_in_tag($scope, $ops){
-	$tag_list = $ops[$scope.'_tag_condition_entries'];
-	$tag_array = preg_split("/[\s,]+/", $tag_list, -1, PREG_SPLIT_NO_EMPTY);
-	if (empty($tag_array)) return true;
-	
-	$tag_mode = $ops[$scope.'_tag_condition_mode'];
+function adinj_allowed_in_category($scope, $ops){
+	$cat_array = adinj_split_comma_list($ops[$scope.'_category_condition_entries']);
+	if (empty($cat_array)) return true;
 	global $post;
-	$posttags = get_the_tags($post->ID);
-	if (is_array($posttags)){
-		foreach($posttags as $tag) {
-			$slug = $tag->slug;
-			$decodedslug = rawurldecode($slug); //allow UTF-8 encoded tags
-			if (in_array($slug, $tag_array) || in_array($decodedslug, $tag_array)){
-				if ($tag_mode == ADINJ_ONLY_SHOW_IN){
-					return true;
-				} else if ($tag_mode == ADINJ_NEVER_SHOW_IN){
-					return false;
-				}
-			}
-		}
-	}
-	if ($tag_mode == ADINJ_ONLY_SHOW_IN){
-		return false;
-	} else if ($tag_mode == ADINJ_NEVER_SHOW_IN){
-		return true;
-	}
-	echo ("<!--ADINJ DEBUG: error in adinj_allowed_in_tag-->");
-	return true;
+	$postcategories = get_the_category($post->ID);
+	return adinj_allowed_in_list($postcategories, $cat_array, 
+		$ops[$scope.'_category_condition_mode'], 'adinj_category_nicename');
+}
+
+function adinj_allowed_in_tag($scope, $ops){
+	$conditions = adinj_split_comma_list($ops[$scope.'_tag_condition_entries']);
+	if (empty($conditions)) return true;
+	global $post;
+	$tags = get_the_tags($post->ID);
+	return adinj_allowed_in_list($tags, $conditions, 
+		$ops[$scope.'_tag_condition_mode'], 'adinj_tag_slug');
+}
+
+function adinj_allowed_in_author($scope, $ops){
+	$conditions = adinj_split_comma_list($ops[$scope.'_author_condition_entries']);
+	if (empty($conditions)) return true;
+	$data = get_the_author_meta('user_login');
+	$user[] = $data ; //need to make it into array
+	return adinj_allowed_in_list($user, $conditions, 
+		$ops[$scope.'_author_condition_mode'], 'adinj_author_data');
+}
+
+//function parameters
+function adinj_category_nicename($category){ return $category->category_nicename; }
+function adinj_tag_slug($tag){ return $tag->slug; }
+function adinj_author_data($data){ return $data; }
+
+function adinj_split_comma_list($list){
+	return preg_split("/[\s,]+/", $list, -1, PREG_SPLIT_NO_EMPTY);
 }
 
 function adinj_inject_hook($content){
@@ -551,13 +556,13 @@ function adinj_inject_hook($content){
 	$length = 0;
 	if ($ops['content_length_unit'] == 'all'){
 		$length = strlen($content);
-		if ($debug_on) $debug .= "\nlength = $length (including HTML chars)";
+		if ($debug_on) $debug .= "\nnum chars: = $length (including HTML chars)";
 	} else if ($ops['content_length_unit'] == 'viewable'){
 		$length = strlen(strip_tags($content));
-		if ($debug_on) $debug .= "\nlength = $length (viewable chars only)";
+		if ($debug_on) $debug .= "\nnum chars: = $length (viewable chars only)";
 	} else {
 		$length = str_word_count(strip_tags($content));
-		if ($debug_on) $debug .= "\nlength = $length (number of words)";
+		if ($debug_on) $debug .= "\nnum words: = $length";
 	}
 	# Insert top and bottom ads if necesary
 	if(is_page() || is_single()){
@@ -569,13 +574,12 @@ function adinj_inject_hook($content){
 			$content = $content.adinj_ad_code_bottom();
 		}
 	}
+	if ($ad_include !== false) $content = $ad_include.$content;
 	
 	$num_rand_ads_to_insert = adinj_num_rand_ads_to_insert($length);
 	if ($num_rand_ads_to_insert <= 0) return adinj($content, "all ads used up");
 	$ad = adinj_ad_code_random();
 	if (empty($ad)) return adinj($content, "no random ad defined");
-	
-	if ($ad_include !== false) $content = $ad_include.$content;
 	
 	if (!$debug_on) $debugtags=false;
 	

@@ -7,12 +7,14 @@ http://www.reviewmylife.co.uk/
 // 1 = original
 // 2 = split testing / alt content
 // 3 = increase db rotation slots to 10 - no UI support yet
-define('ADINJ_WIDGET_DB_VERSION', 3);
+// 4 = added ui show fields for ads 4-10. Category/tag/author conditions.
+// 5 = ad/alt pool show fields
+define('ADINJ_WIDGET_DB_VERSION', 5);
 
 class Ad_Injection_Widget extends WP_Widget {
 	function Ad_Injection_Widget() {
 		$widget_ops = array( 'classname' => 'adinjwidget', 'description' => 'Insert Ad Injection adverts into your sidebars/widget areas.' );
-		$control_ops = array( 'width' => 450, 'height' => 300, 'id_base' => 'adinj' );
+		$control_ops = array( 'width' => 500, 'height' => 300, 'id_base' => 'adinj' );
 		$this->WP_Widget( 'adinj', 'Ad Injection', $widget_ops, $control_ops );
 	}
 	
@@ -29,6 +31,10 @@ class Ad_Injection_Widget extends WP_Widget {
 			return;
 		}
 
+		if (!adinj_allowed_in_category('widget', $instance)) return;
+		if (!adinj_allowed_in_tag('widget', $instance)) return;
+		if (!adinj_allowed_in_author('widget', $instance)) return;
+		
 		extract( $args );
 		
 		$ops = adinj_options();
@@ -64,12 +70,16 @@ class Ad_Injection_Widget extends WP_Widget {
 		
 		// Only strip tags when potential for updated title
 		$updated['title'] = strip_tags( $new_instance['title'] );
+		
+		// After first save mark it as saved
+		$updated['saved'] = 1;
 
-		write_ad_to_file($updated['advert_1'], $this->get_ad_file_path(1));
-		write_ad_to_file($updated['advert_2'], $this->get_ad_file_path(2));
-		write_ad_to_file($updated['advert_3'], $this->get_ad_file_path(3));
-		write_ad_to_file($updated['advert_alt_1'], $this->get_alt_file_path(1));
-		write_ad_to_file($updated['advert_alt_2'], $this->get_alt_file_path(2));
+		for ($i=1; $i<=10; ++$i){
+			write_ad_to_file($updated['advert_'.$i], $this->get_ad_file_path($i));
+		}
+		for ($i=1; $i<=3; ++$i){
+			write_ad_to_file($updated['advert_alt_'.$i], $this->get_alt_file_path($i));
+		}
 		
 		return $updated;
 	}
@@ -103,17 +113,38 @@ class Ad_Injection_Widget extends WP_Widget {
 			'advert_alt_1_split' => '100', 
 			'advert_alt_2' => '', 
 			'advert_alt_2_split' => '100', 
+			'advert_alt_3' => '', 
+			'advert_alt_3_split' => '100', 
 			//settings
 			'margin_top' => ADINJ_DISABLED,
 			'margin_bottom' => ADINJ_DISABLED,
 			'padding_top' => ADINJ_DISABLED,
 			'padding_bottom' => ADINJ_DISABLED,
+			'widget_category_condition_mode' => ADINJ_ONLY_SHOW_IN,
+			'widget_category_condition_entries' => '',
+			'widget_tag_condition_mode' => ADINJ_ONLY_SHOW_IN,
+			'widget_tag_condition_entries' => '',
+			'widget_author_condition_mode' => ADINJ_ONLY_SHOW_IN,
+			'widget_author_condition_entries' => '',
 			//ui
 			'ui_ad_1_show' => 'true',
+			'ui_conditions_show' => 'false',
+			'ui_spacing_show' => 'false',
+			'ui_ad_pool_show' => 'false',
 			'ui_ad_2_show' => 'false',
 			'ui_ad_3_show' => 'false',
+			'ui_ad_4_show' => 'false',
+			'ui_ad_5_show' => 'false',
+			'ui_ad_6_show' => 'false',
+			'ui_ad_7_show' => 'false',
+			'ui_ad_8_show' => 'false',
+			'ui_ad_9_show' => 'false',
+			'ui_ad_10_show' => 'false',
+			'ui_alt_pool_show' => 'false',
 			'ui_alt_1_show' => 'false',
 			'ui_alt_2_show' => 'false',
+			'ui_alt_3_show' => 'false',
+			'saved' => 0,
 			//
 			'db_version' => ADINJ_WIDGET_DB_VERSION
 			);
@@ -141,47 +172,87 @@ class Ad_Injection_Widget extends WP_Widget {
 	
 	function form( $instance ) {
 		$instance = $this->adinj_upgrade_widget_db($instance, $instance);
-		
-		$total_ad_split = adinj_total_split('advert_', $instance);
-		$total_alt_split = adinj_total_split('advert_alt_', $instance);
-		
+
+		$savedfieldname = $this->get_field_name('saved');
+		$savedfieldvalue = $instance['saved'];
 		?>
 		
-		<input type='hidden' <?php $this->add_id_and_name('db_version'); ?> value='<?php echo $defaults['db_version']; ?>' />
+		<input type='hidden' <?php $this->add_name('db_version'); ?> value='<?php echo $defaults['db_version']; ?>' />
+		<input type='hidden' name="$savedfieldname" value='$savedfieldvalue' />
 		
 		<p>
-			<label for="<?php echo $this->get_field_id('title'); ?>">Title:</label>
-			<input id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" value="<?php echo $instance['title']; ?>" style="width:100%;" />
+			<b>Title:</b><br />
+			<input id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" value="<?php echo $instance['title']; ?>" style="width:490px;" />
 		<br />
-			<span style="font-size:10px;">Make sure any label complies with your ad provider's TOS. More info for <a href="http://adsense.blogspot.com/2007/04/encouraging-clicks.html" target="_new">AdSense</a> users.</span>
+			<span style="font-size:10px;">Make sure any title complies with your ad provider's TOS. More info for <a href="http://adsense.blogspot.com/2007/04/encouraging-clicks.html" target="_new">AdSense</a> users.</span>
 		</p>
 
 		<style type="text/css">
 		.adinjtable td { vertical-align: top; }
 		</style>
 		
-		<table border="0" cellspacing="5" width="100% "class="adinjtable">
+		<table border="0" width="490px" class="adinjtable">
 		<?php
+		$total_ad_split = adinj_total_split('advert_', $instance);
 		$this->add_row('advert_', 1, 'Ad code 1', 'ui_ad_1_show', $total_ad_split, $instance);
 		?>
+		</table>
+		
+		<?php
+		if ($savedfieldvalue != 1){
+			echo '<b>The widget needs to be saved for first time to activate the other options.</b>';
+			return;
+		}
+		?>
+		
+		<br />
+		<b> Category, tag and author conditions</b>
+		<?php 
+		$this->add_show_hide_section('ad_restrictions_'.uniqid(), 'ui_conditions_show', $instance);
+		adinj_condition_table('widget_category', 'category slugs. e.g: cat1, cat2, cat3', 'category', $instance, $this->get_field_name('widget_category_condition_mode'), $this->get_field_name('widget_category_condition_entries'));
+		adinj_condition_table('widget_tag', 'tag slugs. e.g: tag1, tag2, tag3', 'tag', $instance, $this->get_field_name('widget_tag_condition_mode'), $this->get_field_name('widget_tag_condition_entries'));
+		adinj_condition_table('widget_author', 'author nicknames. e.g: john, paul', 'author', $instance, $this->get_field_name('widget_author_condition_mode'), $this->get_field_name('widget_author_condition_entries'));
+		echo '</div>'
+		?>
+		
+		<br />
+		<b> Spacing options</b>
+		<?php $this->add_show_hide_section('ad_spacing_'.uniqid(), 'ui_spacing_show', $instance); ?>
+		<table border="0" width="490px" class="adinjtable">
 		<tr><td>
 			<?php adinj_add_margin_top_bottom_options('widget_', $instance, $this->get_field_name('margin_top'), $this->get_field_name('margin_bottom') ); ?>
 		</td><td>
 			<?php adinj_add_padding_top_bottom_options('widget_', $instance, $this->get_field_name('padding_top'), $this->get_field_name('padding_bottom') ); ?>
 		</td></tr>
-		
-		<?php
-		$this->add_row('advert_', 2, 'Ad code 2', 'ui_ad_2_show', $total_ad_split, $instance);
-		$this->add_row('advert_', 3, 'Ad code 3', 'ui_ad_3_show', $total_ad_split, $instance);
-		$this->add_row('advert_alt_', 1, 'Alt content 1', 'ui_alt_1_show', $total_alt_split, $instance);
-		$this->add_row('advert_alt_', 2, 'Alt content 2', 'ui_alt_2_show', $total_alt_split, $instance);
-		?>
-		
 		</table>
+		</div>
 		
-		<p>Other options to define who sees these adverts (by page age, IP, referrer) are on the main <a href='options-general.php?page=ad-injection.php'>Ad Injection settings page</a>. The title will however always be displayed. If you want the title to be dynamic as well you should embed it in the ad code text box.</p>
+		<br />
+		<b> Ad rotation pool</b>
+		<?php $this->add_show_hide_section('ad_pool_'.uniqid(), 'ui_ad_pool_show', $instance); ?>
+		<table border="0" width="490px" class="adinjtable">
+		<?php
+		for ($i=2; $i<=10; ++$i){
+			$this->add_row('advert_', $i, 'Ad code '.$i, 'ui_ad_'.$i.'_show', $total_ad_split, $instance);
+		}
+		?>
+		</table></div>
 		
-		<p>You can also set which <a href='options-general.php?page=ad-injection.php#widgets'>page types</a> the widgets appear on.</p>
+		<br />
+		<b> Alt content pool</b>
+		<?php $this->add_show_hide_section('alt_pool_'.uniqid(), 'ui_alt_pool_show', $instance); ?>
+		<table border="0" cellspacing="5" width="490px" class="adinjtable">
+		<?php
+		$total_alt_split = adinj_total_split('advert_alt_', $instance);
+		for ($i=1; $i<=3; ++$i){
+			$this->add_row('advert_alt_', $i, 'Alt content '.$i, 'ui_alt_'.$i.'_show', $total_alt_split, $instance);
+		}
+		?>
+		</table></div>
+		
+		<br />
+		
+		<p>Other options to define who sees these adverts (by page age, IP, referrer) are on the main <a href='options-general.php?page=ad-injection.php'>Ad Injection settings page</a>. You can also set which <a href='options-general.php?page=ad-injection.php#widgets'>page types</a> the widgets appear on.</p>
 		
 		<?php
 	}
@@ -189,39 +260,20 @@ class Ad_Injection_Widget extends WP_Widget {
 	function add_row($op_stem, $num, $label, $show_op, $total_split, $ops){
 		$op = $op_stem.$num;
 		$op_split = $op.'_split';
-		$anchorid = $op_stem.uniqid().'_'.$num;
-		$anchorclick = $anchorid.'_click';
-		$show = $ops[$show_op];
-		$hiddenfieldid = $this->get_field_id($show_op);
+		$anchorid = $op.'_'.uniqid();
+		
 		$percentage_split = adinj_percentage_split($op_stem, $num, $ops, $total_split);
 		?>
 		<tr><td colspan='2'>
-		<textarea style="float:right" <?php $this->add_id_and_name($op_split); ?> rows="1" cols="4"><?php echo $ops[$op_split]; ?></textarea>
+		<input style="float:right; padding:0; margin:0;" <?php $this->add_name($op_split); ?> size="7" value="<?php echo $ops[$op_split]; ?>" />
 		
 		<?php
 		echo <<<HTML
-		<a href='#' onclick='javascript:$anchorclick();return false;' style='float:left;display:none' id='toggle-$anchorid' class='button'>+/-</a>
-		
-		<label><b> $label</b></label> <label style='float:right'>(Rotation: $percentage_split)</label>
-		
-		<script type="text/javascript">
-		jQuery(document).ready(function(){
-			jQuery('a#toggle-$anchorid').show();
-			if ('$show' == 'false') jQuery('.$anchorid-box').hide();
-		});
-		function $anchorclick(){
-			jQuery('#$hiddenfieldid').val(jQuery('.$anchorid-box').is(":hidden"));
-			jQuery('.$anchorid-box').slideToggle(1000);
-		}
-		</script>
-		
-		</td></tr>
-		<tr><td colspan='2'>
-		
-		<div id="$anchorid-box" class="$anchorid-box">
+		<b> $label</b> <label style='float:right'>(Rotation: $percentage_split)</label>
 		
 HTML;
-		
+		$this->add_show_hide_section($anchorid, $show_op, $ops);
+
 		if ($op_stem == 'advert_' && $num == 2){
 			echo '<span style="font-size:10px;">These boxes are for defining rotated adverts which replace the original advert according to the percentages defined. If you want multiple sidebar/widget ads you need to drag another widget into the sidebar.</span><br />';
 		}
@@ -230,11 +282,20 @@ HTML;
 		}
 		
 		?>
-		<input type='hidden' <?php $this->add_id_and_name($show_op); ?> value='<?php echo $ops[$show_op]; ?>' />
-		<textarea class="widefat" rows="8" cols="50" width="100%" <?php $this->add_id_and_name($op); ?>><?php echo $ops[$op];	?></textarea>
-		</div>
+		
+		<textarea class="widefat" rows="8" cols="50" width="100%" <?php $this->add_name($op); ?>><?php echo $ops[$op]; ?></textarea>
+		</div><!--add_show_hide_section-->
 		</td></tr>
 		<?php
+	}
+	
+	function add_show_hide_section($anchor, $show_op, $ops){
+		$show_field_name = $this->get_field_name($show_op);
+		adinj_add_show_hide_section($anchor, $show_op, $show_field_name, $ops);
+	}
+	
+	function add_name($op){
+		echo 'id="'.$this->get_field_id($op).'" name="'.$this->get_field_name($op).'"';
 	}
 	
 	function add_id_and_name($op){
@@ -258,7 +319,6 @@ HTML;
 	}
 	
 	function get_id(){
-		//return $widget_id;
 		$field = $this->get_field_id('advert_1');
 		preg_match('/-(\d+)-/', $field, $matches);
 		return $matches[1];
