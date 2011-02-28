@@ -4,13 +4,18 @@ Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-w
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, widgets, sidebar, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog, ad rotation, A:B testing, split testing, WP Super Cache, W3 Total Cache, WP Cache
 Requires at least: 2.8.6
 Tested up to: 3.1
-Stable tag: 0.9.6.6
+Stable tag: 0.9.7
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
 == Description ==
 
 Ad Injection injects any kind of advert (e.g. Google AdSense, Amazon Associates, ClickBank, TradeDoubler, etc) into the existing content of your WordPress posts and pages. You can control the number of adverts based on the post length, and it can restrict who sees adverts by post age, visitor referrer and IP address. Adverts can be configured in the post (random, top, and bottom positions) or in any widget/sidebar area. There's support for A:B split testing / ad rotation. And the dynamic restrictions (by IP and referrer) work with WP Super Cache, W3 Total Cache and WP Cache.
+
+**New Features 0.9.7.x**
+
+* Archive and home page ads now fully supported with the same controls as ads for single posts/pages.
+* Category, tag and author restrictions for top, random and bottom ads.
 
 **New Features 0.9.6.x**
 
@@ -213,6 +218,10 @@ You can try defining the 'clear' display setting so that multiple floated parts 
 
 If you always have a floated image at the top of the page you can set which paragraph the first random advert will start from. If you needed finer control over where the random adverts appear you can use the <!--adstart--> and <!--adend--> tags in the page.
 
+= I have set the ads to float but the text/headings aren't flowing around them =
+
+Check your style sheet to see if either the text or headings have the 'clear' attribute set. This may be preventing your text / headings from flowing around the advert.
+
 = I have configured four Google AdSense ad units but only three are showing. Why? =
 
 Google's AdSense TOS only allow allow three ad units, and three link units per page. If you have for example tried to insert four ad units on your page then Google will (probably) disable the forth one automatically. Read Google's AdSense [program policies](https://www.google.com/adsense/support/bin/answer.py?hl=en&answer=48182 "AdSense program policies") for more info.
@@ -226,6 +235,32 @@ Don't worry - everything will still work except for:
 
 If you aren't interested in these features then it doesn't matter! Just make sure you tick the box to say that you to use 'Direct static ad insertion' on the Ad Injection settings screen.
 
+= How can I show different ads for different categories? =
+
+If you want to show different ads for different categories using widgets you can set up filters for the different ads from the widget UI. If you want to show different top, random, or bottom adverts on different categories you can use some very simple PHP in the ad box (this will also work for the widgets as well if you don't like the UI method).
+
+Note this will only work in the direct insertion mode. It won’t work in mfunc mode!
+
+Example 1 - one category specific ad and a general ad.
+
+`<?php if (in_category('japan')) { ?>
+Japan advert
+<?php } else { ?>
+General advert
+<?php } ?>`
+
+Example 2 - Two different ads in two different categories. Pages which aren't in either category have no ads.
+
+`<?php if (in_category('cheese')) { ?>
+Cheese advert
+<?php } else if (in_category('milk')) { ?>
+Milk advert
+<?php } ?>`
+
+See http://codex.wordpress.org/Function_Reference/in_category for more information on in_category.
+
+You can do the same for tags using has_tag. See http://codex.wordpress.org/Function_Reference/has_tag for info.
+
 = How can I show different ads for different post authors? =
 
 This is something I hope to build into the UI at some point. But in the mean time you can use PHP in the ad code boxes to do this: e.g.
@@ -237,6 +272,25 @@ This is John's Ad.
 <?php } else if ($author == "paul") { ?>
 This is Paul's Ad.
 <?php } ?>`
+
+Note this will only work in direct insertion mode. It won’t work in mfunc mode!
+
+= How can I show different ads to people in different countries? =
+
+If you install the Country Filter plugin (with the IP database) then you can use the following code in the direct ad insertion modes. This will not work in mfunc mode!
+
+<?php if (function_exists('isCountryInFilter')) { ?>
+<?php if(isCountryInFilter(array("uk"))) { ?>
+
+UK advert
+
+<?php } else { ?>
+
+Global advert
+
+<?php } } ?>
+
+You can download the Country Filter plugin from http://wordpress.org/extend/plugins/country-filter/
 
 = Are there any known plugin conflicts? =
 
@@ -317,6 +371,10 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 3. Can choose to show the ads only to search engine visitors, or define IP addresses that ads aren't shown to.
 
 == Changelog ==
+
+= 0.9.7 =
+* Archive and home page ads now fully supported with the same controls as ads for single posts/pages.
+* Category, tag and author restrictions for top, random and bottom ads.
 
 = 0.9.6.6 =
 * Widgets can be conditionally included on pages by category, tag, and author.
@@ -443,8 +501,8 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 
 == Upgrade Notice ==
 
-= 0.9.6.6 =
-Widget condition options - category, tag and author. Plus other fixes.
+= 0.9.7 =
+Support for ads on archives and home page. Fixes for widget ads.
 
 = 0.8.3 =
 First public release.

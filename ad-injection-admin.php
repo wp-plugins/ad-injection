@@ -230,7 +230,12 @@ echo <<<HTML
 	}
 	</script>
 	<!--end of Ad Injection scripts-->
+	<script type="text/javascript">
+        document.write('<style type="text/css" media="screen">.hiddenbox { display: none; }</style>');
+	</script>
 HTML;
+
+
 }
 
 function adinj_options_page(){
@@ -266,6 +271,12 @@ function adinj_options_page(){
 		adinj_side_info_box();
 		echo '</div>';
 		adinj_tab_adrotation();
+		break;
+	case "debug":
+		require_once(ADINJ_PATH . '/ui-tab-debug.php');
+		adinj_side_info_box();
+		echo '</div>';
+		adinj_tab_debug();
 		break;
 	case "main":
 	default:
@@ -320,7 +331,7 @@ function adinj_top_message_box(){
 		
 	} else {
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "11th February 2011: New category, tag and author restriction for widgets. This means you can configure different widgets for different page types. Widget ad pool increased to 10. New author restriction for global settings. Plus other bug fixes and UI tweaks. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
+		echo "28th February 2011: Archives and home ads now fully supported - you can add top/random/bottom ads to them. Big UI updates to support this. And fixes for when/where widget ads appear. I'd recommend you re-check that your ads appear where you expect them to. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
 		echo '</strong></p></div>';
 	}
 }
@@ -381,7 +392,7 @@ function adinj_admin_tabs( $current = 0 ) {
 			$current = 'main';
 		}
 	}
-	$tabs = array( 'main' => __( 'Main', 'ad-injection' ), 'adrotation' => __( 'Ad pool: (Rotation / A:B Testing / Alternate content)', 'ad-injection' ) );
+	$tabs = array( 'main' => __( 'Main', 'ad-injection' ), 'adrotation' => __( 'Ad codes / rotation / misc', 'ad-injection' ), 'debug' => __( 'Debug' ) );
 	$links = array();
 	foreach( $tabs as $tab => $name ) {
 		if ( $current == $tab ) {
@@ -404,23 +415,23 @@ function adinj_postbox_start($title, $anchor, $width='650px'){
 	<div class="metabox-holder">
 	<div class="postbox">
 	<input type="submit" style="float:right" class="button-primary" name="adinj_action" value="<?php _e('Save all settings', 'adinj') ?>" />
+	
 	<?php
 	$anchorclick = $anchor.'_click';
 	$anchorupdate = $anchor.'_update';
 	$anchorhide = 'ui_'.$anchor.'_hide';
+	$hide = $ops[$anchorhide];
 echo <<<HTML
+	<input type='hidden' id='$anchorhide' name='$anchorhide' value='$hide' />
 	<a href="#" onclick='javascript:$anchorclick();return false;' style="float:right;display:none" id="toggle-$anchor" class="button">Show/Hide</a>
 	<script type="text/javascript">
-
-	jQuery(document).ready(function(){
-		$anchorupdate();
-		jQuery('#toggle-$anchor').show();
-	});
+	$anchorupdate();
+	jQuery('#toggle-$anchor').show();
 	
 	function $anchorclick(){
-		jQuery('#$anchorhide').val(!jQuery('.$anchor-box').is(":hidden"));
+		jQuery('#$anchorhide').val(!jQuery('#$anchor-box').is(":hidden"));
+		jQuery('#$anchor-box').slideToggle(300);
 		$anchorupdate();
-		jQuery('.$anchor-box').slideToggle(300);
 		return false;
 	}
 	
@@ -434,18 +445,14 @@ echo <<<HTML
 	</script>
 HTML;
 	?>
-	<input type='hidden' id='ui_<?php echo $anchor; ?>_hide' name='ui_<?php echo $anchor; ?>_hide' value='<?php echo $ops['ui_'.$anchor.'_hide']; ?>' />
+	
 	<h3><?php $info = adinj_get_status($anchor); echo adinj_dot($info[0]); ?> <a name="<?php echo $anchor; ?>"></a><?php echo adinj_get_logo() . ' ' . $title; ?></h3>
-	<?php if($ops['ui_'.$anchor.'_hide'] == 'true'){ ?>
-	<script type="text/javascript">
-        document.write('<style type="text/css" media="screen">#<?php echo $anchor; ?>-box { display: none; }</style>');
-	</script>
-	<div id="<?php echo $anchor; ?>-box" class="<?php echo $anchor; ?>-box">
+	<?php if($hide == 'true'){ ?>
+		<div id="<?php echo $anchor; ?>-box" class="hiddenbox">
 	<?php } else { ?>
-	<div class="<?php echo $anchor; ?>-box">
+		<div id="<?php echo $anchor; ?>-box">
 	<?php } ?>
 	<div class="inside" style="margin:10px">
-
 	<?php
 }
 
@@ -485,92 +492,6 @@ function adinj_get_status($name){
 			$status[0] = 'orange';
 			$status[1] = 'test mode';
 		}
-	} else if ($name == 'random'){
-		$count = adinj_count_live_ads('ad_code_random_', $ops);
-		if ($count == 0){
-			$status[0] = 'red';
-			$status[1] = 'no ads defined';
-			return $status;
-		}
-		$val = $ops['max_num_of_ads'];
-		if ($val == '0'){
-			$status[0] = 'red';
-		} else {
-			$status[0] = 'green';
-		}
-		$status[1] = 'single/page: ' . $val . ' <a href="#random_single">#</a>';
-	} else if ($name == 'random_home'){
-		$val = $ops['max_num_of_ads_home_page'];
-		if ($val == 0){
-			$status[0] = 'red';
-		} else {
-			$status[0] = 'green';
-		}
-		$status[1] = 'home: ' . $val .' <a href="#random_home">#</a>';
-	} else if ($name == 'random_pool'){
-		$count = adinj_count_live_ads('ad_code_random_', $ops);
-		$status[0] = $count == 0 ? 'red' : 'green';
-		$status[1] = "ad pool: " . $count." <a href='?page=ad-injection&amp;tab=adrotation#multiple_random'>#</a>";
-	} else if ($name == 'top_pool'){
-		$count = adinj_count_live_ads('ad_code_top_', $ops);
-		$status[0] = $count == 0 ? 'red' : 'green';
-		$status[1] = "ad pool: " . $count." <a href='?page=ad-injection&amp;tab=adrotation#multiple_top'>#</a>";
-	} else if ($name == 'bottom_pool'){
-		$count = adinj_count_live_ads('ad_code_bottom_', $ops);
-		$status[0] = $count == 0 ? 'red' : 'green';
-		$status[1] = "ad pool: " . $count." <a href='?page=ad-injection&amp;tab=adrotation#multiple_bottom'>#</a>";
-	} else if ($name == 'random_alt_pool'){
-		$count = adinj_count_live_ads('ad_code_random_alt_', $ops);
-		$status[1] = "alt pool: " . $count." <a href='?page=ad-injection&amp;tab=adrotation#ad_code_random_alt_1'>#</a>";
-	} else if ($name == 'top_alt_pool'){
-		$count = adinj_count_live_ads('ad_code_top_alt_', $ops);
-		$status[1] = "alt pool: " . $count." <a href='?page=ad-injection&amp;tab=adrotation#ad_code_top_alt_1'>#</a>";
-	} else if ($name == 'bottom_alt_pool'){
-		$count = adinj_count_live_ads('ad_code_bottom_alt_', $ops);
-		$status[1] = "alt pool: " . $count." <a href='?page=ad-injection&amp;tab=adrotation#ad_code_bottom_alt_1'>#</a>";
-	} else if ($name == 'topad'){
-		$count = adinj_count_live_ads('ad_code_top_', $ops);
-		if ($count == 0){
-			$status[0] = 'red';
-			$status[1] = 'no ad defined';
-			return $status;
-		}
-		$val = $ops['top_ad_if_longer_than'];
-		if (adinj_disabled($val)){
-			$status[0] = 'red';
-			$status[1] = 'off';
-		} else {
-			$status[0] = 'green';
-			$status[1] = 'on';
-		}
-	} else if ($name == 'bottomad'){
-		$count = adinj_count_live_ads('ad_code_bottom_', $ops);
-		if ($count == 0){
-			$status[0] = 'red';
-			$status[1] = 'no ad defined';
-			return $status;
-		}
-		$val = $ops['bottom_ad_if_longer_than'];
-		if (adinj_disabled($val)){
-			$status[0] = 'red';
-			$status[1] = 'off';
-		} else {
-			$status[0] = 'green';
-			$status[1] = 'on';
-		}
-	} else if ($name == 'widgets'){
-		if ($ops['widget_exclude_front'] == 'on' &&
-			$ops['widget_exclude_home'] == 'on' &&
-			$ops['widget_exclude_page'] == 'on' &&
-			$ops['widget_exclude_single'] == 'on' &&
-			$ops['widget_exclude_archive'] == 'on' &&
-			$ops['widget_exclude_search'] == 'on' &&
-			$ops['widget_exclude_404'] == 'on'){
-			$status[0] = 'red';
-			$status[1] = 'exclude from all';
-		} else {
-			$status[1] = 'see <a href="widgets.php">widgets</a> screen';
-		}
 	} else if ($name == 'mode'){
 		$status[1] = $ops['ad_insertion_mode'];
 	} else if ($name == 'restrictions'){
@@ -608,8 +529,48 @@ function adinj_green_or_red_dot($option){
 	}
 }
 
+function adinj_print_ad_dot($adtype, $pagetype){
+	if (adinj_max_num_ads($adtype, $pagetype) > 0){
+		echo adinj_dot('green');
+	} else {
+		echo adinj_dot('red');
+	}
+}
+
 function adinj_dot($colour){
 	return '<span style="color:'.$colour.'">&#x25cf;</span>';
+}
+
+function adinj_max_num_ads($adtype, $pagetype){
+	$ops = adinj_options();
+	if (adinj_ticked('exclude_'.$pagetype)) return 0;
+	if ($adtype == 'widget'){
+		if (adinj_ticked('widget_exclude_'.$pagetype)) return 0;
+	}
+	if ($adtype == 'top' || $adtype == 'random' || $adtype == 'bottom'){
+		if (adinj_count_live_ads($adtype, $ops) == 0) return 0;
+	}
+	if ($adtype == 'top' || $adtype == 'bottom'){
+		if ($pagetype == "single" || $pagetype == "page"){
+			if (!adinj_disabled($ops[$adtype.'_ad_if_longer_than'])) return 1;
+		} else if ($pagetype == 'home' || $pagetype == 'archive'){
+			if (!adinj_disabled($ops[$pagetype.'_'.$adtype.'_ad_if_longer_than'])) return $ops[$pagetype.'_max_num_'.$adtype.'_ads_per_page'];
+		} else if ($pagetype == "excerpt"){
+			//TODO
+		}
+	} else if ($adtype == "random"){
+		if ($pagetype == "single" || $pagetype == "page"){
+			return $ops['max_num_of_ads'];
+		} else if ($pagetype == 'home' || $pagetype == 'archive'){
+			if ($ops[$pagetype.'_max_num_random_ads_per_post'] > 0) return $ops[$pagetype.'_max_num_random_ads_per_page'];
+		} else if ($pagetype == "excerpt"){
+			//TODO
+		}
+	}
+	if ($adtype == 'widget'){
+		return 1;
+	}
+	return 0;
 }
 
 function adinj_selection_box($name, $values, $type="", $selected_value=NULL){
@@ -624,17 +585,29 @@ function adinj_selection_box($name, $values, $type="", $selected_value=NULL){
 		$selected_value = $ops[$name];
 	}
 
-	echo "<select name='$name'>";
+	echo "<select name='$name' id='$name'>";
 	foreach ($values as $key=>$value){
 		$option_value = $value;
+		$display_value = $value;
 		if ($associative){
 			$option_value = $key;
 		}
 		echo "<option value=\"$option_value\" ";
-		if($selected_value == $option_value) echo 'selected="selected"';
+		if("$selected_value" == "$option_value" ||
+			"$selected_value" == ADINJ_ALWAYS_SHOW && "$option_value" == 'a' ||
+			"$selected_value" == ADINJ_DISABLED && "$option_value" == 'd' || 
+			"$selected_value" == ADINJ_RULE_DISABLED && "$option_value" == 'd' || 
+			"$selected_value" == ADINJ_ONLY_SHOW_IN && "$option_value" == 'o' || 
+			"$selected_value" == ADINJ_NEVER_SHOW_IN && "$option_value" == 'n'){
+			echo 'selected="selected"';
+		}
 		$typetxt = $type;
-		if (adinj_disabled($option_value) || $option_value == ADINJ_ALWAYS_SHOW) $typetxt = "";
-		echo ">$value $typetxt</option>";
+		if (adinj_disabled($option_value) || adinj_alwaysshow($display_value)) $typetxt = "";
+		if ("$option_value" === 'd') { $display_value = ADINJ_DISABLED; }
+		if ("$option_value" === 'a') { $display_value = ADINJ_ALWAYS_SHOW; }
+		if ("$option_value" === 'o') { $display_value = ADINJ_ONLY_SHOW_IN; }
+		if ("$option_value" === 'n') { $display_value = ADINJ_NEVER_SHOW_IN; }
+		echo ">$display_value $typetxt</option>";
 	}
 	echo "</select>";
 }
@@ -658,23 +631,36 @@ function adinj_javascript_addtext(){
 function adinj_add_show_hide_section($anchor, $show_op, $show_field_name, $ops){
 		$show_setting_id = $anchor.'_show';
 		$show_value = $ops[$show_op];
-		
+
 	echo <<<HTML
 		<input type='hidden' id="$show_setting_id" name="$show_field_name" value='$show_value' />
-		<a href='#' onclick="javascript:adinj_toggle_click('$show_setting_id', '$anchor-button', '$anchor-box');return false;" style='float:left;display:none;width:10px;' id='$anchor-button' class='button'>+/-</a>
+		<a href='#' onclick="javascript:adinj_toggle_click('$show_setting_id', '$anchor-button', '$anchor-box');return false;" style='display:none;width:10px;' id='$anchor-button' class='button'>+/-</a>
 		<br clear="all" />
 		
 		<script type="text/javascript">
-		jQuery(document).ready(function(){
-			adinj_button_update('$show_setting_id', '$anchor-button');
-			jQuery('a#$anchor-button').show();
-			if ('$show_value' == 'false') jQuery('#$anchor-box').hide();
-		});
+		adinj_button_update('$show_setting_id', '$anchor-button');
+		jQuery('a#$anchor-button').show();
 		</script>
-		
-		<div id="$anchor-box">
+
 HTML;
+	if ($show_value == 'false'){
+		echo "<div id='$anchor-box' class='hiddenbox'>";
+	} else {
+		echo "<div id='$anchor-box'>";
 	}
+}
+
+function adinj_condition_tables($prefix, $show_setting){
+	$ops = adinj_options();
+	?>
+	Category tag, and author conditions
+	<?php
+	adinj_add_show_hide_section('ad_conditions_'.uniqid(), $show_setting, $show_setting, $ops);
+	adinj_condition_table($prefix.'category', 'category slugs. e.g: cat1, cat2, cat3', 'category', $ops);
+	adinj_condition_table($prefix.'tag', 'tag slugs. e.g: tag1, tag2, tag3', 'tag', $ops);
+	adinj_condition_table($prefix.'author', 'author nicknames. e.g: john, paul', 'author', $ops);
+	echo '</div>';
+}
 
 function adinj_condition_table($name, $description, $type, $ops, $dropdown_fieldname=NULL, $textarea_fieldname=NULL){
 	if ($dropdown_fieldname == NULL){
@@ -746,17 +732,15 @@ function adinj_add_alignment_options($prefix){
 	_e("Alignment", 'adinj');
 	echo "<br />";
 	adinj_selection_box($prefix.'align',
-		array(ADINJ_DISABLED, 'left', 'center', 'right', 'float left', 'float right', 'rand lcr', 'rand float lr', 'rand all'));
-
+		array('d', 'left', 'center', 'right', 'float left', 'float right', 'rand lcr', 'rand float lr', 'rand all'));
 	echo "<br />";
-
 	_e("Clear (CSS)", 'adinj');
 	echo "<br />";
 	adinj_selection_box($prefix.'clear',
-		array(ADINJ_DISABLED, 'left', 'right', 'both'));
-
+		array('d', 'left', 'right', 'both'));
 	echo "<br />";
-	
+	adinj_add_padding_top_bottom_options($prefix);
+	echo "<br />";
 	adinj_add_margin_top_bottom_options($prefix);
 }
 
@@ -773,18 +757,14 @@ function adinj_add_margin_top_bottom_options($prefix, $options=NULL, $topname=NU
 		$bname = $bottomname;
 		$bdefault = "margin_bottom";
 	}
-
 	_e("Margin top", 'adinj');
 	echo "<br />";
-	adinj_selection_box($tname,
-		array(ADINJ_DISABLED, 0, 1, 2, 3, 4, 5, 7, 10, 15, 20, 30), "(px)", $options[$tdefault]);
-	
+	$margin_settings = array('d',0,1,2,3,4,5,7,10,15,20,30);
+	adinj_selection_box($tname, $margin_settings, "(px)", $options[$tdefault]);
 	echo "<br />";
-	
 	_e("Margin bottom", 'adinj');
 	echo "<br />";
-	adinj_selection_box($bname,
-		array(ADINJ_DISABLED, 0, 1, 2, 3, 4, 5, 7, 10, 15, 20, 30), "(px)", $options[$bdefault]);	
+	adinj_selection_box($bname, $margin_settings, "(px)", $options[$bdefault]);	
 }
 
 function adinj_add_padding_top_bottom_options($prefix, $options=NULL, $topname=NULL, $bottomname=NULL){
@@ -800,18 +780,14 @@ function adinj_add_padding_top_bottom_options($prefix, $options=NULL, $topname=N
 		$bname = $bottomname;
 		$bdefault = "padding_bottom";
 	}
-
 	_e("Padding top", 'adinj');
 	echo "<br />";
-	adinj_selection_box($tname,
-		array(ADINJ_DISABLED, 0, 1, 2, 3, 4, 5, 7, 10, 15, 20, 30), "(px)", $options[$tdefault]);
-	
+	$padding_settings = array('d',0,1,2,3,4,5,7,10,15,20,30);
+	adinj_selection_box($tname, $padding_settings, "(px)", $options[$tdefault]);
 	echo "<br />";
-	
 	_e("Padding bottom", 'adinj');
 	echo "<br />";
-	adinj_selection_box($bname,
-		array(ADINJ_DISABLED, 0, 1, 2, 3, 4, 5, 7, 10, 15, 20, 30), "(px)", $options[$bdefault]);	
+	adinj_selection_box($bname, $padding_settings, "(px)", $options[$bdefault]);	
 }
 
 function adinj_get_version(){
@@ -866,6 +842,91 @@ function is_supported_caching_plugin_active(){
 
 //////////////////////////////////////////////////////////////////////////////
 
+function adinj_testads(){
+	adinj_postbox_start(__("Test Adverts", 'adinj'), "testads", '95%');
+	?>
+<p>You can copy and paste these adverts into the boxes above to test your ad setup before switching to your real ads.</p>
+
+<h4><a name="468x60"></a>468x60 banner</h4>
+
+<p><textarea onclick="javascript:this.focus();this.select();" style="min-height:50px;" cols="80" rows="4">&lt;div style=&quot;background-color:#ff9999; width:468px; height:60px;&quot;&gt;
+&lt;h5&gt;TEST ADVERT 468x60 - &lt;a href=&quot;http://www.reviewmylife.co.uk/&quot;&gt;www.reviewmylife.co.uk&lt;/a&gt;&lt;/h5&gt;
+&lt;/div&gt;</textarea></p>
+
+<div style="background-color:#99ffff; width:468px; height:60px;">
+<h5>TEST ADVERT 468x60 - <a href="http://www.reviewmylife.co.uk/">www.reviewmylife.co.uk</a></h5>
+</div><p></p>
+
+<h4><a name="728x90"></a>728x90 banner</h4>
+
+<p><textarea onclick="javascript:this.focus();this.select();" style="min-height:50px;" cols="80" rows="4">&lt;div style=&quot;background-color:#ff9999; width:728px; height:90px;&quot;&gt;
+&lt;h5&gt;TEST ADVERT 728x90&lt;/h5&gt;
+&lt;a href=&quot;http://www.reviewmylife.co.uk/&quot;&gt;www.reviewmylife.co.uk&lt;/a&gt;&lt;br /&gt;
+&lt;a href=&quot;http://www.advancedhtml.co.uk/&quot;&gt;www.advancedhtml.co.uk&lt;/a&gt;
+&lt;/div&gt;</textarea></p>
+
+<div style="background-color:#ff9999; width:728px; height:90px;">
+<h5>TEST ADVERT 728x90</h5>
+<a href="http://www.reviewmylife.co.uk/">www.reviewmylife.co.uk</a><br />
+<a href="http://www.advancedhtml.co.uk/">www.advancedhtml.co.uk</a>
+</div><p></p>
+
+<h4>160x90 link unit</h4>
+
+<p><textarea onclick="javascript:this.focus();this.select();" style="min-height:50px;" cols="80" rows="4">&lt;div style=&quot;background-color:#ccff99; width:160px; height:90px;&quot;&gt;
+&lt;h5&gt;TEST ADVERT 160x90&lt;/h5&gt;
+&lt;a href=&quot;http://www.reviewmylife.co.uk/&quot;&gt;reviewmylife.co.uk&lt;/a&gt;&lt;br /&gt;
+&lt;a href=&quot;http://www.advancedhtml.co.uk/&quot;&gt;advancedhtml.co.uk&lt;/a&gt;
+&lt;/div&gt;</textarea></p>
+
+<div style="background-color:#ccff99; width:160px; height:90px;">
+<h5>TEST ADVERT 160x90</h5>
+<a href="http://www.reviewmylife.co.uk/">reviewmylife.co.uk</a>
+<a href="http://www.advancedhtml.co.uk/">advancedhtml.co.uk</a><br />
+</div><p></p>
+
+<h4><a name="468x15"></a>468x15 link unit</h4>
+
+<p><textarea onclick="javascript:this.focus();this.select();" style="min-height:50px;" cols="80" rows="4">&lt;div style=&quot;background-color:#cccc99; width:468px; height:15px;&quot;&gt;
+&lt;font size=&quot;-2&quot;&gt;&lt;b&gt;TEST ADVERT 160x90&lt;/b&gt; &lt;a href=&quot;http://www.reviewmylife.co.uk/&quot;&gt;reviewmylife.co.uk&lt;/a&gt;&lt;/font&gt;
+&lt;/div&gt;</textarea></p>
+
+<div style="background-color:#cccc99; width:468px; height:15px;">
+<font size="-2"><b>TEST ADVERT 468x15</b> <a href="http://www.reviewmylife.co.uk/">reviewmylife.co.uk</a></font>
+</div><p></p>
+
+<h4><a name="336x280"></a>336x280 large rectangle</h4>
+
+<p><textarea onclick="javascript:this.focus();this.select();" style="min-height:50px;" cols="80" rows="4">&lt;div style=&quot;background-color:#ccccff; width:336px; height:280px;&quot;&gt;
+&lt;h5&gt;TEST ADVERT 336x280 - &lt;a href=&quot;http://www.reviewmylife.co.uk/&quot;&gt;www.reviewmylife.co.uk&lt;/a&gt;&lt;/h5&gt;
+&lt;/div&gt;</textarea></p>
+
+<div style="background-color:#ccccff; width:336px; height:280px;">
+<h5>TEST ADVERT 336x280 - <a href="http://www.reviewmylife.co.uk/">www.reviewmylife.co.uk</a></h5>
+</div><p></p>
+
+<h4>468x60 banner with dynamic PHP</h4>
+
+<p>The PHP will execute if you use a mfunc compatible caching plugin which is correctly configured, or if you don't use any caching plugin at all.</p>
+
+<p><textarea onclick="javascript:this.focus();this.select();" style="min-height:50px;" cols="80" rows="5">&lt;div style=&quot;background-color:#ffff99; width:468px; height:60px;&quot;&gt;
+&lt;b&gt;TEST ADVERT 468x60 with date() and rand()&lt;/b&gt;&lt;br /&gt;
+&lt;?php echo &quot;date=&quot;.date(&quot;Y-m-d H:i:s&quot;) .&quot; rand=&quot;.rand(); ?&gt;&lt;br /&gt;
+&lt;a href=&quot;http://www.advancedhtml.co.uk/&quot;&gt;www.advancedhtml.co.uk&lt;/a&gt;
+&lt;/div&gt;</textarea></p>
+
+<div style="background-color:#ffff99; width:468px; height:60px;">
+<b>TEST ADVERT 468x60 with date() and rand()</b><br />
+<?php echo "date=".date("Y-m-d H:i:s") ." rand=".rand(); ?><br />
+<a href="http://www.advancedhtml.co.uk/">www.advancedhtml.co.uk</a>
+</div><p></p>
+
+	<?php 
+	adinj_postbox_end();
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
 function adinj_percentage_split($name_stem, $num, $ops, $total=NULL){
 	// for old db -  TODO delete later
 	if (adinj_db_version($ops) == 1){
@@ -907,7 +968,8 @@ function adinj_total_split($name_stem, $ops){
 	return $total;
 }
 
-function adinj_count_live_ads($name_stem, $ops){
+function adinj_count_live_ads($adtype, $ops){
+	$name_stem = adinj_ad_name_stem($adtype);
 	$total = 0;
 	for ($i=1; $i<=10; ++$i){
 		$split = $name_stem.$i.'_split';
@@ -918,6 +980,17 @@ function adinj_count_live_ads($name_stem, $ops){
 		}
 	}
 	return $total;
+}
+
+function adinj_ad_name_stem($adtype){
+	if ($adtype == 'top') return 'ad_code_top_';
+	if ($adtype == 'random') return 'ad_code_random_';
+	if ($adtype == 'bottom') return 'ad_code_bottom_';
+	if ($adtype == 'top_alt') return 'ad_code_top_alt_';
+	if ($adtype == 'random_alt') return 'ad_code_random_alt_';
+	if ($adtype == 'bottom_alt') return 'ad_code_bottom_alt_';
+	// TODO widget?
+	return 'Error: adinj_ad_name_stem:'.$adtype;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -985,6 +1058,10 @@ function adinj_upgrade_db(){
 		$new_options['widget_exclude_404'] = 'on';
 	}
 	
+	if ($stored_dbversion < 6){
+		$new_options['home_max_num_random_ads_per_page'] = $stored_options['max_num_of_ads_home_page'];
+	}
+	
 	// 3. Bump up db version number.
 	$new_options['db_version'] = $new_dbversion;
 	
@@ -1011,11 +1088,11 @@ function adinj_default_options(){
 		'exclude_archive' => '',
 		'exclude_search' => 'on',
 		'exclude_404' => 'on',
-		'global_category_condition_mode' => ADINJ_ONLY_SHOW_IN,
+		'global_category_condition_mode' => 'o',
 		'global_category_condition_entries' => '',
-		'global_tag_condition_mode' => ADINJ_ONLY_SHOW_IN,
+		'global_tag_condition_mode' => 'o',
 		'global_tag_condition_entries' => '',
-		'global_author_condition_mode' => ADINJ_ONLY_SHOW_IN,
+		'global_author_condition_mode' => 'o',
 		'global_author_condition_entries' => '',
 		'content_length_unit' => 'words',
 		// Random ads
@@ -1043,28 +1120,50 @@ function adinj_default_options(){
 		'ad_code_random_alt_2' => '',
 		'ad_code_random_alt_1_split' => '100',
 		'ad_code_random_alt_2_split' => '100',
-		'max_num_of_ads' => '2', // single posts and pages
+		'rnd_align' => 'd',
+		'rnd_clear' => 'd',
+		'rnd_margin_top' => 'd',
+		'rnd_margin_bottom' => 'd',
+		'rnd_padding_top' => 'd',
+		'rnd_padding_bottom' => 'd',
+		'start_from_paragraph' => 'd',
+		'multiple_ads_at_same_position' => '',
+		'random_category_condition_mode' => 'o',
+		'random_category_condition_entries' => '',
+		'random_tag_condition_mode' => 'o',
+		'random_tag_condition_entries' => '',
+		'random_author_condition_mode' => 'o',
+		'random_author_condition_entries' => '',
+		// single posts and pages
+		'top_ad_if_longer_than' => 'd',
+		'max_num_of_ads' => '2', // random ads
 		'no_random_ads_if_shorter_than' => '100',
 		'one_ad_if_shorter_than' => '500',
 		'two_ads_if_shorter_than' => '1000',
-		'three_ads_if_shorter_than' => ADINJ_RULE_DISABLED,
-		'top_ad_if_longer_than' => ADINJ_RULE_DISABLED,
-		'bottom_ad_if_longer_than' => ADINJ_RULE_DISABLED,
-		'rnd_align' => ADINJ_DISABLED,
-		'rnd_clear' => ADINJ_DISABLED,
-		'rnd_margin_top' => '3',
-		'rnd_margin_bottom' => '3',
-		'rnd_padding_top' => ADINJ_DISABLED, //TODO
-		'rnd_padding_bottom' => ADINJ_DISABLED, //TODO
-		'first_paragraph_ad' => '', // TODO delete
-		'start_from_paragraph' => ADINJ_DISABLED, //TODO
-		'multiple_ads_at_same_position' => '',
-		'rnd_category_condition_mode' => ADINJ_ONLY_SHOW_IN, //TODO
-		'rnd_category_condition_entries' => '', //TODO
-		'rnd_tag_condition_mode' => ADINJ_ONLY_SHOW_IN, //TODO
-		'rnd_tag_condition_entries' => '', //TODO
-		// Home page specific random ads
-		'max_num_of_ads_home_page' => '3',
+		'three_ads_if_shorter_than' => 'd',
+		'bottom_ad_if_longer_than' => 'd',
+		// Home page  ads
+		'home_top_ad_if_longer_than' => 'd',
+		'home_max_num_top_ads_per_page' => '1',
+		'home_max_num_random_ads_per_post' => '1',
+		'home_max_num_random_ads_per_page' => '3',
+		'home_no_random_ads_if_shorter_than' => '100',
+		'home_one_ad_if_shorter_than' => '500',
+		'home_two_ads_if_shorter_than' => '1000',
+		'home_three_ads_if_shorter_than' => 'd',
+		'home_bottom_ad_if_longer_than' => 'd',
+		'home_max_num_bottom_ads_per_page' => '1',
+		// Archive ads
+		'archive_top_ad_if_longer_than' => 'd',
+		'archive_max_num_top_ads_per_page' => '1',
+		'archive_max_num_random_ads_per_post' => '1',
+		'archive_max_num_random_ads_per_page' => '3',
+		'archive_no_random_ads_if_shorter_than' => '100',
+		'archive_one_ad_if_shorter_than' => '500',
+		'archive_two_ads_if_shorter_than' => '1000',
+		'archive_three_ads_if_shorter_than' => 'd',
+		'archive_bottom_ad_if_longer_than' => 'd',
+		'archive_max_num_bottom_ads_per_page' => '1',
 		// Top ads
 		'ad_code_top_1' => '',
 		'ad_code_top_2' => '',
@@ -1090,16 +1189,18 @@ function adinj_default_options(){
 		'ad_code_top_alt_2' => '',
 		'ad_code_top_alt_1_split' => '100',
 		'ad_code_top_alt_2_split' => '100',
-		'top_align' => ADINJ_DISABLED,
-		'top_clear' => ADINJ_DISABLED,
-		'top_margin_top' => '3',
-		'top_margin_bottom' => '3',
-		'top_padding_top' => ADINJ_DISABLED, //TODO
-		'top_padding_bottom' => ADINJ_DISABLED, //TODO
-		'top_category_condition_mode' => ADINJ_ONLY_SHOW_IN, //TODO
-		'top_category_condition_entries' => '', //TODO
-		'top_tag_condition_mode' => ADINJ_ONLY_SHOW_IN, //TODO
-		'top_tag_condition_entries' => '', //TODO
+		'top_align' => 'd',
+		'top_clear' => 'd',
+		'top_margin_top' => 'd',
+		'top_margin_bottom' => 'd',
+		'top_padding_top' => 'd',
+		'top_padding_bottom' => 'd',
+		'top_category_condition_mode' => 'o',
+		'top_category_condition_entries' => '',
+		'top_tag_condition_mode' => 'o',
+		'top_tag_condition_entries' => '',
+		'top_author_condition_mode' => 'o',
+		'top_author_condition_entries' => '',
 		// Bottom ads
 		'ad_code_bottom_1' => '',
 		'ad_code_bottom_2' => '',
@@ -1125,16 +1226,18 @@ function adinj_default_options(){
 		'ad_code_bottom_alt_2' => '',
 		'ad_code_bottom_alt_1_split' => '100',
 		'ad_code_bottom_alt_2_split' => '100',
-		'bottom_align' => ADINJ_DISABLED,
-		'bottom_clear' => ADINJ_DISABLED,
-		'bottom_margin_top' => '3',
-		'bottom_margin_bottom' => '3',
-		'bottom_padding_top' => ADINJ_DISABLED, //TODO
-		'bottom_padding_bottom' => ADINJ_DISABLED, //TODO
-		'bottom_category_condition_mode' => ADINJ_ONLY_SHOW_IN, //TODO
-		'bottom_category_condition_entries' => '', //TODO
-		'bottom_tag_condition_mode' => ADINJ_ONLY_SHOW_IN, //TODO
-		'bottom_tag_condition_entries' => '', //TODO
+		'bottom_align' => 'd',
+		'bottom_clear' => 'd',
+		'bottom_margin_top' => 'd',
+		'bottom_margin_bottom' => 'd',
+		'bottom_padding_top' => 'd',
+		'bottom_padding_bottom' => 'd',
+		'bottom_category_condition_mode' => 'o',
+		'bottom_category_condition_entries' => '',
+		'bottom_tag_condition_mode' => 'o',
+		'bottom_tag_condition_entries' => '',
+		'bottom_author_condition_mode' => 'o',
+		'bottom_author_condition_entries' => '',
 		// widgets
 		'widget_exclude_front' => '',
 		'widget_exclude_home' => '',
@@ -1149,24 +1252,28 @@ function adinj_default_options(){
 		'ad_referrers' => '.google., .bing., .yahoo., .ask., search?, search., /search/',
 		'block_keywords' => 'off', //TODO change to blocked referrers?
 		'blocked_keywords' => '', //TODO
-		'block_ips' => 'on', //TODO
+		'block_ips' => 'off',
 		'blocked_ips' => '',
 		// ui main tab
 		'ui_global_hide' => 'false',
-		'ui_random_hide' => 'false',
-		'ui_topad_hide' => 'false',
-		'ui_bottomad_hide' => 'false',
-		'ui_widgets_hide' => 'false',
+		'ui_adsettings_hide' => 'false',
+		'ui_adverts_hide' => 'false',
 		'ui_restrictions_hide' => 'false',
-		'ui_debugging_hide' => 'true',
-		'ui_docs_hide' => 'false',
+		'ui_docsquickstart_hide' => 'false',
 		'ui_testads_hide' => 'false',
-		//
 		'ui_conditions_show' => 'false',
+		'ui_top_conditions_show' => 'false',
+		'ui_random_conditions_show' => 'false',
+		'ui_bottom_conditions_show' => 'false',
 		// ui ad rotation tab
-		'ui_multiple_random_hide' => 'false',
+		'ui_docs_adrotation_hide' => 'false',
 		'ui_multiple_top_hide' => 'false',
+		'ui_multiple_random_hide' => 'false',
 		'ui_multiple_bottom_hide' => 'false',
+		'ui_misc_hide' => 'true',
+		'ui_docs_tags_hide' => 'true',
+		// ui debug tab
+		'ui_debugging_hide' => 'false',
 		// debug
 		'debug_mode' => '',
 		// version

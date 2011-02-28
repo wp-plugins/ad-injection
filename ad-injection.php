@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 0.9.6.6
+Version: 0.9.7
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -21,8 +21,11 @@ define('ADINJ_NO_CONFIG_FILE', 1);
 // 2 = split testing support
 // 3 = added front options
 // 4 = new character counting option
-// 5 = search/404 exclusion, increase db ad rotations to 10
-define('ADINJ_DB_VERSION', 5);
+// 5 = search/404 exclusion, increase db ad rotations to 10 + author conditions
+// 6 = archive/home options
+// 7 = cat/tag/author restriction for top/random/bottom ads
+// 8 = ui options for new layout
+define('ADINJ_DB_VERSION', 8);
 
 // Files
 // TODO will these paths work on windows?
@@ -39,7 +42,9 @@ define('ADINJ_ONLY_SHOW_IN', 'Only show in');
 define('ADINJ_NEVER_SHOW_IN', 'Never show in');
 
 // Global variables
-$adinj_total_rand_ads_used = 0;
+$adinj_total_top_ads_used = 0;
+$adinj_total_random_ads_used = 0;
+$adinj_total_bottom_ads_used = 0;
 $adinj_total_all_ads_used = 0;
 $adinj_data = array();
 
@@ -208,39 +213,26 @@ function adinj_live_ads_array($type, $ads_option, &$ads, &$split, $output_type="
 	$op_stem = "";
 	$file_stem = "";
 
-	if ($type == 'random' || $type == 'top' || $type == 'bottom' || 
+	if ($type == 'random' || $type == 'top' || $type == 'bottom' ||
 		$type == 'random_alt' || $type == 'top_alt' || $type == 'bottom_alt'){
 		$op_stem = 'ad_code_'.$type.'_';
 		$file_stem = 'ad_'.$type.'_';
 	} else if (preg_match("/widget_[\d+]/i", $type)){
 		if (strpos($type, '_alt') === false){
 			$op_stem = 'advert_';
-			$file_stem = 'ad_'.$type.'_';
 		} else {
 			$op_stem = 'advert_alt_';
-			$file_stem = 'ad_'.$type.'_';
 		}
+		$file_stem = 'ad_'.$type.'_';
 	}
 	
 	if (adinj_db_version($ads_option) == 1){
 		// old DB support (no ad rotation support) - TODO  delete later
-		if ($type == 'random'){
+		if ($type == 'random'|| $type == 'top' || $type == 'bottom'){
 			if ($output_type == "string"){
-				$ads = "'ad_random_1.txt'";
+				$ads = "'ad_".$type."_1.txt'";
 			} else {
-				$ads[] = 'ad_code_random_1';
-			}
-		} else if ($type == 'top'){
-			if ($output_type == "string"){
-				$ads = "'ad_top_1.txt'";
-			} else {
-				$ads[] = 'ad_code_top_1';
-			}
-		} else if ($type == 'bottom'){
-			if ($output_type == "string"){
-				$ads = "'ad_bottom_1.txt'";
-			} else {
-				$ads[] = 'ad_code_bottom_1';
+				$ads[] = 'ad_code_'.$type.'_1';
 			}
 		} else if (preg_match("/widget_[\d+]/i", $type)){
 			if ($output_type == "string"){
@@ -281,28 +273,18 @@ function adinj_formatting_options($adtype, $ops, $output_type="string"){
 	$padding_top = "";
 	$padding_bottom = "";
 
-	if ($adtype == 'random'){
-		$align = $ops['rnd_align'];
-		$clear = $ops['rnd_clear'];
-		$margin_top = $ops['rnd_margin_top'];
-		$margin_bottom = $ops['rnd_margin_bottom'];
-		$padding_top = $ops['rnd_padding_top'];
-		$padding_bottom = $ops['rnd_padding_bottom'];
-	} else if ($adtype == 'top' || $adtype == 'bottom'){
-		$align = $ops[$adtype.'_align'];
-		$clear = $ops[$adtype.'_clear'];
-		$margin_top = $ops[$adtype.'_margin_top'];
-		$margin_bottom = $ops[$adtype.'_margin_bottom'];
-		$padding_top = $ops[$adtype.'_padding_top'];
-		$padding_bottom = $ops[$adtype.'_padding_bottom'];
-	} else if (preg_match("/widget_[\d+]/i", $adtype)){
-		$align = $ops['align'];
-		$clear = $ops['clear'];
-		$margin_top = $ops['margin_top'];
-		$margin_bottom = $ops['margin_bottom'];
-		$padding_top = $ops['padding_top'];
-		$padding_bottom = $ops['padding_bottom'];
-	}
+	$prefix = '';
+	if ($adtype == 'random') $prefix = 'rnd_';
+	if ($adtype == 'top') $prefix = 'top_';
+	if ($adtype == 'bottom') $prefix = 'bottom_';
+	//widgets have no prefix
+
+	$align = $ops[$prefix.'align'];
+	$clear = $ops[$prefix.'clear'];
+	$margin_top = $ops[$prefix.'margin_top'];
+	$margin_bottom = $ops[$prefix.'margin_bottom'];
+	$padding_top = $ops[$prefix.'padding_top'];
+	$padding_bottom = $ops[$prefix.'padding_bottom'];
 	
 	if (adinj_disabled($align)) $align = "";
 	if (adinj_disabled($clear)) $clear = "";
@@ -387,11 +369,21 @@ function adinj_adverts_disabled_flag(){
 
 function adinj($content, $message){
 	if (!adinj_ticked('debug_mode')) return $content;
-	global $adinj_total_rand_ads_used, $adinj_total_all_ads_used;
+	global $adinj_total_top_ads_used, $adinj_total_random_ads_used, $adinj_total_bottom_ads_used, $adinj_total_all_ads_used;
 	$ops = adinj_options();
 	$para = adinj_paragraph_to_start_ads();
 	$mode = $ops['ad_insertion_mode'];
-	$posttype = get_post_type();
+	
+	$posttype = get_post_type() . ' (';
+	if (is_archive()) $posttype .= ' archive';
+	if (is_front_page()) $posttype .= ' front';
+	if (is_home()) $posttype .= ' home';
+	if (is_page()) $posttype .= ' page';
+	if (is_search()) $posttype .= ' search';
+	if (is_single()) $posttype .= ' single';
+	if (is_404()) $posttype .= ' 404';
+	$posttype .= ')';
+	
 	if(is_single() || is_page()) {
 		$currentdate = time();
 		$postdate = get_the_time('U');
@@ -402,7 +394,9 @@ function adinj($content, $message){
 <!--
 [ADINJ DEBUG]
 $message
-\$adinj_total_rand_ads_used=$adinj_total_rand_ads_used
+\$adinj_total_top_ads_used=$adinj_total_top_ads_used
+\$adinj_total_random_ads_used=$adinj_total_random_ads_used
+\$adinj_total_bottom_ads_used=$adinj_total_bottom_ads_used
 \$adinj_total_all_ads_used=$adinj_total_all_ads_used
 paragraphtostartads=$para (fyi: -1 is disabled)
 posttype=$posttype
@@ -414,7 +408,7 @@ injection mode=$mode
 
 function adinj_ads_completely_disabled_from_page($content=NULL){
 	$ops = adinj_options();
-	if ($ops['ads_enabled'] == 'off' || 
+	if ($ops['ads_enabled'] == 'off' ||
 		$ops['ads_enabled'] == ''){
 		return "NOADS: Ads are not switched on";
 	}
@@ -438,15 +432,10 @@ function adinj_ads_completely_disabled_from_page($content=NULL){
 	
 	// no ads on old posts/pages if rule is enabled
 	if((is_page() || is_single()) && !adinj_is_old_post()) return "NOADS: !is_old_post";
-
-	$category_ok = adinj_allowed_in_category('global', $ops);	
-	if (!$category_ok) return "NOADS: blocked from category";
 	
-	$tag_ok = adinj_allowed_in_tag('global', $ops);
-	if (!$tag_ok) return "NOADS: blocked from tag";
-	
-	$author_ok = adinj_allowed_in_author('global', $ops);	
-	if (!$author_ok) return "NOADS: blocked from author";
+	if (!adinj_allowed_in_category('global', $ops)) return "NOADS: globally blocked from category";
+	if (!adinj_allowed_in_tag('global', $ops)) return "NOADS: globally blocked from tag";	
+	if (!adinj_allowed_in_author('global', $ops)) return "NOADS: globally blocked from author";
 	
 	// manual ad disabling tags
 	if ($content == NULL) return false;
@@ -458,54 +447,94 @@ function adinj_ads_completely_disabled_from_page($content=NULL){
 	return false;
 }
 
-function adinj_allowed_in_list($all_entries, $config_entries, $cat_mode, $func){
+function adinj_allowed_in_list($all_entries, $config_entries, $mode, $func){
 	if (is_array($all_entries)){
-		foreach($all_entries as $entry) {
+		foreach($all_entries as $entry){
 			$string = $func($entry);
 			$decoded = rawurldecode($string); //allow UTF-8 encoded strings
 			if (in_array($string, $config_entries) || in_array($decoded, $config_entries)){
-				if ($cat_mode == ADINJ_ONLY_SHOW_IN){
+				if (adinj_mode_only_show_in($mode)){
 					return true;
-				} else if ($cat_mode == ADINJ_NEVER_SHOW_IN){
+				} else if (adinj_mode_never_show_in($mode)){
 					return false;
 				}
 			}
 		}
 	}
-	if ($cat_mode == ADINJ_ONLY_SHOW_IN){
+	if (adinj_mode_only_show_in($mode)){
 		return false;
-	} else if ($cat_mode == ADINJ_NEVER_SHOW_IN){
+	} else if (adinj_mode_never_show_in($mode)){
 		return true;
 	}
 	echo ("<!--ADINJ DEBUG: error in adinj_allowed_in_list-->");
 	return true;
 }
 
+function adinj_mode_only_show_in($mode){
+	return ($mode == ADINJ_ONLY_SHOW_IN || $mode == 'o');
+}
+
+function adinj_mode_never_show_in($mode){
+	return ($mode == ADINJ_NEVER_SHOW_IN || $mode == 'n');
+}
+
 function adinj_allowed_in_category($scope, $ops){
 	$cat_array = adinj_split_comma_list($ops[$scope.'_category_condition_entries']);
 	if (empty($cat_array)) return true;
-	global $post;
-	$postcategories = get_the_category($post->ID);
-	return adinj_allowed_in_list($postcategories, $cat_array, 
-		$ops[$scope.'_category_condition_mode'], 'adinj_category_nicename');
+	
+	$mode = $ops[$scope.'_category_condition_mode'];
+	if (adinj_mode_only_show_in($mode) && !(is_single() || is_category())){
+		return false;
+	}
+	
+	$postcategories = array();
+	if (is_single()){
+		global $post;
+		$postcategories = get_the_category($post->ID);
+	} else if (is_category()){
+		$postcategories[] = get_category(get_query_var('cat'));
+	} // else cat array is empty
+	return adinj_allowed_in_list($postcategories, $cat_array, $mode, 'adinj_category_nicename');
 }
 
 function adinj_allowed_in_tag($scope, $ops){
 	$conditions = adinj_split_comma_list($ops[$scope.'_tag_condition_entries']);
 	if (empty($conditions)) return true;
-	global $post;
-	$tags = get_the_tags($post->ID);
-	return adinj_allowed_in_list($tags, $conditions, 
-		$ops[$scope.'_tag_condition_mode'], 'adinj_tag_slug');
+	
+	$mode = $ops[$scope.'_tag_condition_mode'];
+	if (adinj_mode_only_show_in($mode) && !(is_single() || is_tag())){
+		return false;
+	}
+	
+	$tags = array();
+	if (is_single()){
+		global $post;
+		$tags = get_the_tags($post->ID);
+	} else if (is_tag()){
+		$tags[] = get_tag(get_query_var('tag_id'));
+	} // else tag array is empty
+	return adinj_allowed_in_list($tags, $conditions, $mode, 'adinj_tag_slug');
 }
 
 function adinj_allowed_in_author($scope, $ops){
 	$conditions = adinj_split_comma_list($ops[$scope.'_author_condition_entries']);
 	if (empty($conditions)) return true;
-	$data = get_the_author_meta('user_login');
-	$user[] = $data ; //need to make it into array
-	return adinj_allowed_in_list($user, $conditions, 
-		$ops[$scope.'_author_condition_mode'], 'adinj_author_data');
+	
+	$mode = $ops[$scope.'_author_condition_mode'];
+	if (adinj_mode_only_show_in($mode) && !(is_single() || is_page() || is_author())){
+		return false;
+	}
+	
+	$user = array();
+	if (is_single() || is_page()){
+		$data = get_the_author_meta('user_login');
+		$user[] = $data ; //need to make it into array
+	} else if (is_author()){
+		$curauth = get_userdata(get_query_var('author'));
+		$user[] = $curauth->user_login;
+	} // else author array is empty
+	
+	return adinj_allowed_in_list($user, $conditions, $mode, 'adinj_author_data');
 }
 
 //function parameters
@@ -518,14 +547,14 @@ function adinj_split_comma_list($list){
 }
 
 function adinj_inject_hook($content){
-	global $adinj_total_rand_ads_used;
 	if (is_feed()) return $content; // TODO feed specific ads
 	
 	adinj_upgrade_db_if_necessary();
 	
+	global $adinj_total_random_ads_used, $adinj_total_top_ads_used, $adinj_total_bottom_ads_used;
 	if(!is_archive && (is_page() || is_single())){
 		// TODO hack for no random ads bug
-		$adinj_total_rand_ads_used = 0;
+		$adinj_total_random_ads_used = 0;
 	}
 
 	$reason = adinj_ads_completely_disabled_from_page($content);
@@ -565,19 +594,22 @@ function adinj_inject_hook($content){
 		if ($debug_on) $debug .= "\nnum words: = $length";
 	}
 	# Insert top and bottom ads if necesary
-	if(is_page() || is_single()){
-		if (adinj_do_rule_if($ops['top_ad_if_longer_than'], '<', $length)){
-			$content = $ad_include.adinj_ad_code_top().$content;
-			$ad_include = false;
-		}
-		if (adinj_do_rule_if($ops['bottom_ad_if_longer_than'], '<', $length)){
-			$content = $content.adinj_ad_code_bottom();
-		}
+	if (adinj_num_top_ads_to_insert($length) > 0){
+		$content = $ad_include.adinj_ad_code_top().$content;
+		$ad_include = false;
+		++$adinj_total_top_ads_used;
+		++$adinj_total_all_ads_used;
 	}
+	if (adinj_num_bottom_ads_to_insert($length) > 0){
+		$content = $content.adinj_ad_code_bottom();
+		++$adinj_total_bottom_ads_used;
+		++$adinj_total_all_ads_used;
+	}
+
 	if ($ad_include !== false) $content = $ad_include.$content;
 	
 	$num_rand_ads_to_insert = adinj_num_rand_ads_to_insert($length);
-	if ($num_rand_ads_to_insert <= 0) return adinj($content, "all ads used up");
+	if ($num_rand_ads_to_insert <= 0) return adinj($content, "no random ads on this post");
 	$ad = adinj_ad_code_random();
 	if (empty($ad)) return adinj($content, "no random ad defined");
 	
@@ -621,7 +653,7 @@ function adinj_inject_hook($content){
 	$paragraphmarker = "</p>";
 	if(stripos($content, $paragraphmarker) === false) return adinj($content, "no &lt;/p&gt; tags");
 	
-	if ($debug_on) $debug .= "\nTags=". htmlentities($debugtags);  
+	if ($debug_on) $debug .= "\nTags=". htmlentities($debugtags);
 	
 	// Generate a list of all potential injection points
 	if ($debug_on) $debug .= "\nPotential positions: ";
@@ -691,10 +723,10 @@ function adinj_inject_hook($content){
 	sort($inj_positions);
 	
 	// Insert ads in reverse order
-	global $adinj_total_rand_ads_used, $adinj_total_all_ads_used;
+	global $adinj_total_random_ads_used, $adinj_total_all_ads_used;
 	for ($adnum=sizeof($inj_positions)-1; $adnum>=0; $adnum--){
 		$content = substr_replace($content, $ad, $inj_positions[$adnum], 0);
-		++$adinj_total_rand_ads_used;
+		++$adinj_total_random_ads_used;
 		++$adinj_total_all_ads_used;
 	}
 
@@ -727,43 +759,89 @@ function adinj_split_by_tag($content, $tag, &$debugtags){
 	return $ret;
 }
 
-function adinj_num_rand_ads_to_insert($content_length){
-	global $adinj_total_rand_ads_used; // a page can be more than one post
+function adinj_get_current_page_type_prefix(){
+	if (is_home()) return 'home_';
+	if (is_archive()) return 'archive_';
+	return '';
+}
+
+function adinj_num_top_ads_to_insert($content_length){
+	global $adinj_total_top_ads_used;
 	$ops = adinj_options();
+	$prefix = adinj_get_current_page_type_prefix();
+	$max_num_ads_to_insert = $ops[$prefix.'max_num_top_ads_per_page'] - $adinj_total_top_ads_used;
+	if ($max_num_ads_to_insert == 0) return 0;
+	
+	if (!adinj_allowed_in_category('top', $ops)) return "NOADS: top ad blocked from category";
+	if (!adinj_allowed_in_tag('top', $ops)) return "NOADS: top ad blocked from tag";
+	if (!adinj_allowed_in_author('top', $ops)) return "NOADS: top ad blocked from author";
+	
+	if (adinj_do_rule_if($ops[$prefix.'top_ad_if_longer_than'], '<', $content_length)){
+		return 1;
+	}
+	return 0;
+}
+
+function adinj_num_bottom_ads_to_insert($content_length){
+	global $adinj_total_bottom_ads_used;
+	$ops = adinj_options();
+	$prefix = adinj_get_current_page_type_prefix();
+	$max_num_ads_to_insert = $ops[$prefix.'max_num_bottom_ads_per_page'] - $adinj_total_bottom_ads_used;
+	if ($max_num_ads_to_insert == 0) return 0;
+	
+	if (!adinj_allowed_in_category('bottom', $ops)) return "NOADS: bottom ad blocked from category";
+	if (!adinj_allowed_in_tag('bottom', $ops)) return "NOADS: bottom ad blocked from tag";
+	if (!adinj_allowed_in_author('bottom', $ops)) return "NOADS: bottom ad blocked from author";
+	
+	if (adinj_do_rule_if($ops[$prefix.'bottom_ad_if_longer_than'], '<', $content_length)){
+		return 1;
+	}
+	return 0;
+}
+
+function adinj_num_rand_ads_to_insert($content_length){
+	global $adinj_total_random_ads_used; // a page can be more than one post
+	$ops = adinj_options();
+	$max_ads_in_post = 0;
+	$prefix = adinj_get_current_page_type_prefix();
 	if (is_single() || is_page()){
-		$max_num_rand_ads_to_insert = $ops['max_num_of_ads'] - $adinj_total_rand_ads_used;
-	} else if (is_home()){
-		$max_num_rand_ads_to_insert = $ops['max_num_of_ads_home_page'] - $adinj_total_rand_ads_used;
+		$max_num_rand_ads_to_insert = $ops['max_num_of_ads'] - $adinj_total_random_ads_used;
+		$max_ads_in_post = $max_num_rand_ads_to_insert;
+	} else if (is_home() || is_archive()){
+		$max_num_rand_ads_to_insert = $ops[$prefix.'max_num_random_ads_per_page'] - $adinj_total_random_ads_used;
+		$max_ads_in_post = $ops[$prefix.'max_num_random_ads_per_post'];
 	} else {
 		return 0;
-		//TODO Allow ads in other page types later
 	}
+	
+	$max_num_rand_ads_to_insert = min($max_num_rand_ads_to_insert, $max_ads_in_post);
+
 	if ($max_num_rand_ads_to_insert <= 0) {
 		return 0;
 	}
-	if(!is_single() && !is_page()) {
-		// If there are multiple posts on page only show one ad per post
-		// This rule from 'Adsense Injection'.
-		return 1;
-	}
+	
+	if (!adinj_allowed_in_category('random', $ops)) return "NOADS: random ad blocked from category";
+	if (!adinj_allowed_in_tag('random', $ops)) return "NOADS: random ad blocked from tag";
+	if (!adinj_allowed_in_author('random', $ops)) return "NOADS: random ad blocked from author";
+	
 	$length = $content_length;
-	if (adinj_do_rule_if($ops['no_random_ads_if_shorter_than'], '>', $length)){
+	if (adinj_do_rule_if($ops[$prefix.'no_random_ads_if_shorter_than'], '>', $length)){
 		return 0;
 	}
-	if (adinj_do_rule_if($ops['one_ad_if_shorter_than'], '>', $length)){
+	if (adinj_do_rule_if($ops[$prefix.'one_ad_if_shorter_than'], '>', $length)){
 		return 1;
 	}
-	if (adinj_do_rule_if($ops['two_ads_if_shorter_than'], '>', $length)){
+	if (adinj_do_rule_if($ops[$prefix.'two_ads_if_shorter_than'], '>', $length)){
 		return min(2, $max_num_rand_ads_to_insert);
 	}
-	if (adinj_do_rule_if($ops['three_ads_if_shorter_than'], '>', $length)){
+	if (adinj_do_rule_if($ops[$prefix.'three_ads_if_shorter_than'], '>', $length)){
 		return min(3, $max_num_rand_ads_to_insert);
 	}
 	return $max_num_rand_ads_to_insert;
 }
 
 function adinj_do_rule_if($rule_value, $condition, $content_length){
-	if ($rule_value == ADINJ_ALWAYS_SHOW) return true;
+	if (adinj_alwaysshow($rule_value)) return true;
 	if (adinj_disabled($rule_value)) return false;
 	if ($condition == '>'){
 		return ($rule_value > $content_length);
@@ -775,7 +853,11 @@ function adinj_do_rule_if($rule_value, $condition, $content_length){
 }
 
 function adinj_disabled($value){
-	return $value == ADINJ_RULE_DISABLED || $value == ADINJ_DISABLED || $value == '';
+	return "$value" == ADINJ_RULE_DISABLED || "$value" == ADINJ_DISABLED || "$value" == 'd' || "$value" == '';
+}
+
+function adinj_alwaysshow($value){
+	return "$value" == ADINJ_ALWAYS_SHOW || "$value" == 'a';
 }
 
 function adinj_ticked($option){
