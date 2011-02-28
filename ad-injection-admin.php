@@ -331,7 +331,7 @@ function adinj_top_message_box(){
 		
 	} else {
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "28th February 2011: Archives and home ads now fully supported - you can add top/random/bottom ads to them. Big UI updates to support this. And fixes for when/where widget ads appear. I'd recommend you re-check that your ads appear where you expect them to. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
+		echo "28th February 2011: Fix for disappearing top/bottom ad - I'm sorry if you were affected by that! Archives and home ads now fully supported - you can add top/random/bottom ads to them. Big UI updates to support this. And fixes for when/where widget ads appear. I'd recommend you re-check that your ads appear where you expect them to. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
 		echo '</strong></p></div>';
 	}
 }

@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 0.9.7
+Version: 0.9.7.1
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -769,9 +769,12 @@ function adinj_num_top_ads_to_insert($content_length){
 	global $adinj_total_top_ads_used;
 	$ops = adinj_options();
 	$prefix = adinj_get_current_page_type_prefix();
-	$max_num_ads_to_insert = $ops[$prefix.'max_num_top_ads_per_page'] - $adinj_total_top_ads_used;
-	if ($max_num_ads_to_insert == 0) return 0;
-	
+	if (is_single() || is_page()){
+		$max_num_ads_to_insert = 1 - $adinj_total_top_ads_used;
+	} else {
+		$max_num_ads_to_insert = $ops[$prefix.'max_num_top_ads_per_page'] - $adinj_total_top_ads_used;
+	}
+	if ($max_num_ads_to_insert <= 0) return 0;
 	if (!adinj_allowed_in_category('top', $ops)) return "NOADS: top ad blocked from category";
 	if (!adinj_allowed_in_tag('top', $ops)) return "NOADS: top ad blocked from tag";
 	if (!adinj_allowed_in_author('top', $ops)) return "NOADS: top ad blocked from author";
@@ -786,8 +789,12 @@ function adinj_num_bottom_ads_to_insert($content_length){
 	global $adinj_total_bottom_ads_used;
 	$ops = adinj_options();
 	$prefix = adinj_get_current_page_type_prefix();
-	$max_num_ads_to_insert = $ops[$prefix.'max_num_bottom_ads_per_page'] - $adinj_total_bottom_ads_used;
-	if ($max_num_ads_to_insert == 0) return 0;
+	if (is_single() || is_page()){
+		$max_num_ads_to_insert = 1 - $adinj_total_bottom_ads_used;;
+	} else {
+		$max_num_ads_to_insert = $ops[$prefix.'max_num_bottom_ads_per_page'] - $adinj_total_bottom_ads_used;
+	}
+	if ($max_num_ads_to_insert <= 0) return 0;
 	
 	if (!adinj_allowed_in_category('bottom', $ops)) return "NOADS: bottom ad blocked from category";
 	if (!adinj_allowed_in_tag('bottom', $ops)) return "NOADS: bottom ad blocked from tag";
@@ -870,6 +877,7 @@ function adinj_upgrade_db_if_necessary(){
 	$cached_options = adinj_options();
 	if(empty($cached_options)){
 		// 1st Install.
+		require_once(ADINJ_PATH . '/ad-injection-admin.php');
 		adinj_install_db();
 		return;
 	}
