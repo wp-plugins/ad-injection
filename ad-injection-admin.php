@@ -493,18 +493,25 @@ function adinj_get_status($name){
 			$status[1] = 'test mode';
 		}
 	} else if ($name == 'mode'){
+		$status[0] = 'green';
+		if ($ops['ad_insertion_mode'] == 'direct_static') $status[0] = 'orange';
 		$status[1] = $ops['ad_insertion_mode'];
 	} else if ($name == 'restrictions'){
-		if ($ops['ad_insertion_mode'] == 'direct_static'){
-			$status[1] = 'n/a for direct static';
-			return $status;
-		}
+		$status[0] = 'green';
 		$status[1] = "";
 		if ($ops['sevisitors_only'] == 'on'){
 			$status[1] .= 'referrer';
 		}
 		if ($ops['block_ips'] == 'on' && !empty($ops['blocked_ips'])){
 			$status[1] .= ' ip';
+		}
+	} else if ($name == 'adsettings'){
+		$status[0] = 'green';
+	} else if ($name == 'adverts'){
+		if (adinj_count_live_ads('top', $ops) > 0 || adinj_count_live_ads('random', $ops) || adinj_count_live_ads('bottom', $ops)){
+			$status[0] = 'green';
+		} else {
+			$status[0] = 'red';
 		}
 	} else if ($name == 'debugging'){
 		$val = $ops['debug_mode'];
@@ -663,8 +670,11 @@ function adinj_condition_tables($prefix, $show_setting){
 }
 
 function adinj_condition_table($name, $description, $type, $ops, $dropdown_fieldname=NULL, $textarea_fieldname=NULL){
+	$style = "";
 	if ($dropdown_fieldname == NULL){
 		$dropdown_fieldname = $name."_condition_mode";
+		// Only for the main screen - now for widgets screen.
+		$style = "style='width:280px'";
 	}
 	if ($textarea_fieldname == NULL){
 		$textarea_fieldname = $name."_condition_entries";
@@ -683,7 +693,7 @@ function adinj_condition_table($name, $description, $type, $ops, $dropdown_field
 	?>
 	
 	<br />
-	<select name="<?php echo $name; ?>_dropdown" onchange='adinj_addtext(getElementsByName("<?php echo $textarea_fieldname; ?>")[0], this.options[this.selectedIndex].value);'>
+	<select name="<?php echo $name; ?>_dropdown" <?php echo $style; ?> onchange='adinj_addtext(getElementsByName("<?php echo $textarea_fieldname; ?>")[0], this.options[this.selectedIndex].value);'>
 		<option value=""><?php echo 'Add ' . $type; ?></option> 
 	
 	<?php 
@@ -796,6 +806,7 @@ function adinj_get_version(){
 }
 
 function adinj_problem_with_wpminify_check(){
+	if (!is_plugin_active('wp-minify/wp-minify.php')) return false;
 	$wpm_options = get_option('wp_minify');
 	$ops = adinj_options();
 	if ($wpm_options['enable_html'] == true && $ops['ad_insertion_mode'] == 'mfunc'){
