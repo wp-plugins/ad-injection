@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 0.9.7.1
+Version: 0.9.7.2
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -132,6 +132,7 @@ function adinj_addsevjs_hook(){
 }
 
 function adinj_get_ad_code($adtype, $ads_db){
+	echo "\n<!--*adinj_get_ad_code:".$adtype."-->";
 	$ops = adinj_options();
 	$ads_live = NULL;
 	$ads_split = NULL;
@@ -139,12 +140,14 @@ function adinj_get_ad_code($adtype, $ads_db){
 	$alt_split = NULL;
 	$formatting = NULL;
 	if ($ops['ad_insertion_mode'] == 'mfunc'){
+		echo "<!--ga1-->";
 		adinj_live_ads_array($adtype, $ads_db, $ads_live, $ads_split, 'string');
 		if (adinj_db_version($ads_db) >= 2){
 			adinj_live_ads_array($adtype.'_alt', $ads_db, $alt_live, $alt_split, 'string');
 		}
 		$formatting = adinj_formatting_options($adtype, $ads_db, 'string');
 	} else {
+		echo "<!--ga2-->";
 		$ads_live = array();
 		$ads_split = array();
 		$alt_live = array();
@@ -155,11 +158,14 @@ function adinj_get_ad_code($adtype, $ads_db){
 		}
 		$formatting = adinj_formatting_options($adtype, $ads_db, 'array');
 	}
+	echo "<!--ga3-->";
 	if (empty($ads_live) && empty($alt_live)){
+		echo "<!--ga4-->";
 		return "";
 	}
-
+	echo "<!--ga5-->";
 	if ($ops['ad_insertion_mode'] == 'mfunc'){
+		echo "<!--ga6-->";
 		return adinj_ad_code_eval("\n
 <!--mfunc adshow_display_ad_file_v2(array($ads_live), array($ads_split), array($formatting), array($alt_live), array($alt_split)) -->
 <?php adshow_display_ad_file_v2(array($ads_live), array($ads_split), array($formatting), array($alt_live), array($alt_split)); ?>
@@ -170,16 +176,22 @@ function adinj_get_ad_code($adtype, $ads_db){
 	// else dynamic ad
 	if ($ops['ad_insertion_mode'] == 'direct_dynamic' && adshow_show_adverts() !== true){
 		$adname = adshow_pick_value($alt_live, $alt_split);
+		echo "<!--ga7".$adname."-->";
 	} else {
 		$adname = adshow_pick_value($ads_live, $ads_split);
+		echo "<!--ga8".$adname."-->";
 	}
 	$ad = $ads_db[$adname];
+	echo "<!--ga9:".strlen($ad)."-->";
 	
 	if (empty($ad)){
+		echo "<!--ga10-->";
 		return "";
 	}
 	
+	echo "<!--ga11-->";
 	$ad = adshow_add_formatting($ad, $formatting);
+	echo "<!--ga12:".strlen($ad)."-->";
 	return adinj_ad_code_eval($ad);
 }
 
@@ -188,14 +200,18 @@ function adinj_ad_code_random(){
 }
 
 function adinj_ad_code_top(){
+echo "\n<!--xxxadinj_ad_code_top2b-->";
 	$ad = adinj_get_ad_code('top', adinj_options());
+	echo "<!--c: ".strlen($ad)."-->";
 	global $adinj_total_all_ads_used;
 	++$adinj_total_all_ads_used;
 	return $ad;
 }
 
 function adinj_ad_code_bottom(){
+echo "\n<!--xxxadinj_ad_code_bottom2b-->";
 	$ad = adinj_get_ad_code('bottom', adinj_options());
+	echo "<!--c: ".strlen($ad)."-->";
 	global $adinj_total_all_ads_used;
 	++$adinj_total_all_ads_used;
 	return $ad;
@@ -574,7 +590,10 @@ function adinj_inject_hook($content){
 		}
 	}
 
-	$ad_include = adinj_ad_code_include();
+	$ad_include = "";
+	if ($ops['ad_insertion_mode'] == 'mfunc'){
+		$ad_include = adinj_ad_code_include();
+	}
 	
 	# Ad sandwich mode
 	if(is_page() || is_single()){
@@ -594,19 +613,21 @@ function adinj_inject_hook($content){
 		if ($debug_on) $debug .= "\nnum words: = $length";
 	}
 	# Insert top and bottom ads if necesary
+	echo "<!--1-->";
 	if (adinj_num_top_ads_to_insert($length) > 0){
+	echo "<!--2-->";
 		$content = $ad_include.adinj_ad_code_top().$content;
-		$ad_include = false;
+		$ad_include = "";
 		++$adinj_total_top_ads_used;
-		++$adinj_total_all_ads_used;
 	}
+	echo "<!--3-->";
 	if (adinj_num_bottom_ads_to_insert($length) > 0){
+	echo "<!--4-->";
 		$content = $content.adinj_ad_code_bottom();
 		++$adinj_total_bottom_ads_used;
-		++$adinj_total_all_ads_used;
 	}
 
-	if ($ad_include !== false) $content = $ad_include.$content;
+	if ($ad_include !== "") $content = $ad_include.$content;
 	
 	$num_rand_ads_to_insert = adinj_num_rand_ads_to_insert($length);
 	if ($num_rand_ads_to_insert <= 0) return adinj($content, "no random ads on this post");
@@ -766,22 +787,28 @@ function adinj_get_current_page_type_prefix(){
 }
 
 function adinj_num_top_ads_to_insert($content_length){
+echo "\n<!--adinj_num_top_ads_to_insert(".$content_length.")-->";
 	global $adinj_total_top_ads_used;
 	$ops = adinj_options();
 	$prefix = adinj_get_current_page_type_prefix();
+	$max_num_ads_to_insert = 0;
 	if (is_single() || is_page()){
 		$max_num_ads_to_insert = 1 - $adinj_total_top_ads_used;
 	} else {
 		$max_num_ads_to_insert = $ops[$prefix.'max_num_top_ads_per_page'] - $adinj_total_top_ads_used;
 	}
+	echo "<!--num1:".$max_num_ads_to_insert."-->";
 	if ($max_num_ads_to_insert <= 0) return 0;
+	echo "<!--num2:-->";
 	if (!adinj_allowed_in_category('top', $ops)) return "NOADS: top ad blocked from category";
 	if (!adinj_allowed_in_tag('top', $ops)) return "NOADS: top ad blocked from tag";
 	if (!adinj_allowed_in_author('top', $ops)) return "NOADS: top ad blocked from author";
 	
 	if (adinj_do_rule_if($ops[$prefix.'top_ad_if_longer_than'], '<', $content_length)){
+		echo "<!--num3:-->";
 		return 1;
 	}
+	echo "<!--num4:-->";
 	return 0;
 }
 
@@ -789,8 +816,9 @@ function adinj_num_bottom_ads_to_insert($content_length){
 	global $adinj_total_bottom_ads_used;
 	$ops = adinj_options();
 	$prefix = adinj_get_current_page_type_prefix();
+	$max_num_ads_to_insert = 0;
 	if (is_single() || is_page()){
-		$max_num_ads_to_insert = 1 - $adinj_total_bottom_ads_used;;
+		$max_num_ads_to_insert = 1 - $adinj_total_bottom_ads_used;
 	} else {
 		$max_num_ads_to_insert = $ops[$prefix.'max_num_bottom_ads_per_page'] - $adinj_total_bottom_ads_used;
 	}
