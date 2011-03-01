@@ -4,7 +4,7 @@ Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-w
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, widgets, sidebar, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog, ad rotation, A:B testing, split testing, WP Super Cache, W3 Total Cache, WP Cache
 Requires at least: 2.8.6
 Tested up to: 3.1
-Stable tag: 0.9.7.2
+Stable tag: 0.9.7.3
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
@@ -372,6 +372,9 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 
 == Changelog ==
 
+= 0.9.7.3 =
+* Fix (hopefully) for the disappearing top/bottom adverts that affected some users. Special thanks to numaga.com for the debug access.
+
 = 0.9.7.2 =
 Release with more debugging to try to track down top/bottom ads which have gone missing on some blogs.
 
@@ -507,8 +510,8 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 
 == Upgrade Notice ==
 
-= 0.9.7.2 =
-If you are using a release before 0.9.7 please don't upgrade yet as there is a problem with the 0.9.7.x releases which I am trying to fix.
+= 0.9.7.3 =
+* Fix (hopefully) for the disappearing top/bottom adverts that affected some users.
 
 = 0.8.3 =
 First public release.
