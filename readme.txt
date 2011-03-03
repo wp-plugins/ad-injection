@@ -4,7 +4,7 @@ Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-w
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, widgets, sidebar, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog, ad rotation, A:B testing, split testing, WP Super Cache, W3 Total Cache, WP Cache
 Requires at least: 2.8.6
 Tested up to: 3.1
-Stable tag: 0.9.7.4
+Stable tag: 0.9.7.5
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
@@ -59,7 +59,7 @@ IP addresses of people who shouldn't see your ads can be defined. These could be
 
 = Alternate content =
 
-This is content that is displayed when ads are blocked for the user. Ads can only be blocked for specific users if you use one of the dynamic modes (mfunc or direct_dynamic). You could use this alternate content to show other content, some kind of layout filler, or even a different type of ad. I've added support for rotation of alternate content as well.
+This is content that is displayed when ads are blocked for the user. You could use this alternate content to show other content, some kind of layout filler, or even a different type of ad. I've added support for rotation of alternate content as well.
 
 = Not tied to any ad provider =
 
@@ -183,9 +183,9 @@ The dynamic features will work with any caching program that supports the mfunc 
 
 Both WP Super Cache and W3 Total Cache are likely to be faster than WP Cache.
 
-If you aren't using the dynamic features (and you are using direct_static mode) then the only way to find out which is best between WP Super Cache and W3 Total Cache is to measure the performance yourself, as the speed depends on many factors that will be unique to your web server and web site.
+If you aren't using the dynamic features then the only way to find out which is best between WP Super Cache and W3 Total Cache is to measure the performance yourself, as the speed depends on many factors that will be unique to your web server and web site.
 
-If you are using dynamic features (i.e. with mfunc mode) then WP Super Cache (in mod_rewrite mode) and W3 Total Cache (in Page Cache: Disk (basic) mode) are likely to offer similar performance as they both return the dynamic files via PHP. 
+If you are using dynamic features with mfunc mode then WP Super Cache (in mod_rewrite mode) and W3 Total Cache (in Page Cache: Disk (basic) mode) are likely to offer similar performance as they both return the dynamic files via PHP. 
 
 Note that W3 Total Cache will not cache pages with mfunc tags if you use the Page Cache: Disk (enhanced) mode.
 
@@ -273,7 +273,7 @@ This is John's Ad.
 This is Paul's Ad.
 <?php } ?>`
 
-Note this will only work in direct insertion mode. It won’t work in mfunc mode!
+Note this will only work in direct insertion mode. It won’t work in mfunc mode unless you also load in the WordPress database dependencies.
 
 = How can I show different ads to people in different countries? =
 
@@ -371,6 +371,10 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 3. Can choose to show the ads only to search engine visitors, or define IP addresses that ads aren't shown to.
 
 == Changelog ==
+
+= 0.9.7.5 =
+* Simplify the ad insertion modes. Replace the two previous direct modes with one.
+* Other minor bug fixes.
 
 = 0.9.7.4 =
 * UI fixes.
@@ -513,8 +517,8 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 
 == Upgrade Notice ==
 
-= 0.9.7.4 =
-* Fix (hopefully) for the disappearing top/bottom adverts that affected some users of v0.9.7 - v0.9.7.2.
+= 0.9.7.5 =
+* Simplify ad insertion modes. Replace the two direct modes with one.
 
 = 0.8.3 =
 First public release.

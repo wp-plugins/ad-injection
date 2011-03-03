@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 0.9.7.4
+Version: 0.9.7.5
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -25,7 +25,8 @@ define('ADINJ_NO_CONFIG_FILE', 1);
 // 6 = archive/home options
 // 7 = cat/tag/author restriction for top/random/bottom ads
 // 8 = ui options for new layout
-define('ADINJ_DB_VERSION', 8);
+// 9 = replace the two direct modes with 'direct'
+define('ADINJ_DB_VERSION', 9);
 
 // Files
 // TODO will these paths work on windows?
@@ -138,7 +139,7 @@ function adinj_get_ad_code($adtype, $ads_db){
 	$alt_live = NULL;
 	$alt_split = NULL;
 	$formatting = NULL;
-	if ($ops['ad_insertion_mode'] == 'mfunc'){
+	if (adinj_mfunc_mode()){
 		adinj_live_ads_array($adtype, $ads_db, $ads_live, $ads_split, 'string');
 		if (adinj_db_version($ads_db) >= 2){
 			adinj_live_ads_array($adtype.'_alt', $ads_db, $alt_live, $alt_split, 'string');
@@ -158,7 +159,7 @@ function adinj_get_ad_code($adtype, $ads_db){
 	if (empty($ads_live) && empty($alt_live)){
 		return "";
 	}
-	if ($ops['ad_insertion_mode'] == 'mfunc'){
+	if (adinj_mfunc_mode()){
 		return adinj_ad_code_eval("\n
 <!--mfunc adshow_display_ad_file_v2(array($ads_live), array($ads_split), array($formatting), array($alt_live), array($alt_split)) -->
 <?php adshow_display_ad_file_v2(array($ads_live), array($ads_split), array($formatting), array($alt_live), array($alt_split)); ?>
@@ -167,7 +168,7 @@ function adinj_get_ad_code($adtype, $ads_db){
 	}
 	
 	// else dynamic ad
-	if ($ops['ad_insertion_mode'] == 'direct_dynamic' && adshow_show_adverts() !== true){
+	if (adshow_show_adverts() !== true){
 		$adname = adshow_pick_value($alt_live, $alt_split);
 	} else {
 		$adname = adshow_pick_value($ads_live, $ads_split);
@@ -314,19 +315,17 @@ function adinj_ad_code_eval($ad){
 
 function adinj_ad_code_include(){
 	$plugin_dir = ADINJ_PATH;
-	$ops = adinj_options();
-	$ad = "";
-	if ($ops['ad_insertion_mode'] == 'mfunc'){
+	if (adinj_mfunc_mode()){
 		// WP Super Cache's support for mclude assumes that we will be including
 		// files from within ABSPATH. To remove this limitation we do the include
 		// using mfunc instead.
-		$ad = "\n
+		return adinj_ad_code_eval("\n
 <!--mfunc include_once('$plugin_dir/adshow.php') -->
 <?php include_once('$plugin_dir/adshow.php'); ?>
 <!--/mfunc-->
-";
+");
 	}
-	return adinj_ad_code_eval($ad);
+	return "";
 }
 
 function read_ad_from_file($ad_path){
@@ -547,11 +546,14 @@ function adinj_split_comma_list($list){
 
 function adinj_inject_hook($content){
 	if (is_feed()) return $content; // TODO feed specific ads
-	
+	if (!in_the_loop()) return $content; // Don't insert ads into meta description tags TODOTODO
 	$ops = adinj_options();
 	if(empty($ops)){
 		return $content;
 	}
+	$debug_on = $ops['debug_mode'];
+	if ($debug_on) echo "<!--adinj_inject_hook-->";
+	
 	adinj_upgrade_db_if_necessary();
 	
 	global $adinj_total_all_ads_used, $adinj_total_random_ads_used, $adinj_total_top_ads_used, $adinj_total_bottom_ads_used;
@@ -572,7 +574,7 @@ function adinj_inject_hook($content){
 	$debug_on = $ops['debug_mode'];
 	$debug = "";
 	
-	if ($debug_on && $ops['ad_insertion_mode'] == 'direct_dynamic'){
+	if ($debug_on && adinj_direct_mode()){
 		$showads = adshow_show_adverts();
 		if ($showads !== true){
 			$debug .= "\nNOADS: ad blocked at run time reason=$showads";
@@ -580,7 +582,7 @@ function adinj_inject_hook($content){
 	}
 
 	$ad_include = "";
-	if ($ops['ad_insertion_mode'] == 'mfunc'){
+	if (adinj_mfunc_mode()){
 		$ad_include = adinj_ad_code_include();
 	}
 	
@@ -866,6 +868,16 @@ function adinj_do_rule_if($rule_value, $condition, $content_length){
 	} else {
 		die("adinj_do_rule_if bad condition: $condition");
 	}
+}
+
+function adinj_direct_mode(){
+	$ops = adinj_options();
+	return ($ops['ad_insertion_mode'] != 'mfunc');
+}
+
+function adinj_mfunc_mode(){
+	$ops = adinj_options();
+	return ($ops['ad_insertion_mode'] == 'mfunc');
 }
 
 function adinj_disabled($value){

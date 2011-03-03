@@ -40,7 +40,7 @@ class Ad_Injection_Widget extends WP_Widget {
 		$ops = adinj_options();
 		
 		$include = "";
-		if ($ops['ad_insertion_mode'] == 'mfunc'){
+		if (adinj_mfunc_mode()){
 			$include = adinj_ad_code_include();
 		}
 		

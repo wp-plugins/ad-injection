@@ -141,7 +141,7 @@ function adinj_tab_main(){
 	<tr><td colspan="4">
 	<?php
 		_e("Always put the first ad immediately after paragraph: ", 'adinj');
-		adinj_selection_box("start_from_paragraph",	array(ADINJ_RULE_DISABLED,1,2,3,4,5), " ");
+		adinj_selection_box("start_from_paragraph", array(ADINJ_RULE_DISABLED,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), " ");
 	?>
 	</td></tr>
 	<tr><td colspan="4">
@@ -233,17 +233,18 @@ function adinj_tab_main(){
 	<?php adinj_postbox_start(__("Ad insertion mode and dynamic ad display restrictions", 'adinj'), 'restrictions'); ?>
 	<h4>Ad insertion mode</h4>
 	<blockquote>
-	<p><input type="radio" name="ad_insertion_mode" value="mfunc" <?php if ($ops['ad_insertion_mode']=='mfunc') echo 'checked="checked"'; ?> /> <b>mfunc: Use mfunc tags for dynamic features</b> - Dynamic features will work with WP Super Cache, W3 Total Cache and WP Cache. Only select this mode if you are using one of those caching plugins.</p>
+	<input type="radio" name="ad_insertion_mode" value="mfunc" <?php if (adinj_mfunc_mode()) echo 'checked="checked"'; ?> /> <b>mfunc: Insert ads using cache compatible mfunc tags</b> - Dynamic features will work with WP Super Cache, W3 Total Cache and WP Cache. Only select this mode if you are using one of those caching plugins and want to use dynamic features (IP / referrer restriction, alt content and ad roatation). If you aren't using dynamic features select direct mode.
 	<?php if (!is_supported_caching_plugin_active()) {
 		echo '<p><b><span style="font-size:10px;color:red;">Note: A supported caching plugin does not appear to be active. If you are not using WP Super Cache / W3 Total Cache / WP Cache you should use one of the direct insertion modes below.</span></b></p>';		
 	} ?>
 	
-	<?php if ($ops['ad_insertion_mode'] != 'mfunc') { ?>
+	<?php if (!adinj_mfunc_mode()) { ?>
 	<script type="text/javascript">
 	document.write('<style type="text/css" media="screen">#caching_plugin_msg { display: none; }</style>');
 	</script>
 	<?php }  ?>
-
+	<br />
+	
 	<div id="caching_plugin_msg" class="caching_plugin_msg">
 	<?php
 	if (is_plugin_active('wp-super-cache/wp-cache.php')){
@@ -255,11 +256,11 @@ function adinj_tab_main(){
 	}
 	adinj_unknown_cache_msg();
 	?>
-	
 	</div>
 	
-	<p><input type="radio" name="ad_insertion_mode" value="direct_dynamic" <?php if ($ops['ad_insertion_mode']=='direct_dynamic') echo 'checked="checked"'; ?> /> <b>direct_dynamic: Direct ad insertion with dynamic features</b> - Dynamic features will work if no caching is used. Only select this if you are not using any caching plugin.</p>
-	<p><input type="radio" name="ad_insertion_mode" value="direct_static" <?php if ($ops['ad_insertion_mode']=='direct_static') echo 'checked="checked"'; ?> /> <b><strike>direct_static: Direct static ad insertion</strike></b> - <font color="red">Warning: This mode will be removed very soon (March 2011). There will only be an 'mfunc' and a 'direct' mode to simplify things. I recommend you switch to 'direct_dynamic' if you are using this mode. If you aren't using dynamic features make sure the tick boxes below are unticked.</font> No dynamic feature support. Select this if you are are not using dynamic features or are using an incompatible caching plugin.</p>
+	<br />
+	
+	<input type="radio" name="ad_insertion_mode" value="direct" <?php if (adinj_direct_mode()) echo 'checked="checked"'; ?> /> <b>direct: Direct ad code insertion</b> - Select this if you are not using an mfunc compatible caching plugin OR if you are not using the dynamic features.<br />
 	</blockquote>
 	</div>
 	<p></p>
@@ -267,42 +268,17 @@ function adinj_tab_main(){
 	<script type="text/javascript">
 	jQuery(document).ready(function(){
 	jQuery('input[name=ad_insertion_mode]:radio').change(function() {
-		if (jQuery('input[name=ad_insertion_mode]:checked').val() == "direct_static"){
-			jQuery('.dynamic_features').slideUp(1000);
-			jQuery('.dynamic_features_msg').slideDown(1000);
-			jQuery('.caching_plugin_msg').slideUp(1000);
-		} else if (jQuery('input[name=ad_insertion_mode]:checked').val() == "direct_dynamic"){
-			jQuery('.dynamic_features_msg').slideUp(1000);
-			jQuery('.dynamic_features').slideDown(1000);
-			jQuery('.caching_plugin_msg').slideUp(1000);
+		if (jQuery('input[name=ad_insertion_mode]:checked').val() == "direct"){
+			jQuery('.caching_plugin_msg').slideUp(300);
 		} else { // mfunc
-			jQuery('.dynamic_features_msg').slideUp(1000);
-			jQuery('.dynamic_features').slideDown(1000);
-			jQuery('.caching_plugin_msg').slideDown(1000);
+			jQuery('.caching_plugin_msg').slideDown(300);
 		}
 		return true;
 		});
 	});
 	</script>
 	
-	<?php if ($ops['ad_insertion_mode'] != 'direct_static') { ?>
-	<script type="text/javascript">
-	document.write('<style type="text/css" media="screen">#dynamic_features_msg { display: none; }</style>');
-	</script>
-	<?php } ?>
-	<div id="dynamic_features_msg" class="dynamic_features_msg">
-	<div class="inside" style="margin:10px">
-	<blockquote><b><span style="font-size:10px;color:red;">Note: Dynamic ad blocking features (restricting ad views by referrer or IP address) are only available in the mfunc, or direct_dynamic modes.</span></b>
-	</blockquote>
-	</div>
-	</div>
 	
-	<?php if ($ops['ad_insertion_mode'] == 'direct_static') { ?>
-	<script type="text/javascript">
-	document.write('<style type="text/css" media="screen">#dynamic_features { display: none; }</style>');
-	</script>
-	<?php } ?>
-	<div id="dynamic_features" class="dynamic_features">
 	<div class="inside" style="margin:10px">
 	<h4><a name="dynamic"></a>Show ads only to search engine visitors (dynamic feature)</h4>
 	
@@ -325,7 +301,6 @@ function adinj_tab_main(){
 	</blockquote>
 	</div>
 	
-	</div>
 	
 	<?php adinj_postbox_end(); ?>
 	

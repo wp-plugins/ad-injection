@@ -33,7 +33,7 @@ DOCS;
 	<p>Ad rotation / split testing and alternate content are advanced features. If you don't understand these features you probably don't need them and can therefore ignore this tab. In summary:</p>
 	<ul>
 	<li><b>Ad rotation / split testing:</b> You can define multiple adverts for the same ad space which are rotated according to the ratios you define. The percentage of views that each ad will be shows is displated beneath the ratio text box. For example if you define two ads and set both to have a ratio of '50' they will each be shown (roughly) 50% of the time. The numbers don't have to add up to 100 as the ratio is calculated based on the total. e.g. if you have two advert - one is set with a ratio of '1' and the other '3' the ratios will be 25% and 75%. Please remember this isn't strict ad rotation, it is random selection based on ratios so the ratios will be correct over a large sample of ad views, not a small sample.</li>
-	<li><b>Alternate content:</b> This is content that is displayed when ads are blocked for the user. Ads can only  be blocked for specific users if you use one of the dynamic modes (mfunc or direct_dynamic). You could use this alternate content to show other content, some kind of layout filler, or even a different type of ad. I've added support for rotation of alternate content as well.</li>
+	<li><b>Alternate content:</b> This is content that is displayed when ads are blocked for the user. You could use this alternate content to show other content, some kind of layout filler, or even a different type of ad. I've added support for rotation of alternate content as well.</li>
 	</ul>
 DOCS;
 	adinj_postbox_end();
