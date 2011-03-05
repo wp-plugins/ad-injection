@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 0.9.7.5
+Version: 0.9.7.6
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -477,22 +477,32 @@ function adinj_mode_never_show_in($mode){
 }
 
 function adinj_allowed_in_category($scope, $ops){
-	$cat_array = adinj_split_comma_list($ops[$scope.'_category_condition_entries']);
-	if (empty($cat_array)) return true;
+	$conditions = adinj_split_comma_list($ops[$scope.'_category_condition_entries']);
+	if (empty($conditions)) return true;
 	
 	$mode = $ops[$scope.'_category_condition_mode'];
-	if (adinj_mode_only_show_in($mode) && !(is_single() || is_category())){
+	
+	if ($scope == 'widget' && adinj_mode_only_show_in($mode) && !(is_single() || is_category())){
 		return false;
 	}
 	
-	$postcategories = array();
-	if (is_single()){
-		global $post;
-		$postcategories = get_the_category($post->ID);
+	if (adinj_mode_only_show_in($mode) && !(is_single() || is_home() || is_category())){
+		return false;
+	}
+	
+	$categories = array();
+	global $post;
+	if (in_the_loop() && (is_single() || is_home())){
+		$categories = get_the_category($post->ID);
+	} else if (!in_the_loop() && is_single()){
+		$cat_ids = wp_get_object_terms($post->ID, 'category', 'fields=all');
+		foreach($cat_ids as $id){
+			$categories[] = get_category($id);
+		}
 	} else if (is_category()){
-		$postcategories[] = get_category(get_query_var('cat'));
+		$categories[] = get_category(get_query_var('cat'));
 	} // else cat array is empty
-	return adinj_allowed_in_list($postcategories, $cat_array, $mode, 'adinj_category_nicename');
+	return adinj_allowed_in_list($categories, $conditions, $mode, 'adinj_category_nicename');
 }
 
 function adinj_allowed_in_tag($scope, $ops){
@@ -500,14 +510,24 @@ function adinj_allowed_in_tag($scope, $ops){
 	if (empty($conditions)) return true;
 	
 	$mode = $ops[$scope.'_tag_condition_mode'];
-	if (adinj_mode_only_show_in($mode) && !(is_single() || is_tag())){
+
+	if ("$scope" == "widget" && adinj_mode_only_show_in($mode) && !(is_single() || is_tag())){
+		return false;
+	}
+
+	if (adinj_mode_only_show_in($mode) && !(is_single() || is_home() || is_tag())){
 		return false;
 	}
 	
 	$tags = array();
-	if (is_single()){
-		global $post;
+	global $post;
+	if (in_the_loop() && (is_single() || is_home())){
 		$tags = get_the_tags($post->ID);
+	} else if (!in_the_loop() && is_single()){
+		$tag_ids = wp_get_object_terms($post->ID, 'post_tag', 'fields=all');
+		foreach($tag_ids as $id){
+			$tags[] = get_tag($id);
+		}
 	} else if (is_tag()){
 		$tags[] = get_tag(get_query_var('tag_id'));
 	} // else tag array is empty
@@ -519,14 +539,19 @@ function adinj_allowed_in_author($scope, $ops){
 	if (empty($conditions)) return true;
 	
 	$mode = $ops[$scope.'_author_condition_mode'];
-	if (adinj_mode_only_show_in($mode) && !(is_single() || is_page() || is_author())){
+	
+	if ($scope == 'widget' && adinj_mode_only_show_in($mode) && !(is_single() || is_page() || is_author())){
+		return false;
+	}
+	
+	if (adinj_mode_only_show_in($mode) && !(is_single() || is_page() || is_home() || is_author())){
 		return false;
 	}
 	
 	$user = array();
-	if (is_single() || is_page()){
-		$data = get_the_author_meta('user_login');
-		$user[] = $data ; //need to make it into array
+	if (is_single() || is_page() || is_home()){
+		$data = get_the_author_meta('user_login'); // works in and out of the loop
+		$user[] = $data; //need to make it into array
 	} else if (is_author()){
 		$curauth = get_userdata(get_query_var('author'));
 		$user[] = $curauth->user_login;

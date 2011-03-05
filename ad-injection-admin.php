@@ -331,7 +331,7 @@ function adinj_top_message_box(){
 		
 	} else if (!isset($_GET['tab'])){
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "3rd March 2011: This update simplifies the ad insertion modes. Instead of two direct modes there is now just one. There is the same functionality as before, but now with less options. If you were previously using direct_static mode then you should verify that everything still works as you expect. Plus other minor fixes. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
+		echo "5th March 2011: Category, tag and author exclusions bugs have been fixed. If you don't use these rules there is no change for you. If you do use these rules and were relying on the bugs, then your ads positions may have changed. Do check them! Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
 		echo '</strong></p></div>';
 	}
 }
