@@ -71,18 +71,38 @@ function adinj_tab_main(){
 	$count_pages = wp_count_posts('page', 'readable'); 
 	$count_posts = wp_count_posts('post', 'readable'); 
 	?>
-	<table><tr><td><b>all ads</b></td><td></td><td><b>widget ads</b></td></tr>
-	<tr><td><?php adinj_add_checkbox('exclude_front') ?></td><td>front - <?php echo get_bloginfo('url'); ?></td><td><?php adinj_add_checkbox('widget_exclude_front') ?></td></tr>
-	<tr><td><?php adinj_add_checkbox('exclude_home') ?></td><td>home page (latest posts page - may or may not be same as front)</td><td><?php adinj_add_checkbox('widget_exclude_home') ?></td></tr>
-	<tr><td><?php adinj_add_checkbox('exclude_page') ?></td><td>page - <?php echo $count_pages->publish; ?> single page(s)</td><td><?php adinj_add_checkbox('widget_exclude_page') ?></td></tr>
-	<tr><td><?php adinj_add_checkbox('exclude_single') ?></td><td>single - <?php echo $count_posts->publish; ?> single post(s)</td><td><?php adinj_add_checkbox('widget_exclude_single') ?></td></tr>
-	<tr><td><?php adinj_add_checkbox('exclude_archive') ?></td><td>archive - categories, tags, authors, dates</td><td><?php adinj_add_checkbox('widget_exclude_archive') ?></td></tr>
-	<tr><td><?php adinj_add_checkbox('exclude_search') ?></td><td>search (widgets only for now)</td><td><?php adinj_add_checkbox('widget_exclude_search') ?></td></tr>
-	<tr><td><?php adinj_add_checkbox('exclude_404') ?></td><td>404 (widgets only for now)</td><td><?php adinj_add_checkbox('widget_exclude_404') ?></td></tr>
+	
+	
+	<table class="adinjstatustable">
+	<tr>
+		<td></td>
+		<td><b>Single</b></td>
+		<td><b>Page</b></td>
+		<td><b>Home</b></td>
+		<td><b>Archive</b></td>
+		<td><b>Front</b></td>
+		<td><b>404</b></td>
+		<td><b>Search</b></td>
+	</tr>
+	<?php
+	adinj_add_exclude_row('All ads');
+	adinj_add_exclude_row('Top', 'top_');
+	adinj_add_exclude_row('Random', 'random_');
+	adinj_add_exclude_row('Bottom', 'bottom_');
+	adinj_add_exclude_row('Footer', 'footer_');
+	adinj_add_exclude_row('Widget', 'widget_');
+	?>
 	</table>
+	
+	front - <?php echo get_bloginfo('url'); ?><br />
+	home page (latest posts page - may or may not be same as front)<br />
+	page - <?php echo $count_pages->publish; ?> single page(s)<br />
+	single - <?php echo $count_posts->publish; ?> single post(s)<br />
+	archive - categories, tags, authors, dates<br />
+	
 	<p><span style="font-size:10px;"><b>Notes:</b> Your home page is the page displaying your latest posts. It may be different to your front page if you have configured your front page to be a static page.</span></p>
 	<p><span style="font-size:10px;">If you have <a href='options-reading.php'>set your front page</a> to be a static 'page' rather than your latest posts, the 'page' tick box will also apply to the front page.</span></p>
-	<p><span style="font-size:10px;">You must configure your individual widgets from the <a href="widgets.php">widgets control panel</a>. Ticking the 'all ads' box will also exclude the widget ads.</span></p>
+	<p><span style="font-size:10px;">You must configure your individual widgets from the <a href="widgets.php">widgets control panel</a>.</span></p>
 	<p></p>
 	
 	<table border="0" class="adinjtable">
@@ -173,6 +193,14 @@ function adinj_tab_main(){
 	<?php adinj_condition_tables('bottom_', 'ui_bottom_conditions_show'); ?>
 	<p></p>
 	</td></tr>
+	
+	<tr><td colspan="4"><h3>Footer ad</h3></td></tr>
+	<tr><td colspan="4">
+	<?php adinj_condition_tables('footer_', 'ui_footer_conditions_show'); ?>
+	<p></p>
+
+	</td></tr>
+	
 	</table>
 	
 	<?php adinj_postbox_end(); ?>
@@ -224,6 +252,29 @@ function adinj_tab_main(){
 	?>
 	</td></tr>
 	</table>
+	
+	
+	<h3>Footer ad (injected into 'the_footer' hook - not supported by all themes)</h3>
+	<table border="0" class="adinjtable">
+	<tr><td>
+	<textarea name="ad_code_footer_1" rows="10" cols="60"><?php echo $ops['ad_code_footer_1']; ?></textarea>
+	<br />
+	Docs: footer ad information and troubleshooting
+	<?php adinj_add_show_hide_section('footer_docs_'.uniqid(), 'ui_footer_docs_show', 'ui_footer_docs_show', $ops); ?>
+	<blockquote>
+	<p><span style="font-size:10px;">Try a <a href="#468x60">468x60</a> or <a href="#728x90">728x90</a> banner.</span></p>
+	<p><span style="font-size:10px;">The footer ad will only work if your theme supports it.</span></p>
+	<p><span style="font-size:10px;">Your theme must include 'the_footer' hook in the correct part of the page. If the footer ad is appearing in the wrong place, you could try manually editing your theme to move 'the_footer' hook.</span></p>
+	</blockquote>
+	</div>
+	</td><td>
+	<?php 
+	adinj_add_alignment_options('footer_');  
+	echo "<br /><b><a href='?page=ad-injection&amp;tab=adrotation#multiple_footer'>Rotation:<br />".adinj_percentage_split('ad_code_footer_', 1, $ops)."</a></b>";
+	?>
+	</td></tr>
+	</table>
+	
 	
 	<?php adinj_postbox_end(); ?>
 	
@@ -311,6 +362,21 @@ function adinj_tab_main(){
 	adinj_docs();
 	
 	adinj_testads();
+}
+
+function adinj_add_exclude_row($name, $prefix=''){
+?>
+	<tr>
+		<td><b><?php echo $name; ?></b></td>
+		<td><?php adinj_add_checkbox($prefix.'exclude_single') ?></td>
+		<td><?php adinj_add_checkbox($prefix.'exclude_page') ?></td>
+		<td><?php adinj_add_checkbox($prefix.'exclude_home') ?></td>
+		<td><?php adinj_add_checkbox($prefix.'exclude_archive') ?></td>
+		<td><?php adinj_add_checkbox($prefix.'exclude_front') ?></td>
+		<td><?php adinj_add_checkbox($prefix.'exclude_404') ?></td>
+		<td><?php adinj_add_checkbox($prefix.'exclude_search') ?></td>
+	</tr>
+<?php
 }
 
 function adinj_random_ad_limit_table(){
@@ -490,6 +556,15 @@ function adinj_side_status_box(){
 				<td><?php adinj_print_ad_dot('bottom', 'page') ?></td>
 				<td><?php adinj_print_ad_dot('bottom', 'home') ?></td>
 				<td><?php adinj_print_ad_dot('bottom', 'archive') ?></td>
+			</tr>
+			<tr>
+				<td style="text-align:right"><b>Footer</b></td>
+				<td><?php echo adinj_count_live_ads('footer', $ops); ?></td>
+				<td><?php echo adinj_count_live_ads('footer_alt', $ops); ?></td>
+				<td><?php adinj_print_ad_dot('footer', 'single') ?></td>
+				<td><?php adinj_print_ad_dot('footer', 'page') ?></td>
+				<td><?php adinj_print_ad_dot('footer', 'home') ?></td>
+				<td><?php adinj_print_ad_dot('footer', 'archive') ?></td>
 			</tr>
 			<tr>
 				<td style="text-align:right"><b>Widget</b></td>

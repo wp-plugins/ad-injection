@@ -22,9 +22,9 @@ if (!function_exists('adshow_functions_exist')){
 // and so that a problem doesn't disable the whole website. 
 function adshow_functions_exist(){
 	if (!defined('ADINJ_NO_CONFIG_FILE')){
-		if (!adshow_functions_exist_impl('adinj_config_add_tags_rnd')){ return false; }
-		if (!adshow_functions_exist_impl('adinj_config_add_tags_top')){ return false; }
-		if (!adshow_functions_exist_impl('adinj_config_add_tags_bottom')){ return false; }
+		if (!adshow_functions_exist_impl('adinj_config_add_tags_rnd')){ return false; } //TODO delete
+		if (!adshow_functions_exist_impl('adinj_config_add_tags_top')){ return false; } //TODO delete
+		if (!adshow_functions_exist_impl('adinj_config_add_tags_bottom')){ return false; } //TODO delete
 		if (!adshow_functions_exist_impl('adinj_config_sevisitors_only')){ return false; }
 		if (!adshow_functions_exist_impl('adinj_config_search_engine_referrers')){ return false; }
 		//if (!adshow_functions_exist_impl('adinj_config_block_ips')){ return false; } // TODO enable
@@ -63,67 +63,6 @@ function adinj_config_blocked_ips() {
 
 function adinj_config_debug_mode() { 
 	return adinj_ticked('debug_mode');
-}
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-// TODO delete
-if (!function_exists('adshow_display_ad_file')){
-function adshow_display_ad_file($adfile){
-	if (!adshow_functions_exist()){ return false; }
-
-	if (adinj_config_debug_mode()){
-		echo "<!--ADINJ DEBUG: adshow_display_ad_file($adfile)-->";
-	}
-	$plugin_dir = dirname(__FILE__);
-	$ad_path1 = $plugin_dir.'/ads/'.$adfile;
-	if (file_exists($ad_path1)){
-		adshow_display_ad_full_path($ad_path1);
-		return;
-	}
-	
-	$ad_path2 = dirname($plugin_dir).'/ad-injection-data/'.$adfile;
-	if (file_exists($ad_path2)){
-		adshow_display_ad_full_path($ad_path2);
-		return;
-	}
-	echo "
-<!--ADINJ DEBUG: could not read ad from either:
-	$ad_path1
-	$ad_path2
-If you have just upgraded you may need to re-save your ads to regenerate the ad files.
--->";
-}
-}
-
-// TODO delete
-if (!function_exists('adshow_display_ad_full_path')){
-function adshow_display_ad_full_path($ad_path){
-	if (!adshow_functions_exist()){ return false; }
-
-	$showads = adshow_show_adverts();
-	if ($showads !== true){
-		if (adinj_config_debug_mode()){
-			echo "<!--ADINJ DEBUG: ad blocked at run time reason=$showads-->";
-		}
-		return;
-	}
-	if (file_exists($ad_path)){
-		$ad = file_get_contents($ad_path);
-		if ($ad === false) echo "<!--ADINJ DEBUG: could not read ad from file: $ad_path-->\n";
-		if (stripos($ad_path, 'random_1.txt') > 0){ // TODO something better than this
-			echo adinj_config_add_tags_rnd(adshow_eval_php($ad));
-		} else if (stripos($ad_path, 'top_1.txt') > 0){
-			echo adinj_config_add_tags_top(adshow_eval_php($ad));
-		} else if (stripos($ad_path, 'bottom_1.txt') > 0){
-			echo adinj_config_add_tags_bottom(adshow_eval_php($ad));
-		} else {
-			echo adshow_eval_php($ad);
-		}
-	} else {
-		echo "\n<!--ADINJ DEBUG: ad file does not exist: $ad_path.\nIf you have just upgraded you may need to re-save your ads to regenerate the ad files.\n-->";
-	}
 }
 }
 

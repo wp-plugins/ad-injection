@@ -9,7 +9,9 @@ http://www.reviewmylife.co.uk/
 // 3 = increase db rotation slots to 10 - no UI support yet
 // 4 = added ui show fields for ads 4-10. Category/tag/author conditions.
 // 5 = ad/alt pool show fields
-define('ADINJ_WIDGET_DB_VERSION', 5);
+// 6 = page type restrictions
+// 7 = align and clear
+define('ADINJ_WIDGET_DB_VERSION', 7);
 
 class Ad_Injection_Widget extends WP_Widget {
 	function Ad_Injection_Widget() {
@@ -28,6 +30,16 @@ class Ad_Injection_Widget extends WP_Widget {
 			(is_archive() && adinj_ticked('widget_exclude_archive')) ||
 			(is_search() && adinj_ticked('widget_exclude_search')) ||
 			(is_404() && adinj_ticked('widget_exclude_404'))){
+			return;
+		}
+		
+		if ((is_front_page() && adinj_ticked('exclude_front', $instance)) ||
+			(is_home() && adinj_ticked('exclude_home', $instance)) ||
+			(is_page() && adinj_ticked('exclude_page', $instance)) ||
+			(is_single() && adinj_ticked('exclude_single', $instance)) ||
+			(is_archive() && adinj_ticked('exclude_archive', $instance)) ||
+			(is_search() && adinj_ticked('exclude_search', $instance)) ||
+			(is_404() && adinj_ticked('exclude_404', $instance))){
 			return;
 		}
 
@@ -120,14 +132,24 @@ class Ad_Injection_Widget extends WP_Widget {
 			'margin_bottom' => 'd',
 			'padding_top' => 'd',
 			'padding_bottom' => 'd',
+			'align' => 'd',
+			'clear' => 'd',
 			'widget_category_condition_mode' => 'o',
 			'widget_category_condition_entries' => '',
 			'widget_tag_condition_mode' => 'o',
 			'widget_tag_condition_entries' => '',
 			'widget_author_condition_mode' => 'o',
 			'widget_author_condition_entries' => '',
+			'exclude_front' => '',
+			'exclude_home' => '',
+			'exclude_page' => '',
+			'exclude_single' => '',
+			'exclude_archive' => '',
+			'exclude_search' => '',
+			'exclude_404' => '',
 			//ui
 			'ui_ad_1_show' => 'true',
+			'ui_pagetypes_show' => 'false',
 			'ui_conditions_show' => 'false',
 			'ui_spacing_show' => 'false',
 			'ui_ad_pool_show' => 'false',
@@ -206,6 +228,24 @@ class Ad_Injection_Widget extends WP_Widget {
 		?>
 		
 		<br />
+		<b> Exclude this widget from page types</b>
+		<?php $this->add_show_hide_section('ad_pagetypes_'.uniqid(), 'ui_pagetypes_show', $instance); ?>
+		<?php
+		$count_pages = wp_count_posts('page', 'readable'); 
+		$count_posts = wp_count_posts('post', 'readable'); 
+		?>
+		<?php $this->add_checkbox('exclude_front', $instance) ?>front - <?php echo get_bloginfo('url'); ?><br />
+		<?php $this->add_checkbox('exclude_home', $instance) ?>home page (latest posts page - may or may not be same as front)<br />
+		<?php $this->add_checkbox('exclude_page', $instance) ?>page - <?php echo $count_pages->publish; ?> single page(s)<br />
+		<?php $this->add_checkbox('exclude_single', $instance) ?>single - <?php echo $count_posts->publish; ?> single post(s)<br />
+		<?php $this->add_checkbox('exclude_archive', $instance) ?>archive - categories, tags, authors, dates<br />
+		<?php $this->add_checkbox('exclude_search', $instance) ?>search (widgets only for now)<br />
+		<?php $this->add_checkbox('exclude_404', $instance) ?>404 (widgets only for now)<br />
+		<span style="font-size:10px;"><b>Notes:</b> Your home page is the page displaying your latest posts. It may be different to your front page if you have configured your front page to be a static page.</span><br />
+		<span style="font-size:10px;">If you have <a href='options-reading.php'>set your front page</a> to be a static 'page' rather than your latest posts, the 'page' tick box will also apply to the front page.</span>
+		</div>
+		
+		<br />
 		<b> Category, tag and author conditions</b>
 		<?php 
 		$this->add_show_hide_section('ad_restrictions_'.uniqid(), 'ui_conditions_show', $instance);
@@ -216,10 +256,12 @@ class Ad_Injection_Widget extends WP_Widget {
 		?>
 		
 		<br />
-		<b> Spacing options</b>
+		<b> Spacing and alignment options</b>
 		<?php $this->add_show_hide_section('ad_spacing_'.uniqid(), 'ui_spacing_show', $instance); ?>
 		<table border="0" width="490px" class="adinjtable">
 		<tr><td>
+			<?php adinj_add_alignment_clear_options('widget_', $instance, $this->get_field_name('align'), $this->get_field_name('clear') ); ?>
+		</td><td>
 			<?php adinj_add_margin_top_bottom_options('widget_', $instance, $this->get_field_name('margin_top'), $this->get_field_name('margin_bottom') ); ?>
 		</td><td>
 			<?php adinj_add_padding_top_bottom_options('widget_', $instance, $this->get_field_name('padding_top'), $this->get_field_name('padding_bottom') ); ?>
@@ -252,9 +294,16 @@ class Ad_Injection_Widget extends WP_Widget {
 		
 		<br />
 		
-		<p>Other options to define who sees these adverts (by page age, IP, referrer) are on the main <a href='options-general.php?page=ad-injection.php'>Ad Injection settings page</a>. You can also set which <a href='options-general.php?page=ad-injection.php#widgets'>page types</a> the widgets appear on.</p>
+		<p>Other options to define who sees these adverts (by page age, IP, referrer) are on the main <a href='options-general.php?page=ad-injection.php'>Ad Injection settings page</a>. You can also set a global <a href='options-general.php?page=ad-injection.php#adsettings'>page type</a> restrictions for the widgets.</p>
 		
 		<?php
+	}
+	
+	function add_checkbox($name, $instance){
+	?>
+		<input type="hidden" <?php $this->add_name($name); ?> value="off" />
+		<input type="checkbox" <?php $this->add_name($name); ?> <?php echo adinj_ticked($name, $instance); ?> />
+	<?php
 	}
 	
 	function add_row($op_stem, $num, $label, $show_op, $total_split, $ops){
@@ -295,10 +344,6 @@ HTML;
 	}
 	
 	function add_name($op){
-		echo 'id="'.$this->get_field_id($op).'" name="'.$this->get_field_name($op).'"';
-	}
-	
-	function add_id_and_name($op){
 		echo 'id="'.$this->get_field_id($op).'" name="'.$this->get_field_name($op).'"';
 	}
 	

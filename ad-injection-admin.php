@@ -59,10 +59,12 @@ function adinj_save_options(){
 		extract_text_args('ad_code_random_', $ops, 1, 10, ADINJ_AD_PATH.'/ad_random_');
 		extract_text_args('ad_code_top_', $ops, 1, 10, ADINJ_AD_PATH.'/ad_top_');
 		extract_text_args('ad_code_bottom_', $ops, 1, 10, ADINJ_AD_PATH.'/ad_bottom_');
+		extract_text_args('ad_code_footer_', $ops, 1, 10, ADINJ_AD_PATH.'/ad_footer_');
 		
 		extract_text_args('ad_code_random_alt_', $ops, 1, 2, ADINJ_AD_PATH.'/ad_random_alt_');
 		extract_text_args('ad_code_top_alt_', $ops, 1, 2, ADINJ_AD_PATH.'/ad_top_alt_');
 		extract_text_args('ad_code_bottom_alt_', $ops, 1, 2, ADINJ_AD_PATH.'/ad_bottom_alt_');
+		extract_text_args('ad_code_footer_alt_', $ops, 1, 2, ADINJ_AD_PATH.'/ad_footer_alt_');
 		
 		extract_text_args('ad_referrers', $ops);
 		extract_text_args('blocked_ips', $ops);
@@ -331,7 +333,7 @@ function adinj_top_message_box(){
 		
 	} else if (!isset($_GET['tab'])){
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "5th March 2011: Category, tag and author exclusions bugs have been fixed. If you don't use these rules there is no change for you. If you do use these rules and were relying on the bugs, then your ads positions may have changed. Do check them! Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
+		echo "18th March 2011: New footer ad support (will only work on themes that correctly use the wp_footer hook). New align and clear options for widgets. And the word counting code now works for non-Latin languages. Also I'll mention that during the rest of March and the first part of April I won't have full internet access due to travelling, so I will take longer to respond and fix any bugs. But please still contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
 		echo '</strong></p></div>';
 	}
 }
@@ -508,7 +510,7 @@ function adinj_get_status($name){
 	} else if ($name == 'adsettings'){
 		$status[0] = 'green';
 	} else if ($name == 'adverts'){
-		if (adinj_count_live_ads('top', $ops) > 0 || adinj_count_live_ads('random', $ops) || adinj_count_live_ads('bottom', $ops)){
+		if (adinj_count_live_ads('top', $ops) > 0 || adinj_count_live_ads('random', $ops) > 0 || adinj_count_live_ads('bottom', $ops) > 0 || adinj_count_live_ads('footer', $ops) > 0){
 			$status[0] = 'green';
 		} else {
 			$status[0] = 'red';
@@ -551,10 +553,11 @@ function adinj_dot($colour){
 function adinj_max_num_ads($adtype, $pagetype){
 	$ops = adinj_options();
 	if (adinj_ticked('exclude_'.$pagetype)) return 0;
-	if ($adtype == 'widget'){
-		if (adinj_ticked('widget_exclude_'.$pagetype)) return 0;
+	if ($adtype == 'top' || $adtype == 'random' || $adtype == 'bottom' || 
+		$adtype == 'footer' || $adtype == 'widget'){
+		if (adinj_ticked($adtype.'_exclude_'.$pagetype)) return 0;
 	}
-	if ($adtype == 'top' || $adtype == 'random' || $adtype == 'bottom'){
+	if ($adtype == 'top' || $adtype == 'random' || $adtype == 'bottom' || $adtype == 'footer'){
 		if (adinj_count_live_ads($adtype, $ops) == 0) return 0;
 	}
 	if ($adtype == 'top' || $adtype == 'bottom'){
@@ -574,7 +577,7 @@ function adinj_max_num_ads($adtype, $pagetype){
 			//TODO
 		}
 	}
-	if ($adtype == 'widget'){
+	if ($adtype == 'widget' || $adtype == 'footer'){
 		return 1;
 	}
 	return 0;
@@ -739,19 +742,33 @@ function adinj_get_authors(){
 }
 
 function adinj_add_alignment_options($prefix){
-	_e("Alignment", 'adinj');
-	echo "<br />";
-	adinj_selection_box($prefix.'align',
-		array('d', 'left', 'center', 'right', 'float left', 'float right', 'rand lcr', 'rand float lr', 'rand all'));
-	echo "<br />";
-	_e("Clear (CSS)", 'adinj');
-	echo "<br />";
-	adinj_selection_box($prefix.'clear',
-		array('d', 'left', 'right', 'both'));
+	adinj_add_alignment_clear_options($prefix);
 	echo "<br />";
 	adinj_add_padding_top_bottom_options($prefix);
 	echo "<br />";
 	adinj_add_margin_top_bottom_options($prefix);
+}
+
+function adinj_add_alignment_clear_options($prefix, $options=NULL, $alignname=NULL, $clearname=NULL){
+	$aname = $prefix.'align';
+	$cname = $prefix.'clear';
+	$adefault = NULL;
+	$cdefault = NULL;
+	if ($alignname != NULL){
+		$aname = $alignname;
+		$adefault = "align";
+	}
+	if ($clearname != NULL){
+		$cname = $clearname;
+		$cdefault = "clear";
+	}
+	_e("Alignment", 'adinj');
+	echo "<br />";
+	adinj_selection_box($aname,array('d','left','center','right','float left','float right','rand lcr','rand float lr','rand all'),"",$options[$adefault]);
+	echo "<br />";
+	_e("Clear (CSS)", 'adinj');
+	echo "<br />";
+	adinj_selection_box($cname,array('d','left','right','both'),"",$options[$cdefault]);
 }
 
 function adinj_add_margin_top_bottom_options($prefix, $options=NULL, $topname=NULL, $bottomname=NULL){
@@ -997,9 +1014,11 @@ function adinj_ad_name_stem($adtype){
 	if ($adtype == 'top') return 'ad_code_top_';
 	if ($adtype == 'random') return 'ad_code_random_';
 	if ($adtype == 'bottom') return 'ad_code_bottom_';
+	if ($adtype == 'footer') return 'ad_code_footer_';
 	if ($adtype == 'top_alt') return 'ad_code_top_alt_';
 	if ($adtype == 'random_alt') return 'ad_code_random_alt_';
 	if ($adtype == 'bottom_alt') return 'ad_code_bottom_alt_';
+	if ($adtype == 'footer_alt') return 'ad_code_footer_alt_';
 	// TODO widget?
 	return 'Error: adinj_ad_name_stem:'.$adtype;
 }
@@ -1156,6 +1175,13 @@ function adinj_default_options(){
 		'random_tag_condition_entries' => '',
 		'random_author_condition_mode' => 'o',
 		'random_author_condition_entries' => '',
+		'random_exclude_front' => '',
+		'random_exclude_home' => '',
+		'random_exclude_page' => '',
+		'random_exclude_single' => '',
+		'random_exclude_archive' => '',
+		'random_exclude_search' => '',
+		'random_exclude_404' => '',
 		// single posts and pages
 		'top_ad_if_longer_than' => 'd',
 		'max_num_of_ads' => '2', // random ads
@@ -1223,6 +1249,13 @@ function adinj_default_options(){
 		'top_tag_condition_entries' => '',
 		'top_author_condition_mode' => 'o',
 		'top_author_condition_entries' => '',
+		'top_exclude_front' => '',
+		'top_exclude_home' => '',
+		'top_exclude_page' => '',
+		'top_exclude_single' => '',
+		'top_exclude_archive' => '',
+		'top_exclude_search' => '',
+		'top_exclude_404' => '',
 		// Bottom ads
 		'ad_code_bottom_1' => '',
 		'ad_code_bottom_2' => '',
@@ -1260,6 +1293,57 @@ function adinj_default_options(){
 		'bottom_tag_condition_entries' => '',
 		'bottom_author_condition_mode' => 'o',
 		'bottom_author_condition_entries' => '',
+		'bottom_exclude_front' => '',
+		'bottom_exclude_home' => '',
+		'bottom_exclude_page' => '',
+		'bottom_exclude_single' => '',
+		'bottom_exclude_archive' => '',
+		'bottom_exclude_search' => '',
+		'bottom_exclude_404' => '',
+		// Footer ads
+		'ad_code_footer_1' => '',
+		'ad_code_footer_2' => '',
+		'ad_code_footer_3' => '',
+		'ad_code_footer_4' => '',
+		'ad_code_footer_5' => '',
+		'ad_code_footer_6' => '',
+		'ad_code_footer_7' => '',
+		'ad_code_footer_8' => '',
+		'ad_code_footer_9' => '',
+		'ad_code_footer_10' => '',
+		'ad_code_footer_1_split' => '100',
+		'ad_code_footer_2_split' => '100',
+		'ad_code_footer_3_split' => '100',
+		'ad_code_footer_4_split' => '100',
+		'ad_code_footer_5_split' => '100',
+		'ad_code_footer_6_split' => '100',
+		'ad_code_footer_7_split' => '100',
+		'ad_code_footer_8_split' => '100',
+		'ad_code_footer_9_split' => '100',
+		'ad_code_footer_10_split' => '100',
+		'ad_code_footer_alt_1' => '',
+		'ad_code_footer_alt_2' => '',
+		'ad_code_footer_alt_1_split' => '100',
+		'ad_code_footer_alt_2_split' => '100',
+		'footer_align' => 'center',
+		'footer_clear' => 'd',
+		'footer_margin_top' => 'd',
+		'footer_margin_bottom' => 'd',
+		'footer_padding_top' => 'd',
+		'footer_padding_bottom' => '3',
+		'footer_category_condition_mode' => 'o',
+		'footer_category_condition_entries' => '',
+		'footer_tag_condition_mode' => 'o',
+		'footer_tag_condition_entries' => '',
+		'footer_author_condition_mode' => 'o',
+		'footer_author_condition_entries' => '',
+		'footer_exclude_front' => '',
+		'footer_exclude_home' => '',
+		'footer_exclude_page' => '',
+		'footer_exclude_single' => '',
+		'footer_exclude_archive' => '',
+		'footer_exclude_search' => '',
+		'footer_exclude_404' => '',
 		// widgets
 		'widget_exclude_front' => '',
 		'widget_exclude_home' => '',
@@ -1287,11 +1371,14 @@ function adinj_default_options(){
 		'ui_top_conditions_show' => 'false',
 		'ui_random_conditions_show' => 'false',
 		'ui_bottom_conditions_show' => 'false',
+		'ui_footer_conditions_show' => 'false',
+		'ui_footer_docs_show' => 'false',
 		// ui ad rotation tab
 		'ui_docs_adrotation_hide' => 'false',
 		'ui_multiple_top_hide' => 'false',
 		'ui_multiple_random_hide' => 'false',
 		'ui_multiple_bottom_hide' => 'false',
+		'ui_multiple_footer_hide' => 'false',
 		'ui_misc_hide' => 'true',
 		'ui_docs_tags_hide' => 'true',
 		// ui debug tab

@@ -4,7 +4,7 @@ Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-w
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, widgets, sidebar, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog, ad rotation, A:B testing, split testing, WP Super Cache, W3 Total Cache, WP Cache
 Requires at least: 2.8.6
 Tested up to: 3.1
-Stable tag: 0.9.7.6
+Stable tag: 0.9.7.7
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
@@ -16,6 +16,7 @@ Ad Injection injects any kind of advert (e.g. Google AdSense, Amazon Associates,
 
 * Archive and home page ads now fully supported with the same controls as ads for single posts/pages.
 * Category, tag and author restrictions for top, random and bottom ads.
+* Footer ads.
 
 **New Features 0.9.6.x**
 
@@ -308,6 +309,10 @@ By default FeedWordPress prevents the syndicated post contents from being passed
 
 From the FeedWordPress settings page go to 'Posts & Links' and then in the 'Formatting' section set 'Formatting filters' to 'Expose syndicated posts to formatting filters'.
 
+= Will Ad Injection work with the multi-blog version of WordPress? =
+
+The multi-user version of WordPress are not supported - yet, however I have heard that some people have got it to work when using the 'direct' insertion mode. I hope to make it work properly with multi-blog versions of WordPress in the future.
+
 = Some technical details =
 
 * Plugin stores all its settings in a single option (adinj_options).
@@ -371,6 +376,11 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 3. Can choose to show the ads only to search engine visitors, or define IP addresses that ads aren't shown to.
 
 == Changelog ==
+
+= 0.9.7.7 =
+* Footer ad support (only for themes that correctly use the wp_footer hook).
+* Align and clear options for widgets.
+* Word counting code now works for non-Latin languages.
 
 = 0.9.7.6 =
 * Category, tag and author exclusions now apply to home page posts.
@@ -521,8 +531,8 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 
 == Upgrade Notice ==
 
-= 0.9.7.6 =
-* Category, tag and author exclusions now apply to home page posts.
+= 0.9.7.7 =
+* Footer ad support. Clear and align options for widgets. And word counting for non-Latin languages.
 
 = 0.8.3 =
 First public release.

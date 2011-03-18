@@ -10,7 +10,7 @@ function adinj_tab_adrotation(){
 	$ops = adinj_options();
 	
 	echo <<<DOCS
-	<p><a href="#multiple_top">Top adverts</a> | <a href="#multiple_random">Random adverts</a> | <a href="#multiple_bottom">Bottom adverts</a> | <a href="#misc">Misc settings</a> | <a href="#docs_tags">Tag docs</a> | <a href="#testads">Test ads</a></p>
+	<p><a href="#multiple_top">Top adverts</a> | <a href="#multiple_random">Random adverts</a> | <a href="#multiple_bottom">Bottom adverts</a> | <a href="#multiple_footer">Footer adverts</a> | <a href="#misc">Misc settings</a> | <a href="#docs_tags">Tag docs</a> | <a href="#testads">Test ads</a></p>
 DOCS;
 	
 	$total_rand_split = adinj_total_split('ad_code_random_', $ops);
@@ -21,6 +21,9 @@ DOCS;
 	
 	$total_bottom_split = adinj_total_split('ad_code_bottom_', $ops);
 	$total_bottom_alt_split = adinj_total_split('ad_code_bottom_alt_', $ops);
+	
+	$total_footer_split = adinj_total_split('ad_code_footer_', $ops);
+	$total_footer_alt_split = adinj_total_split('ad_code_footer_alt_', $ops);
 	?>
 	
 	<style type="text/css">
@@ -67,6 +70,17 @@ DOCS;
 	}
 	adinj_add_row_with_text_box('ad_code_bottom_alt_', 1, 'Alt content', $total_bottom_alt_split);
 	adinj_add_row_with_text_box('ad_code_bottom_alt_', 2, 'Alt content', $total_bottom_alt_split);
+	echo '</table>';
+	adinj_postbox_end();
+	
+	
+	adinj_postbox_start(__("Footer adverts", 'adinj'), 'multiple_footer');
+	echo '<table border="0" cellspacing="5" class="adinjtable">';
+	for ($i=1; $i<=10; ++$i){
+		adinj_add_row_with_text_box('ad_code_footer_', $i, 'Ad code', $total_footer_split);
+	}
+	adinj_add_row_with_text_box('ad_code_footer_alt_', 1, 'Alt content', $total_footer_alt_split);
+	adinj_add_row_with_text_box('ad_code_footer_alt_', 2, 'Alt content', $total_footer_alt_split);
 	echo '</table>';
 	adinj_postbox_end();
 	

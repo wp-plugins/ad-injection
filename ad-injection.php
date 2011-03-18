@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 0.9.7.6
+Version: 0.9.7.7
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -26,7 +26,8 @@ define('ADINJ_NO_CONFIG_FILE', 1);
 // 7 = cat/tag/author restriction for top/random/bottom ads
 // 8 = ui options for new layout
 // 9 = replace the two direct modes with 'direct'
-define('ADINJ_DB_VERSION', 9);
+// 10 = exclusion tick boxes for top, random, bottom, and new footer ad
+define('ADINJ_DB_VERSION', 10);
 
 // Files
 // TODO will these paths work on windows?
@@ -201,6 +202,13 @@ function adinj_ad_code_bottom(){
 	return $ad;
 }
 
+function adinj_ad_code_footer(){
+	$ad = adinj_get_ad_code('footer', adinj_options());
+	global $adinj_total_all_ads_used;
+	++$adinj_total_all_ads_used;
+	return $ad;
+}
+
 /**
 Old:
 ad_code_random_1 <-> ad_random_1.txt
@@ -213,8 +221,8 @@ function adinj_live_ads_array($type, $ads_option, &$ads, &$split, $output_type="
 	$op_stem = "";
 	$file_stem = "";
 
-	if ($type == 'random' || $type == 'top' || $type == 'bottom' ||
-		$type == 'random_alt' || $type == 'top_alt' || $type == 'bottom_alt'){
+	if ($type == 'random' || $type == 'top' || $type == 'bottom' || $type == 'footer' ||
+		$type == 'random_alt' || $type == 'top_alt' || $type == 'bottom_alt' || $type == 'footer_alt'){
 		$op_stem = 'ad_code_'.$type.'_';
 		$file_stem = 'ad_'.$type.'_';
 	} else if (preg_match("/widget_[\d+]/i", $type)){
@@ -277,6 +285,7 @@ function adinj_formatting_options($adtype, $ops, $output_type="string"){
 	if ($adtype == 'random') $prefix = 'rnd_';
 	if ($adtype == 'top') $prefix = 'top_';
 	if ($adtype == 'bottom') $prefix = 'bottom_';
+	if ($adtype == 'footer') $prefix = 'footer_';
 	//widgets have no prefix
 
 	$align = $ops[$prefix.'align'];
@@ -404,6 +413,19 @@ injection mode=$mode
 //-->\n";
 }
 
+function adinj_excluded_by_tick_box($prefix){
+	if (is_front_page() && adinj_ticked($prefix.'exclude_front') ||
+		is_home() && adinj_ticked($prefix.'exclude_home') ||
+		is_search() && adinj_ticked($prefix.'exclude_search') ||
+		is_404() && adinj_ticked($prefix.'exclude_404') ||
+		is_page() && adinj_ticked($prefix.'exclude_page') ||
+		is_single() && adinj_ticked($prefix.'exclude_single') ||
+		is_archive() && adinj_ticked($prefix.'exclude_archive')){
+		return true;
+	}
+	return false;
+}
+
 function adinj_ads_completely_disabled_from_page($content=NULL){
 	$ops = adinj_options();
 	if ($ops['ads_enabled'] == 'off' ||
@@ -482,11 +504,11 @@ function adinj_allowed_in_category($scope, $ops){
 	
 	$mode = $ops[$scope.'_category_condition_mode'];
 	
-	if ($scope == 'widget' && adinj_mode_only_show_in($mode) && !(is_single() || is_category())){
+	if (!in_the_loop() && adinj_mode_only_show_in($mode) && !(is_single() || is_category())){
 		return false;
 	}
 	
-	if (adinj_mode_only_show_in($mode) && !(is_single() || is_home() || is_category())){
+	if (in_the_loop() && adinj_mode_only_show_in($mode) && !(is_single() || is_home() || is_category())){
 		return false;
 	}
 	
@@ -511,11 +533,11 @@ function adinj_allowed_in_tag($scope, $ops){
 	
 	$mode = $ops[$scope.'_tag_condition_mode'];
 
-	if ("$scope" == "widget" && adinj_mode_only_show_in($mode) && !(is_single() || is_tag())){
+	if (!in_the_loop() && adinj_mode_only_show_in($mode) && !(is_single() || is_tag())){
 		return false;
 	}
 
-	if (adinj_mode_only_show_in($mode) && !(is_single() || is_home() || is_tag())){
+	if (in_the_loop() && adinj_mode_only_show_in($mode) && !(is_single() || is_home() || is_tag())){
 		return false;
 	}
 	
@@ -540,11 +562,11 @@ function adinj_allowed_in_author($scope, $ops){
 	
 	$mode = $ops[$scope.'_author_condition_mode'];
 	
-	if ($scope == 'widget' && adinj_mode_only_show_in($mode) && !(is_single() || is_page() || is_author())){
+	if (!in_the_loop() && adinj_mode_only_show_in($mode) && !(is_single() || is_page() || is_author())){
 		return false;
 	}
 	
-	if (adinj_mode_only_show_in($mode) && !(is_single() || is_page() || is_home() || is_author())){
+	if (in_the_loop()&& adinj_mode_only_show_in($mode) && !(is_single() || is_page() || is_home() || is_author())){
 		return false;
 	}
 	
@@ -569,7 +591,12 @@ function adinj_split_comma_list($list){
 	return preg_split("/[\s,]+/", $list, -1, PREG_SPLIT_NO_EMPTY);
 }
 
-function adinj_inject_hook($content){
+function adinj_footer_hook(){
+	if (adinj_num_footer_ads_to_insert() <= 0) return;
+	echo adinj_ad_code_footer();
+}
+
+function adinj_content_hook($content){
 	if (is_feed()) return $content; // TODO feed specific ads
 	if (!in_the_loop()) return $content; // Don't insert ads into meta description tags TODOTODO
 	$ops = adinj_options();
@@ -625,7 +652,7 @@ function adinj_inject_hook($content){
 		$length = strlen(strip_tags($content));
 		if ($debug_on) $debug .= "\nnum chars: = $length (viewable chars only)";
 	} else {
-		$length = str_word_count(strip_tags($content));
+		$length = str_word_count_utf8(strip_tags($content));
 		if ($debug_on) $debug .= "\nnum words: = $length";
 	}
 	# Insert top and bottom ads if necesary
@@ -766,6 +793,12 @@ function adinj_inject_hook($content){
 	return adinj($content_adfree_header.$content.$content_adfree_footer, "Ads injected: " . $debug);
 }
 
+//http://php.net/manual/en/function.str-word-count.php
+define("WORD_COUNT_MASK", "/\p{L}[\p{L}\p{Mn}\p{Pd}'\x{2019}]*/u");
+function str_word_count_utf8($str){
+	return preg_match_all(WORD_COUNT_MASK, $str, $matches);
+}
+
 function adinj_paragraph_to_start_ads(){
 	$ops = adinj_options();
 	if (adinj_db_version($ops) == 1){
@@ -799,6 +832,7 @@ function adinj_get_current_page_type_prefix(){
 }
 
 function adinj_num_top_ads_to_insert($content_length){
+	if (adinj_excluded_by_tick_box('top_')) return 0;
 	$ops = adinj_options();
 	$prefix = adinj_get_current_page_type_prefix();
 	$max_num_ads_to_insert = 0;
@@ -821,6 +855,7 @@ function adinj_num_top_ads_to_insert($content_length){
 }
 
 function adinj_num_bottom_ads_to_insert($content_length){
+	if (adinj_excluded_by_tick_box('bottom_')) return 0;
 	$ops = adinj_options();
 	$prefix = adinj_get_current_page_type_prefix();
 	$max_num_ads_to_insert = 0;
@@ -843,6 +878,7 @@ function adinj_num_bottom_ads_to_insert($content_length){
 }
 
 function adinj_num_rand_ads_to_insert($content_length){
+	if (adinj_excluded_by_tick_box('random_')) return 0;
 	global $adinj_total_random_ads_used; // a page can be more than one post
 	$ops = adinj_options();
 	$max_ads_in_post = 0;
@@ -883,6 +919,15 @@ function adinj_num_rand_ads_to_insert($content_length){
 	return $max_num_rand_ads_to_insert;
 }
 
+function adinj_num_footer_ads_to_insert(){
+	if (adinj_excluded_by_tick_box('footer_')) return 0;
+	$reason = adinj_ads_completely_disabled_from_page($content);
+	if ($reason !== false){
+		return 0;
+	}
+	return 1;
+}
+
 function adinj_do_rule_if($rule_value, $condition, $content_length){
 	if (adinj_alwaysshow($rule_value)) return true;
 	if (adinj_disabled($rule_value)) return false;
@@ -913,8 +958,8 @@ function adinj_alwaysshow($value){
 	return "$value" == ADINJ_ALWAYS_SHOW || "$value" == 'a';
 }
 
-function adinj_ticked($option){
-	$ops = adinj_options();
+function adinj_ticked($option, $ops=array()){
+	if (empty($ops)) $ops = adinj_options();
 	if (!empty($ops[$option]) && $ops[$option] != 'off') return 'checked="checked"';
 	return false;
 }
@@ -957,7 +1002,8 @@ function adinj_widgets_init() {
 register_activation_hook(__FILE__, 'adinj_activate_hook');
 // Content injection
 add_action('wp_enqueue_scripts', 'adinj_addsevjs_hook');
-add_filter('the_content', 'adinj_inject_hook');
+add_filter('the_content', 'adinj_content_hook');
+add_action('wp_footer', 'adinj_footer_hook');
 add_action('wp_footer', 'adinj_print_referrers_hook');
 
 ?>
