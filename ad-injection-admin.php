@@ -333,7 +333,7 @@ function adinj_top_message_box(){
 		
 	} else if (!isset($_GET['tab'])){
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "18th March 2011: New footer ad support (will only work on themes that correctly use the wp_footer hook). New align and clear options for widgets. And the word counting code now works for non-Latin languages. Also I'll mention that during the rest of March and the first part of April I won't have full internet access due to travelling, so I will take longer to respond and fix any bugs. But please still contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
+		echo "6th May 2011: Fix bug that prevented ads appearing on archive/home pages when used with certain plugins/themes. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
 		echo '</strong></p></div>';
 	}
 }
@@ -665,7 +665,7 @@ function adinj_condition_tables($prefix, $show_setting){
 	?>
 	Category tag, and author conditions
 	<?php
-	adinj_add_show_hide_section('ad_conditions_'.uniqid(), $show_setting, $show_setting, $ops);
+	adinj_add_show_hide_section('ad_conditions_'.uniqid(''), $show_setting, $show_setting, $ops);
 	adinj_condition_table($prefix.'category', 'category slugs. e.g: cat1, cat2, cat3', 'category', $ops);
 	adinj_condition_table($prefix.'tag', 'tag slugs. e.g: tag1, tag2, tag3', 'tag', $ops);
 	adinj_condition_table($prefix.'author', 'author nicknames. e.g: john, paul', 'author', $ops);

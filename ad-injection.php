@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 0.9.7.7
+Version: 0.9.7.8
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -592,6 +592,7 @@ function adinj_split_comma_list($list){
 }
 
 function adinj_footer_hook(){
+	if (is_feed()) return; // TODO feed specific ads
 	if (adinj_num_footer_ads_to_insert() <= 0) return;
 	echo adinj_ad_code_footer();
 }
@@ -604,12 +605,12 @@ function adinj_content_hook($content){
 		return $content;
 	}
 	$debug_on = $ops['debug_mode'];
-	if ($debug_on) echo "<!--adinj_inject_hook-->";
+	echo "<!--adinj-->";
 	
 	adinj_upgrade_db_if_necessary();
 	
 	global $adinj_total_all_ads_used, $adinj_total_random_ads_used, $adinj_total_top_ads_used, $adinj_total_bottom_ads_used;
-	if(!is_archive && (is_page() || is_single())){
+	if(!is_archive() && (is_page() || is_single())){
 		// On single page the_content may be called more than once - e.g. for
 		// description meta tag and for content.
 		$adinj_total_all_ads_used = 0;

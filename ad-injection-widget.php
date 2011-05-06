@@ -229,7 +229,7 @@ class Ad_Injection_Widget extends WP_Widget {
 		
 		<br />
 		<b> Exclude this widget from page types</b>
-		<?php $this->add_show_hide_section('ad_pagetypes_'.uniqid(), 'ui_pagetypes_show', $instance); ?>
+		<?php $this->add_show_hide_section('ad_pagetypes_'.uniqid(''), 'ui_pagetypes_show', $instance); ?>
 		<?php
 		$count_pages = wp_count_posts('page', 'readable'); 
 		$count_posts = wp_count_posts('post', 'readable'); 
@@ -248,7 +248,7 @@ class Ad_Injection_Widget extends WP_Widget {
 		<br />
 		<b> Category, tag and author conditions</b>
 		<?php 
-		$this->add_show_hide_section('ad_restrictions_'.uniqid(), 'ui_conditions_show', $instance);
+		$this->add_show_hide_section('ad_restrictions_'.uniqid(''), 'ui_conditions_show', $instance);
 		adinj_condition_table('widget_category', 'category slugs. e.g: cat1, cat2, cat3', 'category', $instance, $this->get_field_name('widget_category_condition_mode'), $this->get_field_name('widget_category_condition_entries'));
 		adinj_condition_table('widget_tag', 'tag slugs. e.g: tag1, tag2, tag3', 'tag', $instance, $this->get_field_name('widget_tag_condition_mode'), $this->get_field_name('widget_tag_condition_entries'));
 		adinj_condition_table('widget_author', 'author nicknames. e.g: john, paul', 'author', $instance, $this->get_field_name('widget_author_condition_mode'), $this->get_field_name('widget_author_condition_entries'));
@@ -257,7 +257,7 @@ class Ad_Injection_Widget extends WP_Widget {
 		
 		<br />
 		<b> Spacing and alignment options</b>
-		<?php $this->add_show_hide_section('ad_spacing_'.uniqid(), 'ui_spacing_show', $instance); ?>
+		<?php $this->add_show_hide_section('ad_spacing_'.uniqid(''), 'ui_spacing_show', $instance); ?>
 		<table border="0" width="490px" class="adinjtable">
 		<tr><td>
 			<?php adinj_add_alignment_clear_options('widget_', $instance, $this->get_field_name('align'), $this->get_field_name('clear') ); ?>
@@ -271,7 +271,7 @@ class Ad_Injection_Widget extends WP_Widget {
 		
 		<br />
 		<b> Ad rotation pool</b>
-		<?php $this->add_show_hide_section('ad_pool_'.uniqid(), 'ui_ad_pool_show', $instance); ?>
+		<?php $this->add_show_hide_section('ad_pool_'.uniqid(''), 'ui_ad_pool_show', $instance); ?>
 		<table border="0" width="490px" class="adinjtable">
 		<?php
 		for ($i=2; $i<=10; ++$i){
@@ -282,7 +282,7 @@ class Ad_Injection_Widget extends WP_Widget {
 		
 		<br />
 		<b> Alt content pool</b>
-		<?php $this->add_show_hide_section('alt_pool_'.uniqid(), 'ui_alt_pool_show', $instance); ?>
+		<?php $this->add_show_hide_section('alt_pool_'.uniqid(''), 'ui_alt_pool_show', $instance); ?>
 		<table border="0" cellspacing="5" width="490px" class="adinjtable">
 		<?php
 		$total_alt_split = adinj_total_split('advert_alt_', $instance);
@@ -309,7 +309,7 @@ class Ad_Injection_Widget extends WP_Widget {
 	function add_row($op_stem, $num, $label, $show_op, $total_split, $ops){
 		$op = $op_stem.$num;
 		$op_split = $op.'_split';
-		$anchorid = $op.'_'.uniqid();
+		$anchorid = $op.'_'.uniqid('');
 		
 		$percentage_split = adinj_percentage_split($op_stem, $num, $ops, $total_split);
 		?>

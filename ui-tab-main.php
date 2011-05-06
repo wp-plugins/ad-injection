@@ -159,12 +159,18 @@ function adinj_tab_main(){
 	adinj_random_ad_limit_table();
 	?>
 	<tr><td colspan="4">
-	<?php
-		_e("Always put the first ad immediately after paragraph: ", 'adinj');
-		adinj_selection_box("start_from_paragraph", array(ADINJ_RULE_DISABLED,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), " ");
-	?>
+		<table class="adinjtable">
+		<?php
+			echo '<tr><td>';
+			_e("Always put the first ad immediately after paragraph: ", 'adinj');
+			echo '</td><td>';
+			adinj_selection_box("start_from_paragraph", array(ADINJ_RULE_DISABLED,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), " ");
+			echo '</tr><tr>';
+		?>
+		</table>
 	</td></tr>
 	<tr><td colspan="4">
+	<br />
 	<?php adinj_condition_tables('random_', 'ui_random_conditions_show'); ?>
 	<p></p>
 	</td></tr>
@@ -260,7 +266,7 @@ function adinj_tab_main(){
 	<textarea name="ad_code_footer_1" rows="10" cols="60"><?php echo $ops['ad_code_footer_1']; ?></textarea>
 	<br />
 	Docs: footer ad information and troubleshooting
-	<?php adinj_add_show_hide_section('footer_docs_'.uniqid(), 'ui_footer_docs_show', 'ui_footer_docs_show', $ops); ?>
+	<?php adinj_add_show_hide_section('footer_docs_'.uniqid(''), 'ui_footer_docs_show', 'ui_footer_docs_show', $ops); ?>
 	<blockquote>
 	<p><span style="font-size:10px;">Try a <a href="#468x60">468x60</a> or <a href="#728x90">728x90</a> banner.</span></p>
 	<p><span style="font-size:10px;">The footer ad will only work if your theme supports it.</span></p>

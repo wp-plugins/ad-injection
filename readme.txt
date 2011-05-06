@@ -3,8 +3,8 @@ Contributors: reviewmylife
 Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, widgets, sidebar, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog, ad rotation, A:B testing, split testing, WP Super Cache, W3 Total Cache, WP Cache
 Requires at least: 2.8.6
-Tested up to: 3.1
-Stable tag: 0.9.7.7
+Tested up to: 3.1.2
+Stable tag: 0.9.7.8
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
@@ -90,7 +90,7 @@ For more information visit [reviewmylife](http://www.reviewmylife.co.uk/blog/201
 
 = Actively being developed =
 
-As of January 2011 this plugin is being actively developed and maintained. Some major new features are planned for January / February 2011. I'm very open to implementing your feature requests.
+As of 2011 this plugin is being actively developed and maintained. New features are planned for later on in 2011. If you have ideas for new features do let me know - I can't promise to do them any time soon - but if they are good and practical I can add them to my list.
 
 == Installation ==
 
@@ -345,6 +345,10 @@ Here are some things to check if the ads are not appearing, or are appearing whe
 1. Turn off the HTML minification mode if you are also using a caching plugin. HTML minification strips out the mfunc tags that Ad Injection needs to inject its ads.
 2. If you use the 'Place Minified JavaScript in footer' then try turning it off.
 
+= Only part of the setting screen is appearing =
+
+You are probably running out of memory. View the HTML source of the settings page (usually right click and View Source) and see if there is an out of memory message. You might have to delete/deactivate some other plugins, or search Google for advise specific to your web host.
+
 = If you are getting errors when using mfunc mode check the following =
 
 1. Are there ad data directories in the plugin directory? The path will be: 
@@ -376,6 +380,10 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 3. Can choose to show the ads only to search engine visitors, or define IP addresses that ads aren't shown to.
 
 == Changelog ==
+
+= 0.9.7.8 =
+* Fix bug that prevents ads appearing on archive/home pages when certain plugins/themes are installed.
+* A PHP4 compatibility fix.
 
 = 0.9.7.7 =
 * Footer ad support (only for themes that correctly use the wp_footer hook).
@@ -530,6 +538,9 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 * First public release
 
 == Upgrade Notice ==
+
+= 0.9.7.8 =
+* Fix bug that prevented ads appearing on archive/home pages when used with certain plugins/themes.
 
 = 0.9.7.7 =
 * Footer ad support. Clear and align options for widgets. And word counting for non-Latin languages.
