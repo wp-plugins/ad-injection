@@ -99,6 +99,19 @@ DOCS;
 	<tr><td>
 	<?php _e("Allow multiple random ads to be injected at the same positions.", 'adinj') ?></td><td><?php adinj_add_checkbox('multiple_ads_at_same_position') ?> (default is to inject ads at unique positions)
 	</td></tr>
+	
+	<tr><td>
+			<?php _e("Allow random ad on last paragraph");
+			echo '</td><td>';
+			adinj_add_checkbox('rnd_allow_ads_on_last_paragraph'); ?>
+	
+	<td></tr>
+	<tr><td>
+			<?php _e("Re-select an ad for each position on post");
+			echo '</td><td>';
+			adinj_add_checkbox('rnd_reselect_ad_per_position_in_post'); ?>
+	</td></tr>
+
 	</table>
 	<?php adinj_postbox_end();
 	

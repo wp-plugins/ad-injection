@@ -333,7 +333,7 @@ function adinj_top_message_box(){
 		
 	} else if (!isset($_GET['tab'])){
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "6th May 2011: Fix bug that prevented ads appearing on archive/home pages when used with certain plugins/themes. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
+		echo "20th May 2011: Two new options for ad placement (exclude random ad from bottom, and re-pick random ad for each position). See the misc options on the ad rotation tab. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
 		echo '</strong></p></div>';
 	}
 }
@@ -1103,6 +1103,10 @@ function adinj_upgrade_db(){
 		}
 	}
 	
+	if ($stored_dbversion < 11){
+		$new_options['rnd_allow_ads_on_last_paragraph'] = 'on';
+	}
+	
 	// 3. Bump up db version number.
 	$new_options['db_version'] = $new_dbversion;
 	
@@ -1168,6 +1172,8 @@ function adinj_default_options(){
 		'rnd_padding_top' => 'd',
 		'rnd_padding_bottom' => 'd',
 		'start_from_paragraph' => 'd',
+		'rnd_allow_ads_on_last_paragraph' => '',
+		'rnd_reselect_ad_per_position_in_post' => '',
 		'multiple_ads_at_same_position' => '',
 		'random_category_condition_mode' => 'o',
 		'random_category_condition_entries' => '',
@@ -1355,7 +1361,7 @@ function adinj_default_options(){
 		// dynamic features
 		'ad_insertion_mode' => 'mfunc',
 		'sevisitors_only' => 'off',
-		'ad_referrers' => '.google., .bing., .yahoo., .ask., search?, search., /search/',
+		'ad_referrers' => '.google., .bing., .yahoo., .ask., search?, search.',
 		'block_keywords' => 'off', //TODO change to blocked referrers?
 		'blocked_keywords' => '', //TODO
 		'block_ips' => 'off',

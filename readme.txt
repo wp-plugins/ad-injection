@@ -4,7 +4,7 @@ Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-w
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, widgets, sidebar, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog, ad rotation, A:B testing, split testing, WP Super Cache, W3 Total Cache, WP Cache
 Requires at least: 2.8.6
 Tested up to: 3.1.2
-Stable tag: 0.9.7.8
+Stable tag: 0.9.7.9
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
@@ -213,6 +213,14 @@ To stop ads appearing on the contact page (or any other post/page) you have many
 2. Add a disable_adverts custom field to the post/page containing the contact form and set the value to 1 (the number one as a single digit).
 3. Add a tag to the page to mean that it shouldn't have adverts, and then add that tag to the tag filtering condition in the global settings area of the plugin configuration page.
 
+= How can I put ads on category (or other archive pages)? =
+
+The top, random and bottom ads can be placed into the category pages. Category pages are a type of archive.
+
+On the main settings page for Ad Injection just enter the number of adverts you want on these page types using the Archives column in the 'Ad placement settings' section.
+
+Ads will only appear on archives/category pages if you are showing the full post contents on these pages. They won't work if you are showing excerpts.
+
 = My adverts are overlapping with other page elements (e.g. images) =
 
 You can try defining the 'clear' display setting so that multiple floated parts of your page do not overlap.
@@ -239,8 +247,6 @@ If you aren't interested in these features then it doesn't matter! Just make sur
 = How can I show different ads for different categories? =
 
 If you want to show different ads for different categories using widgets you can set up filters for the different ads from the widget UI. If you want to show different top, random, or bottom adverts on different categories you can use some very simple PHP in the ad box (this will also work for the widgets as well if you don't like the UI method).
-
-Note this will only work in the direct insertion mode. It won’t work in mfunc mode!
 
 Example 1 - one category specific ad and a general ad.
 
@@ -292,6 +298,12 @@ Global advert
 <?php } } ?>
 
 You can download the Country Filter plugin from http://wordpress.org/extend/plugins/country-filter/
+
+= How can I sell my ads / track my ad clicks? =
+
+These are advanced features which I have no plans for adding into the core Ad Injection. You might however be able to use Ad Injection with Google Ad Manager or OpenX Ad Server that should allow you to sell your own ads and track their clicks.
+
+If you are using a 3rd party ad provider (e.g. AdSense) then statistics such as ad clicks will be available from the ad provider.
 
 = Are there any known plugin conflicts? =
 
@@ -380,6 +392,12 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 3. Can choose to show the ads only to search engine visitors, or define IP addresses that ads aren't shown to.
 
 == Changelog ==
+
+= 0.9.7.9 =
+* Add option to prevent random ad from appearing on last paragraph (to prevent it overlapping bottom ad).
+* New option to randomly pick again from pool for each random ad position.
+* Modify default list of search referrers to remove /search/. Could cause problem with Google Webmaster Tools.
+* Revert a change which unconditionally printed a debug message in hook after receiving report of a problem with it.
 
 = 0.9.7.8 =
 * Fix bug that prevents ads appearing on archive/home pages when certain plugins/themes are installed.
@@ -539,11 +557,11 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 
 == Upgrade Notice ==
 
+= 0.9.7.9 =
+* New options to disable last paragraph random ad, re-pick random ad for each position, and other minor fixes.
+
 = 0.9.7.8 =
 * Fix bug that prevented ads appearing on archive/home pages when used with certain plugins/themes.
-
-= 0.9.7.7 =
-* Footer ad support. Clear and align options for widgets. And word counting for non-Latin languages.
 
 = 0.8.3 =
 First public release.

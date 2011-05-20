@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 0.9.7.8
+Version: 0.9.7.9
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -27,7 +27,8 @@ define('ADINJ_NO_CONFIG_FILE', 1);
 // 8 = ui options for new layout
 // 9 = replace the two direct modes with 'direct'
 // 10 = exclusion tick boxes for top, random, bottom, and new footer ad
-define('ADINJ_DB_VERSION', 10);
+// 11 = options to disable rnd ad at bottom, and to get new ad for each rnd slot
+define('ADINJ_DB_VERSION', 11);
 
 // Files
 // TODO will these paths work on windows?
@@ -605,7 +606,7 @@ function adinj_content_hook($content){
 		return $content;
 	}
 	$debug_on = $ops['debug_mode'];
-	echo "<!--adinj-->";
+	if ($debug_on) echo "<!--adinj-->"; //TODO remove?
 	
 	adinj_upgrade_db_if_necessary();
 	
@@ -732,6 +733,10 @@ function adinj_content_hook($content){
 		return adinj($content, "Error: no potential inj positions");
 	}
 	
+	if (!adinj_ticked('rnd_allow_ads_on_last_paragraph')){
+		array_pop($potential_inj_positions);
+	}
+	
 	$inj_positions = array();
 	
 	$startparagraph = adinj_paragraph_to_start_ads();
@@ -789,6 +794,10 @@ function adinj_content_hook($content){
 		$content = substr_replace($content, $ad, $inj_positions[$adnum], 0);
 		++$adinj_total_random_ads_used;
 		++$adinj_total_all_ads_used;
+
+		if (adinj_ticked('rnd_reselect_ad_per_position_in_post')){
+			$ad = adinj_ad_code_random();
+		}
 	}
 
 	return adinj($content_adfree_header.$content.$content_adfree_footer, "Ads injected: " . $debug);
