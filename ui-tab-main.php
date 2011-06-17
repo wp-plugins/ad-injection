@@ -12,58 +12,8 @@ function adinj_tab_main(){
 	
 	<p><a href="#adsettings">Ad Placement settings</a> | <a href="#adverts">Adverts</a> | <a href="#restrictions">Ad insert mode/dynamic restrictions</a> | <a href="#docsquickstart">Quick Start</a> | <a href="#testads">Test ads</a></p>
 	
-	<?php adinj_postbox_start(__("Global settings", 'adinj'), 'global'); ?>
+	<?php adinj_global_settings_box($ops); ?>
 	
-	<p>These settings apply to all ads (random, top, bottom, and widget). They will override all other settings.</p>
-	
-	<input type="radio" name="ads_enabled" value="on" <?php if ($ops['ads_enabled']=='on') echo 'checked="checked"'; ?> /> <b>On: <?php _e('Ads enabled', 'adinj') ?></b><br />
-	<input type="radio" name="ads_enabled" value="off" <?php if ($ops['ads_enabled']=='off' || $ops['ads_enabled']=='') echo 'checked="checked"'; ?> /> <b>Off</b><br />
-	<input type="radio" name="ads_enabled" value="test" <?php if ($ops['ads_enabled']=='test') echo 'checked="checked"'; ?> /> <b>Test mode</b> - Only show ads to admin.<br />
-	
-	<script type="text/javascript">
-	jQuery(document).ready(function(){
-	jQuery('input[name=ads_enabled]:radio').change(function() {
-		if (jQuery('input[name=ads_enabled]:checked').val() == "test"){
-			jQuery('#test_mode_warning').slideDown(500);
-		} else {
-			jQuery('#test_mode_warning').slideUp(500);
-		}
-		return true;
-		});
-	});
-	if ('<?php echo $ops['ads_enabled'] ?>' != 'test') {
-		document.write('<style type="text/css">#test_mode_warning { display: none; }</style>');
-	}
-	</script>
-	<div id="test_mode_warning"><span style="font-size:10px;color:red;">Warning: Turn any caching plugin *off* before using test mode. If you leave the caching plugin on, the test adverts will be cached and shown to your real visitors.</span><br /></div>
-	
-	<style type="text/css">
-	.adinjtable td { vertical-align: top; }
-	</style>
-	
-	<table border="0" class="adinjtable">
-	<tr>
-	<td><p><?php _e("Only show ads on pages older than ", 'adinj') ?></p></td>
-	<td>
-	<p>
-	<select name='ads_on_page_older_than'>
-	<?php
-	$older_than_days = array(0, 1, 2, 3, 5, 7, 10, 14, 21, 28, 40, 50);
-	for ($value=0; $value<sizeof($older_than_days); ++$value){
-		echo "<option value=\"$older_than_days[$value]\" ";
-		if($ops['ads_on_page_older_than'] == $older_than_days[$value]) echo 'selected="selected"';
-		echo ">$older_than_days[$value]</option>";
-	}
-	?>
-	</select><?php _e(" (days)", 'adinj') ?> - only for single posts and pages</p>
-	</td></tr>
-	</table>
-	<?php
-	adinj_condition_tables('global_', 'ui_conditions_show');
-	adinj_postbox_end();
-	?>
-	
-
 	
 	<?php adinj_postbox_start(__("Ad placement settings", 'adinj'), 'adsettings'); ?>
 	<p><b>Exclude ads from page types</b></p>
@@ -112,7 +62,7 @@ function adinj_tab_main(){
 	<tr><td>Only show top ad on posts longer than:</td><td>
 	<?php
 	$unit = adinj_counting_unit_description();
-	$ad_if_longer_settings = array('d','a',100,200,300,500,1000,1500,2000,2500,3000,5000,10000,20000);
+	$ad_if_longer_settings = array('d','a',100,200,300,500,1000,1500,2000,2500,3000,5000,10000,15000,20000);
 	adinj_selection_box("top_ad_if_longer_than", $ad_if_longer_settings, $unit);
 	echo '</td><td>';
 	adinj_selection_box("home_top_ad_if_longer_than", $ad_if_longer_settings, $unit);
@@ -165,7 +115,7 @@ function adinj_tab_main(){
 			_e("Always put the first ad immediately after paragraph: ", 'adinj');
 			echo '</td><td>';
 			adinj_selection_box("start_from_paragraph", array(ADINJ_RULE_DISABLED,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), " ");
-			echo '</tr><tr>';
+			echo '</td></tr>';
 		?>
 		</table>
 	</td></tr>
@@ -284,10 +234,72 @@ function adinj_tab_main(){
 	
 	<?php adinj_postbox_end(); ?>
 	
+	<?php adinj_insertion_mode_box($ops); ?>
 	
+	<br clear="all" />
+	
+	<?php
+	
+	adinj_docs();
+	
+	adinj_testads();
+}
 
+function adinj_global_settings_box($ops){
+	adinj_postbox_start(__("Global settings", 'adinj'), 'global'); ?>
 	
-	<?php adinj_postbox_start(__("Ad insertion mode and dynamic ad display restrictions", 'adinj'), 'restrictions'); ?>
+	<p>These settings apply to all ads (random, top, bottom, and widget). They will override all other settings.</p>
+	
+	<input type="radio" name="ads_enabled" value="on" <?php if ($ops['ads_enabled']=='on') echo 'checked="checked"'; ?> /> <b>On: <?php _e('Ads enabled', 'adinj') ?></b><br />
+	<input type="radio" name="ads_enabled" value="off" <?php if ($ops['ads_enabled']=='off' || $ops['ads_enabled']=='') echo 'checked="checked"'; ?> /> <b>Off</b><br />
+	<input type="radio" name="ads_enabled" value="test" <?php if ($ops['ads_enabled']=='test') echo 'checked="checked"'; ?> /> <b>Test mode</b> - Only show ads to admin.<br />
+	
+	<script type="text/javascript">
+	jQuery(document).ready(function(){
+	jQuery('input[name=ads_enabled]:radio').change(function() {
+		if (jQuery('input[name=ads_enabled]:checked').val() == "test"){
+			jQuery('#test_mode_warning').slideDown(500);
+		} else {
+			jQuery('#test_mode_warning').slideUp(500);
+		}
+		return true;
+		});
+	});
+	if ('<?php echo $ops['ads_enabled'] ?>' != 'test') {
+		document.write('<style type="text/css">#test_mode_warning { display: none; }</style>');
+	}
+	</script>
+	<div id="test_mode_warning"><span style="font-size:10px;color:red;">Warning: Turn any caching plugin *off* before using test mode. If you leave the caching plugin on, the test adverts will be cached and shown to your real visitors.</span><br /></div>
+	
+	<style type="text/css">
+	.adinjtable td { vertical-align: top; }
+	</style>
+	
+	<table border="0" class="adinjtable">
+	<tr>
+	<td><p><?php _e("Only show ads on pages older than ", 'adinj') ?></p></td>
+	<td>
+	<p>
+	<select name='ads_on_page_older_than'>
+	<?php
+	$older_than_days = array(0, 1, 2, 3, 5, 7, 10, 14, 21, 28, 40, 50);
+	for ($value=0; $value<sizeof($older_than_days); ++$value){
+		echo "<option value=\"$older_than_days[$value]\" ";
+		if($ops['ads_on_page_older_than'] == $older_than_days[$value]) echo 'selected="selected"';
+		echo ">$older_than_days[$value]</option>";
+	}
+	?>
+	</select><?php _e(" (days)", 'adinj') ?> - only for single posts and pages</p>
+	</td></tr>
+	</table>
+	<?php
+	adinj_condition_tables('global_', 'ui_conditions_show');
+	//TODO sometimes OOM here - just before drop down list is loaded
+	adinj_postbox_end();
+}
+
+function adinj_insertion_mode_box($ops){
+	adinj_postbox_start(__("Ad insertion mode and dynamic ad display restrictions", 'adinj'), 'restrictions'); ?>
 	<h4>Ad insertion mode</h4>
 	<blockquote>
 	<input type="radio" name="ad_insertion_mode" value="mfunc" <?php if (adinj_mfunc_mode()) echo 'checked="checked"'; ?> /> <b>mfunc: Insert ads using cache compatible mfunc tags</b> - Dynamic features will work with WP Super Cache, W3 Total Cache and WP Cache. Only select this mode if you are using one of those caching plugins and want to use dynamic features (IP / referrer restriction, alt content and ad roatation). If you aren't using dynamic features select direct mode.
@@ -319,7 +331,7 @@ function adinj_tab_main(){
 	
 	<input type="radio" name="ad_insertion_mode" value="direct" <?php if (adinj_direct_mode()) echo 'checked="checked"'; ?> /> <b>direct: Direct ad code insertion</b> - Select this if you are not using an mfunc compatible caching plugin OR if you are not using the dynamic features.<br />
 	</blockquote>
-	</div>
+
 	<p></p>
 	
 	<script type="text/javascript">
@@ -358,16 +370,7 @@ function adinj_tab_main(){
 	</blockquote>
 	</div>
 	
-	
-	<?php adinj_postbox_end(); ?>
-	
-	<br clear="all" />
-	
-	<?php
-	
-	adinj_docs();
-	
-	adinj_testads();
+	<?php adinj_postbox_end();
 }
 
 function adinj_add_exclude_row($name, $prefix=''){
@@ -391,7 +394,7 @@ function adinj_random_ad_limit_table(){
 	<?php
 	$prefixes = array("", "home_", "archive_");
 	$unit = adinj_counting_unit_description();
-	$ad_limit_settings = array(ADINJ_RULE_DISABLED,100,200,300,500,1000,1500,2000,2500,3000);
+	$ad_limit_settings = array(ADINJ_RULE_DISABLED,100,200,300,500,1000,1500,2000,2500,3000,5000,10000,15000,20000);
 	
 	foreach ($prefixes as $prefix){
 		echo '<td>';
@@ -525,7 +528,7 @@ function adinj_side_status_box(){
 			
 			<tr><td colspan="2">
 			<p></p>
-			<b>Ad summary</a></b><br />
+			<b>Ad summary</b><br />
 			<table class="adinjstatustable">
 			<tr>
 				<td></td>

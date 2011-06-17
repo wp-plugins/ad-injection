@@ -3,8 +3,8 @@ Contributors: reviewmylife
 Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, widgets, sidebar, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog, ad rotation, A:B testing, split testing, WP Super Cache, W3 Total Cache, WP Cache
 Requires at least: 2.8.6
-Tested up to: 3.1.2
-Stable tag: 0.9.7.9
+Tested up to: 3.2
+Stable tag: 0.9.7.10
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
@@ -205,6 +205,12 @@ Yes you can do this, there are two ways.
 1. In the 'Single posts and pages' setting set the number of injected ads to 0. Then in the 'Home page' settings set the number of ads to whatever you want. 
 2. Alternatively use the global exclude options at the top to exclude ads from all page types except the home page.
 
+= Why aren't adverts appearing on my front / home / archives page? =
+
+Ads will only appear if your front, home or archives page if you show the full post - not if you show excerpts*. 
+
+* However if your theme leaves the HTML tags intact then you may in fact see the top ad in your excerpt. Whether you do or not depends on how your theme deals with excerpts.
+
 = How do I stop adverts from appearing on my contacts form page? =
 
 To stop ads appearing on the contact page (or any other post/page) you have many of options. Here are three to choose from:
@@ -268,6 +274,8 @@ See http://codex.wordpress.org/Function_Reference/in_category for more informati
 
 You can do the same for tags using has_tag. See http://codex.wordpress.org/Function_Reference/has_tag for info.
 
+Note - this will only work in direct insertion mode.
+
 = How can I show different ads for different post authors? =
 
 This is something I hope to build into the UI at some point. But in the mean time you can use PHP in the ad code boxes to do this: e.g.
@@ -298,6 +306,22 @@ Global advert
 <?php } } ?>
 
 You can download the Country Filter plugin from http://wordpress.org/extend/plugins/country-filter/
+
+= If I restrict a widget to both a category and a tag it doesn't appear in the relevant category/tag archives. Why? =
+
+If you set an with a tag restriction of 'tag1' and a category restriction of 'cat1', then it will only appear on pages that have BOTH the tag1 and cat1 property.
+
+A post in this category with that tag will work as you spotted.
+
+But if will not show in the 'tag1' archive or 'cat1' category. This is because the 'tag1' archive is not part of the 'cat1' category. A tag archive can't be part of a category, and a category archive can't be part of a tag.
+
+This means that if you add both a tag and a category restriction the ad won't appear in the tag or category archives.
+
+If this restriction wasn't in place then it would mean the category and tag archives would start showing all ads that were set to appear in the category/tag - which could be loads! And there would be no way to remove selected ones from the archives.
+
+Therefore if you are defining ads with both a category and a tag, you will need* to define a separate one for the category/tag archive.
+
+I know this might cause extra work for you, but having this restriction allows more precise control of where the ads appear. This is a deliberate design decision, rather than some random behaviour. 
 
 = How can I sell my ads / track my ad clicks? =
 
@@ -346,6 +370,12 @@ Here are some things to check if the ads are not appearing, or are appearing whe
 5. Have you selected the correct insertion mode in the 'Ad insertion mode' section?
 6. The plugin inserts adverts after the closing HTML paragraph tag </p>. If the ads aren't appearing where you expect, check where your </p> tags are.
 
+= If ads aren't appearing on your archive (category, tag, author) pages =
+
+Ad Injection can only (with most themes) insert ads into archive pages if you are showing the full post. The ads will almost certainly get truncated or stripped out if you are showing excerpts.
+
+I hope to add proper support for ads in excerpts in a later release.
+
 = If you are using a caching plugin =
 
 1. Have you enabled Ad Injection's 'mfunc' mode? (in the Ad insertion mode and dynamic ad display restrictions pane)
@@ -392,6 +422,12 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 3. Can choose to show the ads only to search engine visitors, or define IP addresses that ads aren't shown to.
 
 == Changelog ==
+
+= 0.9.7.10 =
+
+* UI fix for WordPress 3.2
+* fix for users who are running PHP with no UTF8 support
+* file error code message fix
 
 = 0.9.7.9 =
 * Add option to prevent random ad from appearing on last paragraph (to prevent it overlapping bottom ad).
@@ -556,6 +592,10 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 * First public release
 
 == Upgrade Notice ==
+
+= 0.9.7.10 =
+
+* UI fix for WordPress 3.2 and fix for users who are running PHP with no UTF8 support.
 
 = 0.9.7.9 =
 * New options to disable last paragraph random ad, re-pick random ad for each position, and other minor fixes.
