@@ -214,11 +214,12 @@ Ads will only appear if your front, home or archives page if you show the full p
 
 = How do I stop adverts from appearing on my contacts form page? =
 
-To stop ads appearing on the contact page (or any other post/page) you have many of options. Here are three to choose from:
+To stop ads appearing on the contact page (or any other post/page) you have many of options. Here are 4 to choose from:
 
-1. Add (copy and paste) <!--NoAds--> into the content of the post/page with the contact form. Just edit the contact page and paste this in - it will be invisible to the reader.
-2. Add a disable_adverts custom field to the post/page containing the contact form and set the value to 1 (the number one as a single digit).
-3. Add a tag to the page to mean that it shouldn't have adverts, and then add that tag to the tag filtering condition in the global settings area of the plugin configuration page.
+1. Add the post/page id to the post/page id ad filtering box.
+2. Add (copy and paste) &lt;!--NoAds--&gt; into the content of the post/page with the contact form. Just edit the contact page and paste this in - it will be invisible to the reader.
+3. Add a disable_adverts custom field to the post/page containing the contact form and set the value to 1 (the number one as a single digit). If you can't see the custom fields click on 'Screen Options' at the top right on the post/page editing screen, and tick 'Custom Fields.
+4. Add a tag to the page to mean that it shouldn't have adverts, and then add that tag to the tag filtering condition in the global settings area of the plugin configuration page.
 
 = How can I put ads on category (or other archive pages)? =
 
