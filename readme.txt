@@ -296,7 +296,7 @@ Note this will only work in direct insertion mode. It won’t work in mfunc mode u
 
 If you install the Country Filter plugin (with the IP database) then you can use the following code in the direct ad insertion modes. This will not work in mfunc mode!
 
-<?php if (function_exists('isCountryInFilter')) { ?>
+`<?php if (function_exists('isCountryInFilter')) { ?>
 <?php if(isCountryInFilter(array("uk"))) { ?>
 
 UK advert
@@ -305,7 +305,7 @@ UK advert
 
 Global advert
 
-<?php } } ?>
+<?php } } ?>`
 
 You can download the Country Filter plugin from http://wordpress.org/extend/plugins/country-filter/
 
