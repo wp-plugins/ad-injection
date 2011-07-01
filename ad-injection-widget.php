@@ -11,7 +11,8 @@ http://www.reviewmylife.co.uk/
 // 5 = ad/alt pool show fields
 // 6 = page type restrictions
 // 7 = align and clear
-define('ADINJ_WIDGET_DB_VERSION', 7);
+// 8 = post/page id restrictions
+define('ADINJ_WIDGET_DB_VERSION', 8);
 
 class Ad_Injection_Widget extends WP_Widget {
 	function Ad_Injection_Widget() {
@@ -46,6 +47,7 @@ class Ad_Injection_Widget extends WP_Widget {
 		if (!adinj_allowed_in_category('widget', $instance)) return;
 		if (!adinj_allowed_in_tag('widget', $instance)) return;
 		if (!adinj_allowed_in_author('widget', $instance)) return;
+		if (!adinj_allowed_in_id('widget', $instance)) return;
 		
 		extract( $args );
 		
@@ -140,6 +142,8 @@ class Ad_Injection_Widget extends WP_Widget {
 			'widget_tag_condition_entries' => '',
 			'widget_author_condition_mode' => 'o',
 			'widget_author_condition_entries' => '',
+			'widget_id_condition_mode' => 'o',
+			'widget_id_condition_entries' => '',
 			'exclude_front' => '',
 			'exclude_home' => '',
 			'exclude_page' => '',
@@ -246,12 +250,13 @@ class Ad_Injection_Widget extends WP_Widget {
 		</div>
 		
 		<br />
-		<b> Category, tag and author conditions</b>
+		<b> Category, tag, author and id conditions</b>
 		<?php 
 		$this->add_show_hide_section('ad_restrictions_'.uniqid(''), 'ui_conditions_show', $instance);
 		adinj_condition_table('widget_category', 'category slugs. e.g: cat1, cat2, cat3', 'category', $instance, $this->get_field_name('widget_category_condition_mode'), $this->get_field_name('widget_category_condition_entries'));
 		adinj_condition_table('widget_tag', 'tag slugs. e.g: tag1, tag2, tag3', 'tag', $instance, $this->get_field_name('widget_tag_condition_mode'), $this->get_field_name('widget_tag_condition_entries'));
 		adinj_condition_table('widget_author', 'author nicknames. e.g: john, paul', 'author', $instance, $this->get_field_name('widget_author_condition_mode'), $this->get_field_name('widget_author_condition_entries'));
+		adinj_condition_table('widget_id', 'post/page ids. e.g: 7, 23, 276', 'id', $instance, $this->get_field_name('widget_id_condition_mode'), $this->get_field_name('widget_id_condition_entries'));
 		echo '</div>'
 		?>
 		

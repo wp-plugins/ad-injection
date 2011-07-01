@@ -262,34 +262,39 @@ function adinj_options_page(){
 	
 	adinj_admin_tabs();
 	
-	echo '<form name="adinjform" method="post" action="">';
-	wp_nonce_field('_adinj_form');
-	
 	echo '<div style="width:258px; float:right;">';
 	
 	switch( $_GET[ 'tab' ] ) {
 	case "adrotation":
 		require_once(ADINJ_PATH . '/ui-tab-adrotation.php');
+		adinj_side_donate_box();
 		adinj_side_info_box();
 		echo '</div>';
+		echo '<form name="adinjform" method="post" action="">';
+		wp_nonce_field('_adinj_form');
 		adinj_tab_adrotation();
 		break;
 	case "debug":
 		require_once(ADINJ_PATH . '/ui-tab-debug.php');
+		adinj_side_donate_box();
 		adinj_side_info_box();
 		echo '</div>';
+		echo '<form name="adinjform" method="post" action="">';
+		wp_nonce_field('_adinj_form');
 		adinj_tab_debug();
 		break;
 	case "main":
 	default:
 		require_once(ADINJ_PATH . '/ui-tab-main.php');
 		adinj_side_status_box();
+		adinj_side_donate_box();
 		adinj_side_info_box();
 		echo '</div>';
+		echo '<form name="adinjform" method="post" action="">';
+		wp_nonce_field('_adinj_form');
 		adinj_tab_main();
 		break;
 	}
-	
 	echo '</form>';
 	echo '</div> <!--wrap-->';
 }
@@ -334,9 +339,48 @@ function adinj_top_message_box(){
 		
 	} else if (!isset($_GET['tab'])){
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "17th June 2011: UI fixes for WordPress 3.2 and other minor updates. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
+		echo "1st July 2011: New options to filter ads based on post/page IDs and other minor fixes. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
 		echo '</strong></p></div>';
 	}
+}
+
+function adinj_side_donate_box(){
+?>
+	<div class="postbox-container" style="width:258px;">
+		<div class="metabox-holder">	
+		<div class="meta-box-sortables" style="min-height:200px;">
+		<div class="postbox">
+		<h3 class="hndle"><span><?php echo adinj_get_logo(); ?> Donate $10, $20 or $50!</span></h3>
+		<div class="inside" style="margin:5px;">
+		I have spent many hundreds of hours creating this plugin. If it helps you to make money please consider making a donation. Thank you!
+
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="JP5ECV7NX7GSY">
+<input type="hidden" name="item_name" value="Ad Injection">
+<input type="hidden" name="item_number" value="Ad Injection">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donateCC_LG.gif:NonHosted">
+<p>Amount:<br>
+<input class="omni_donate_field" type="text" name="amount" size="9" title="The amount you wish to donate" value="10">
+<select id="currency_code" name="currency_code">
+	<option value="USD">U.S. Dollars</option>
+	<option value="GBP">Pounds Sterling</option>
+    <option value="AUD">Australian Dollars</option>
+    <option value="CAD">Canadian Dollars</option>
+    <option value="EUR">Euros</option>
+    <option value="JPY">Yen</option></select>
+</p>
+<center>
+<input type="image" src="https://www.paypalobjects.com/en_US/GB/i/btn/btn_donateCC_LG.gif" border="0" width="166" height="53" name="submit" alt="PayPal - The safer, easier way to pay online."></center>
+</form>
+				
+		</div>
+		</div>	
+		</div>
+		</div>
+	</div> 
+	<?php
 }
 
 function adinj_side_info_box(){
@@ -614,8 +658,8 @@ function adinj_selection_box($name, $values, $type="", $selected_value=NULL){
 		}
 		$typetxt = $type;
 		if (adinj_disabled($option_value) || adinj_alwaysshow($display_value)) $typetxt = "";
-		if ("$option_value" === 'd') { $display_value = ADINJ_DISABLED; }
 		if ("$option_value" === 'a') { $display_value = ADINJ_ALWAYS_SHOW; }
+		if ("$option_value" === 'd') { $display_value = ADINJ_DISABLED; }
 		if ("$option_value" === 'o') { $display_value = ADINJ_ONLY_SHOW_IN; }
 		if ("$option_value" === 'n') { $display_value = ADINJ_NEVER_SHOW_IN; }
 		echo ">$display_value $typetxt</option>";
@@ -663,13 +707,12 @@ HTML;
 
 function adinj_condition_tables($prefix, $show_setting){
 	$ops = adinj_options();
-	?>
-	Category tag, and author conditions
-	<?php
+	echo "Category tag, author, and post id conditions";
 	adinj_add_show_hide_section('ad_conditions_'.uniqid(''), $show_setting, $show_setting, $ops);
 	adinj_condition_table($prefix.'category', 'category slugs. e.g: cat1, cat2, cat3', 'category', $ops);
 	adinj_condition_table($prefix.'tag', 'tag slugs. e.g: tag1, tag2, tag3', 'tag', $ops);
 	adinj_condition_table($prefix.'author', 'author nicknames. e.g: john, paul', 'author', $ops);
+	adinj_condition_table($prefix.'id', 'post or page ids. e.g: 7, 38, 243', 'id', $ops);
 	echo '</div>';
 }
 
@@ -677,7 +720,7 @@ function adinj_condition_table($name, $description, $type, $ops, $dropdown_field
 	$style = "";
 	if ($dropdown_fieldname == NULL){
 		$dropdown_fieldname = $name."_condition_mode";
-		// Only for the main screen - now for widgets screen.
+		// Only for the main screen - not for widgets screen.
 		$style = "style='width:280px'";
 	}
 	if ($textarea_fieldname == NULL){
@@ -693,9 +736,13 @@ function adinj_condition_table($name, $description, $type, $ops, $dropdown_field
 	
 	<?php
 		adinj_selection_box($dropdown_fieldname,
-			array('Only show in', 'Never show in'), "", $ops[$name.'_condition_mode']);
+			array('o','n'), "", $ops[$name.'_condition_mode']);
 	?>
 	
+	<?php 
+	if ($type == 'category' || $type == 'tag' || $type == 'author') {
+	?>
+
 	<br />
 	<select name="<?php echo $name; ?>_dropdown" <?php echo $style; ?> onchange='adinj_addtext(getElementsByName("<?php echo $textarea_fieldname; ?>")[0], this.options[this.selectedIndex].value);'>
 		<option value=""><?php echo 'Add ' . $type; ?></option> 
@@ -726,6 +773,8 @@ function adinj_condition_table($name, $description, $type, $ops, $dropdown_field
 	
 	</select>
 	<NOSCRIPT><br /><span style="font-size:10px">As JavaScript is disabled you will have to manually type in the values.</span></NOSCRIPT>
+	
+	<?php } ?>
 	
 	</td></tr>
 	<tr><td colspan="2">
@@ -1140,6 +1189,8 @@ function adinj_default_options(){
 		'global_tag_condition_entries' => '',
 		'global_author_condition_mode' => 'o',
 		'global_author_condition_entries' => '',
+		'global_id_condition_mode' => 'o',
+		'global_id_condition_entries' => '',
 		'content_length_unit' => 'words',
 		// Random ads
 		'ad_code_random_1' => '',
@@ -1182,6 +1233,8 @@ function adinj_default_options(){
 		'random_tag_condition_entries' => '',
 		'random_author_condition_mode' => 'o',
 		'random_author_condition_entries' => '',
+		'random_id_condition_mode' => 'o',
+		'random_id_condition_entries' => '',
 		'random_exclude_front' => '',
 		'random_exclude_home' => '',
 		'random_exclude_page' => '',
@@ -1256,6 +1309,8 @@ function adinj_default_options(){
 		'top_tag_condition_entries' => '',
 		'top_author_condition_mode' => 'o',
 		'top_author_condition_entries' => '',
+		'top_id_condition_mode' => 'o',
+		'top_id_condition_entries' => '',
 		'top_exclude_front' => '',
 		'top_exclude_home' => '',
 		'top_exclude_page' => '',
@@ -1300,6 +1355,8 @@ function adinj_default_options(){
 		'bottom_tag_condition_entries' => '',
 		'bottom_author_condition_mode' => 'o',
 		'bottom_author_condition_entries' => '',
+		'bottom_id_condition_mode' => 'o',
+		'bottom_id_condition_entries' => '',
 		'bottom_exclude_front' => '',
 		'bottom_exclude_home' => '',
 		'bottom_exclude_page' => '',
@@ -1344,6 +1401,8 @@ function adinj_default_options(){
 		'footer_tag_condition_entries' => '',
 		'footer_author_condition_mode' => 'o',
 		'footer_author_condition_entries' => '',
+		'footer_id_condition_mode' => 'o',
+		'footer_id_condition_entries' => '',
 		'footer_exclude_front' => '',
 		'footer_exclude_home' => '',
 		'footer_exclude_page' => '',

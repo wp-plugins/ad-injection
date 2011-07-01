@@ -59,7 +59,7 @@ function adinj_tab_main(){
 	<tr><td></td><td><b>Single/Page</b></td><td><b>Home</b></td><td><b>Archive</b></td></tr>
 	<tr><td colspan="4"><h3>Top ad</h3></td></tr>
 	
-	<tr><td>Only show top ad on posts longer than:</td><td>
+	<tr><td><b>Enabled/disabled</b> (on posts longer than):</td><td>
 	<?php
 	$unit = adinj_counting_unit_description();
 	$ad_if_longer_settings = array('d','a',100,200,300,500,1000,1500,2000,2500,3000,5000,10000,15000,20000);
@@ -127,7 +127,7 @@ function adinj_tab_main(){
 	
 	<tr><td colspan="4"><h3>Bottom ad</h3></td></tr>
 	
-	<tr><td>Only show bottom ad on posts longer than:</td><td>
+	<tr><td><b>Enabled/disabled</b> (on posts longer than):</td><td>
 	<?php
 	adinj_selection_box("bottom_ad_if_longer_than", $ad_if_longer_settings, $unit);
 	echo '</td><td>';
@@ -394,7 +394,7 @@ function adinj_random_ad_limit_table(){
 	<?php
 	$prefixes = array("", "home_", "archive_");
 	$unit = adinj_counting_unit_description();
-	$ad_limit_settings = array(ADINJ_RULE_DISABLED,100,200,300,500,1000,1500,2000,2500,3000,5000,10000,15000,20000);
+	$ad_limit_settings = array('d',100,200,300,500,1000,1500,2000,2500,3000,5000,10000,15000,20000);
 	
 	foreach ($prefixes as $prefix){
 		echo '<td>';
@@ -402,7 +402,7 @@ function adinj_random_ad_limit_table(){
 		echo '</td>';
 	} ?>
 	</tr>
-	<tr><td>One ad if shorter than:</td>
+	<tr><td>Only 1 ad if content shorter than:</td>
 	<?php
 	foreach ($prefixes as $prefix){
 		echo '<td>';
@@ -410,7 +410,7 @@ function adinj_random_ad_limit_table(){
 		echo '</td>';
 	} ?>
 	</tr>
-	<tr><td>Two ads if shorter than:</td>
+	<tr><td>Only 2 ads if content shorter than:</td>
 	<?php
 	foreach ($prefixes as $prefix){
 		echo '<td>';
@@ -419,7 +419,7 @@ function adinj_random_ad_limit_table(){
 	}
 	?>
 	</tr>
-	<tr><td>Three ads if shorter than:</td>
+	<tr><td>Only 3 ads if content shorter than:</td>
 	<?php
 	foreach ($prefixes as $prefix){
 		echo '<td>';

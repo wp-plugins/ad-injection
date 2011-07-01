@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 0.9.7.10
+Version: 0.9.7.11
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -28,7 +28,8 @@ define('ADINJ_NO_CONFIG_FILE', 1);
 // 9 = replace the two direct modes with 'direct'
 // 10 = exclusion tick boxes for top, random, bottom, and new footer ad
 // 11 = options to disable rnd ad at bottom, and to get new ad for each rnd slot
-define('ADINJ_DB_VERSION', 11);
+// 13 = post/page id restrictions
+define('ADINJ_DB_VERSION', 13);
 
 // Files
 // TODO will these paths work on windows?
@@ -182,7 +183,7 @@ function adinj_get_ad_code($adtype, $ads_db){
 	}
 	
 	$ad = adshow_add_formatting($ad, $formatting);
-	return adinj_ad_code_eval($ad);
+	return "<!--Ad Injection:$adtype-->".adinj_ad_code_eval($ad);
 }
 
 function adinj_ad_code_random(){
@@ -457,11 +458,12 @@ function adinj_ads_completely_disabled_from_page($content=NULL){
 	if (!adinj_allowed_in_category('global', $ops)) return "NOADS: globally blocked from category";
 	if (!adinj_allowed_in_tag('global', $ops)) return "NOADS: globally blocked from tag";	
 	if (!adinj_allowed_in_author('global', $ops)) return "NOADS: globally blocked from author";
+	if (!adinj_allowed_in_id('global', $ops)) return "NOADS: globally blocked from post/page id";
 	
 	// manual ad disabling tags
 	if ($content == NULL) return false;
-	if (strpos($content, "<!--noadsense-->") !== false) return "NOADS: noadsense tag"; // 'Adsense Injection' tag
-	if (strpos($content, "<!-no-adsense-->") !== false) return "NOADS: no-adsense tag"; // 'Whydowork Adsense' tag
+	if (stripos($content, "<!--noadsense-->") !== false) return "NOADS: noadsense tag"; // 'Adsense Injection' tag
+	if (stripos($content, "<!-no-adsense-->") !== false) return "NOADS: no-adsense tag"; // 'Whydowork Adsense' tag
 	if (stripos($content,'<!--NoAds-->') !== false) return "NOADS: NoAds tag"; // 'Quick Adsense' tag
 	if (stripos($content,'<!--OffAds-->') !== false) return "NOADS: OffAds tag"; // 'Quick Adsense' tag
 	
@@ -487,7 +489,7 @@ function adinj_allowed_in_list($all_entries, $config_entries, $mode, $func){
 	} else if (adinj_mode_never_show_in($mode)){
 		return true;
 	}
-	echo ("<!--ADINJ DEBUG: error in adinj_allowed_in_list-->");
+	echo ("<!--ADINJ DEBUG: error in adinj_allowed_in_list($func)-->");
 	return true;
 }
 
@@ -583,10 +585,32 @@ function adinj_allowed_in_author($scope, $ops){
 	return adinj_allowed_in_list($user, $conditions, $mode, 'adinj_author_data');
 }
 
+function adinj_allowed_in_id($scope, $ops){
+	$conditions = adinj_split_comma_list($ops[$scope.'_id_condition_entries']);
+	if (empty($conditions)) return true;
+	
+	if (!is_single() && !is_page()){
+		return true;
+	}
+	
+	$postid = -1;
+	if (in_the_loop()){
+		global $post;
+		$postid = $post->ID;
+	} else {
+		global $wp_query;
+		$postid = $wp_query->post->ID;
+	}
+	
+	$mode = $ops[$scope.'_id_condition_mode'];
+	return adinj_allowed_in_list(array($postid), $conditions, $mode, 'adinj_post_id');
+}
+
 //function parameters
 function adinj_category_nicename($category){ return $category->category_nicename; }
 function adinj_tag_slug($tag){ return $tag->slug; }
 function adinj_author_data($data){ return $data; }
+function adinj_post_id($data){ return $data; }
 
 function adinj_split_comma_list($list){
 	return preg_split("/[\s,]+/", $list, -1, PREG_SPLIT_NO_EMPTY);
@@ -861,6 +885,7 @@ function adinj_num_top_ads_to_insert($content_length){
 	if (!adinj_allowed_in_category('top', $ops)) return 0;
 	if (!adinj_allowed_in_tag('top', $ops)) return 0;
 	if (!adinj_allowed_in_author('top', $ops)) return 0;
+	if (!adinj_allowed_in_id('top', $ops)) return 0;
 	
 	if (adinj_do_rule_if($ops[$prefix.'top_ad_if_longer_than'], '<', $content_length)){
 		return 1;
@@ -884,6 +909,7 @@ function adinj_num_bottom_ads_to_insert($content_length){
 	if (!adinj_allowed_in_category('bottom', $ops)) return 0;
 	if (!adinj_allowed_in_tag('bottom', $ops)) return 0;
 	if (!adinj_allowed_in_author('bottom', $ops)) return 0;
+	if (!adinj_allowed_in_id('bottom', $ops)) return 0;
 	
 	if (adinj_do_rule_if($ops[$prefix.'bottom_ad_if_longer_than'], '<', $content_length)){
 		return 1;
@@ -916,6 +942,7 @@ function adinj_num_rand_ads_to_insert($content_length){
 	if (!adinj_allowed_in_category('random', $ops)) return 0;
 	if (!adinj_allowed_in_tag('random', $ops)) return 0;
 	if (!adinj_allowed_in_author('random', $ops)) return 0;
+	if (!adinj_allowed_in_id('random', $ops)) return 0;
 	
 	$length = $content_length;
 	if (adinj_do_rule_if($ops[$prefix.'no_random_ads_if_shorter_than'], '>', $length)){
@@ -939,6 +966,11 @@ function adinj_num_footer_ads_to_insert(){
 	if ($reason !== false){
 		return 0;
 	}
+	$ops = adinj_options();
+	if (!adinj_allowed_in_category('footer', $ops)) return 0;
+	if (!adinj_allowed_in_tag('footer', $ops)) return 0;
+	if (!adinj_allowed_in_author('footer', $ops)) return 0;
+	if (!adinj_allowed_in_id('footer', $ops)) return 0;
 	return 1;
 }
 
@@ -1016,7 +1048,7 @@ function adinj_widgets_init() {
 register_activation_hook(__FILE__, 'adinj_activate_hook');
 // Content injection
 add_action('wp_enqueue_scripts', 'adinj_addsevjs_hook');
-add_filter('the_content', 'adinj_content_hook');
+add_filter('the_content', 'adinj_content_hook'); // TODO allow priority to be changed? e.g. TheTravelTheme is setting its formatting at priority 99
 add_action('wp_footer', 'adinj_footer_hook');
 add_action('wp_footer', 'adinj_print_referrers_hook');
 

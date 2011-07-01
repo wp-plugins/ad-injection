@@ -4,19 +4,20 @@ Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-w
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, widgets, sidebar, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog, ad rotation, A:B testing, split testing, WP Super Cache, W3 Total Cache, WP Cache
 Requires at least: 2.8.6
 Tested up to: 3.2
-Stable tag: 0.9.7.10
+Stable tag: 0.9.7.11
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
 == Description ==
 
-Ad Injection injects any kind of advert (e.g. Google AdSense, Amazon Associates, ClickBank, TradeDoubler, etc) into the existing content of your WordPress posts and pages. You can control the number of adverts based on the post length, and it can restrict who sees adverts by post age, visitor referrer and IP address. Adverts can be configured in the post (random, top, and bottom positions) or in any widget/sidebar area. There's support for A:B split testing / ad rotation. And the dynamic restrictions (by IP and referrer) work with WP Super Cache, W3 Total Cache and WP Cache.
+Ad Injection from [reviewmylife](http://www.reviewmylife.co.uk/ "reviewmylife") injects any kind of advert (e.g. Google AdSense, Amazon Associates, ClickBank, TradeDoubler, etc) into the existing content of your WordPress posts and pages. You can control the number of adverts based on the post length, and it can restrict who sees adverts by post age, visitor referrer and IP address. Adverts can be configured in the post (random, top, and bottom positions) or in any widget/sidebar area. There's support for A:B split testing / ad rotation. And the dynamic restrictions (by IP and referrer) work with WP Super Cache, W3 Total Cache and WP Cache.
 
 **New Features 0.9.7.x**
 
 * Archive and home page ads now fully supported with the same controls as ads for single posts/pages.
 * Category, tag and author restrictions for top, random and bottom ads.
 * Footer ads.
+* Restrict ads by page/post id
 
 **New Features 0.9.6.x**
 
@@ -423,8 +424,11 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 
 == Changelog ==
 
-= 0.9.7.10 =
+= 0.9.7.11 =
+* Filter ads by post/page ID
+* Other misc bug fixes
 
+= 0.9.7.10 =
 * UI fix for WordPress 3.2
 * fix for users who are running PHP with no UTF8 support
 * file error code message fix
@@ -593,8 +597,10 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 
 == Upgrade Notice ==
 
-= 0.9.7.10 =
+= 0.9.7.11 =
+* Filter ads by post/page ID and other misc fixes.
 
+= 0.9.7.10 =
 * UI fix for WordPress 3.2 and fix for users who are running PHP with no UTF8 support.
 
 = 0.9.7.9 =
