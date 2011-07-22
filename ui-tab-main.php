@@ -16,7 +16,7 @@ function adinj_tab_main(){
 	
 	
 	<?php adinj_postbox_start(__("Ad placement settings", 'adinj'), 'adsettings'); ?>
-	<p><b>Exclude ads from page types</b></p>
+	<p><b><a name="pagetypefilters"></a>Exclude ads from page types</b></p>
 	<?php
 	$count_pages = wp_count_posts('page', 'readable'); 
 	$count_posts = wp_count_posts('post', 'readable'); 
@@ -26,38 +26,39 @@ function adinj_tab_main(){
 	<table class="adinjstatustable">
 	<tr>
 		<td></td>
-		<td><b>Single</b></td>
-		<td><b>Page</b></td>
+		<td><b>Single(<?php echo $count_posts->publish; ?>)</b></td>
+		<td><b>Page(<?php echo $count_pages->publish; ?>)</b></td>
 		<td><b>Home</b></td>
 		<td><b>Archive</b></td>
-		<td><b>Front</b></td>
+		<td><b><a href="<?php echo get_bloginfo('url'); ?>" target="_new">Front</a></b></td>
 		<td><b>404</b></td>
 		<td><b>Search</b></td>
 	</tr>
 	<?php
 	adinj_add_exclude_row('All ads');
-	adinj_add_exclude_row('Top', 'top_');
-	adinj_add_exclude_row('Random', 'random_');
-	adinj_add_exclude_row('Bottom', 'bottom_');
-	adinj_add_exclude_row('Footer', 'footer_');
-	adinj_add_exclude_row('Widget', 'widget_');
+	adinj_add_exclude_row('|_&nbsp;&nbsp;<a href="#topadplacement">Top</a>', 'top_');
+	adinj_add_exclude_row('|_&nbsp;&nbsp;<a href="#randomadplacement">Random</a>', 'random_');
+	adinj_add_exclude_row('|_&nbsp;&nbsp;<a href="#bottomadplacement">Bottom</a>', 'bottom_');
+	adinj_add_exclude_row('|_&nbsp;&nbsp;<a href="#footeradplacement">Footer</a>', 'footer_');
+	adinj_add_exclude_row('|_&nbsp;&nbsp;Widget', 'widget_');
+	adinj_add_exclude_row('|_&nbsp;&nbsp;Template', 'template_');
 	?>
+	<tr><td colspan="8"><span style="font-size:10px;">Go to the <a href="widgets.php">widget control panel</a> to set up any widgets. See the <a href="http://wordpress.org/extend/plugins/ad-injection/faq/" target="_new">FAQ</a> for how to set up template ads.</span></td></tr>
 	</table>
 	
-	front - <?php echo get_bloginfo('url'); ?><br />
-	home page (latest posts page - may or may not be same as front)<br />
-	page - <?php echo $count_pages->publish; ?> single page(s)<br />
-	single - <?php echo $count_posts->publish; ?> single post(s)<br />
-	archive - categories, tags, authors, dates<br />
+	<p>
+	
+	</p>
 	
 	<p><span style="font-size:10px;"><b>Notes:</b> Your home page is the page displaying your latest posts. It may be different to your front page if you have configured your front page to be a static page.</span></p>
 	<p><span style="font-size:10px;">If you have <a href='options-reading.php'>set your front page</a> to be a static 'page' rather than your latest posts, the 'page' tick box will also apply to the front page.</span></p>
-	<p><span style="font-size:10px;">You must configure your individual widgets from the <a href="widgets.php">widgets control panel</a>.</span></p>
+	<p><span style="font-size:10px;">Archive pages are the categories, tags, authors and date pages.</span></p>
+	
 	<p></p>
 	
 	<table border="0" class="adinjtable">
 	<tr><td></td><td><b>Single/Page</b></td><td><b>Home</b></td><td><b>Archive</b></td></tr>
-	<tr><td colspan="4"><h3>Top ad</h3></td></tr>
+	<tr><td colspan="4"><h3><a name="topadplacement"></a>Top ad [<a href="#topadcode">code</a>] [<a href="#pagetypefilters">page type filters</a>]</h3></td></tr>
 	
 	<tr><td><b>Enabled/disabled</b> (on posts longer than):</td><td>
 	<?php
@@ -71,7 +72,7 @@ function adinj_tab_main(){
 	?>
 	</td></tr>
 	
-	<tr><td>Max num of top ads on whole page:</td><td>1</td><td>
+	<tr><td><b>|_</b> Max num of top ads on whole page:</td><td>1</td><td>
 	<?php
 	$num_ads_array = array(0,1,2,3,4,5,6,7,8,9,10);
 	adinj_selection_box("home_max_num_top_ads_per_page", $num_ads_array);
@@ -82,11 +83,11 @@ function adinj_tab_main(){
 	
 	
 	<tr><td colspan="4">
-	<?php adinj_condition_tables('top_', 'ui_top_conditions_show'); ?>
+	<b>|_</b><?php adinj_condition_tables('top_', 'ui_top_conditions_show'); ?>
 	<p></p>
 	</td></tr>
 	
-	<tr><td colspan="4"><h3>Random ads</h3></td></tr>
+	<tr><td colspan="4"><h3><a name="randomadplacement"></a>Random ads [<a href="#randomadcode">code</a>] [<a href="#pagetypefilters">page type filters</a>]</h3></td></tr>
 	<tr><td>Max num of random ads on whole page:</td><td>
 	n/a
 	</td><td>
@@ -96,7 +97,7 @@ function adinj_tab_main(){
 	adinj_selection_box("archive_max_num_random_ads_per_page", $num_ads_array);
 	?>
 	</td></tr>
-	<tr><td>Max num of random ads per post:</td><td>
+	<tr><td><b>|_ </b>Max num of random ads per post:</td><td>
 	<?php
 	adinj_selection_box("max_num_of_ads", $num_ads_array);
 	echo '</td><td>';
@@ -125,7 +126,7 @@ function adinj_tab_main(){
 	<p></p>
 	</td></tr>
 	
-	<tr><td colspan="4"><h3>Bottom ad</h3></td></tr>
+	<tr><td colspan="4"><h3><a name="bottomadplacement"></a>Bottom ad [<a href="#bottomadcode">code</a>] [<a href="#pagetypefilters">page type filters</a>]</h3></td></tr>
 	
 	<tr><td><b>Enabled/disabled</b> (on posts longer than):</td><td>
 	<?php
@@ -137,7 +138,7 @@ function adinj_tab_main(){
 	?>
 	</td></tr>
 	
-	<tr><td>Max num of bottom ads on whole page:</td><td>1</td><td>
+	<tr><td><b>|_ </b>Max num of bottom ads on whole page:</td><td>1</td><td>
 	<?php
 	adinj_selection_box("home_max_num_bottom_ads_per_page", $num_ads_array);
 	echo '</td><td>';
@@ -146,11 +147,11 @@ function adinj_tab_main(){
 	</td></tr>
 	
 	<tr><td colspan="4">
-	<?php adinj_condition_tables('bottom_', 'ui_bottom_conditions_show'); ?>
+	<b>|_ </b><?php adinj_condition_tables('bottom_', 'ui_bottom_conditions_show'); ?>
 	<p></p>
 	</td></tr>
 	
-	<tr><td colspan="4"><h3>Footer ad</h3></td></tr>
+	<tr><td colspan="4"><h3><a name="footeradplacement"></a>Footer ad [<a href="#footeradcode">code</a>] [<a href="#pagetypefilters">page type filters</a>]</h3></td></tr>
 	<tr><td colspan="4">
 	<?php adinj_condition_tables('footer_', 'ui_footer_conditions_show'); ?>
 	<p></p>
@@ -166,7 +167,7 @@ function adinj_tab_main(){
 	
 	<?php adinj_postbox_start(__("Adverts", 'adinj'), 'adverts'); ?>
 	
-	<h3>Top ad (above the post content - this is not a 'header' ad)</h3>
+	<h3><a name="topadcode"></a>Top ad (above the post content - this is not a 'header' ad) [<a href="#topadplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_top'>pool</a>]--></h3>
 	<table border="0" class="adinjtable">
 	<tr><td>
 	<textarea name="ad_code_top_1" rows="10" cols="60"><?php echo $ops['ad_code_top_1']; ?></textarea>
@@ -181,7 +182,7 @@ function adinj_tab_main(){
 	</table>
 	<p><span style="font-size:10px;">Be especially careful if you decide to use the 'float' layout options. Make sure that you don't have adverts floated over the top of other page elements, or vice-versa.</span></p>
 	
-	<h3>Random ad (inserted randomly between paragraphs)</h3>
+	<h3><a name="randomadcode"></a>Random ad (inserted randomly between paragraphs) [<a href="#randomadplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_random'>pool</a>]--></h3>
 	<table border="0" class="adinjtable">
 	<tr><td>
 	<textarea name="ad_code_random_1" rows="10" cols="60"><?php echo $ops['ad_code_random_1']; ?></textarea>
@@ -195,7 +196,7 @@ function adinj_tab_main(){
 	</td></tr>
 	</table>
 	
-	<h3>Bottom ad (below the post content - this is not a 'footer' ad)</h3>
+	<h3><a name="bottomadcode"></a>Bottom ad (below the post content) [<a href="#bottomadplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_bottom'>pool</a>]--></h3>
 	<table border="0" class="adinjtable">
 	<tr><td>
 	<textarea name="ad_code_bottom_1" rows="10" cols="60"><?php echo $ops['ad_code_bottom_1']; ?></textarea>
@@ -210,7 +211,7 @@ function adinj_tab_main(){
 	</table>
 	
 	
-	<h3>Footer ad (injected into 'the_footer' hook - not supported by all themes)</h3>
+	<h3><a name="footeradcode"></a>Footer ad (put into 'the_footer' hook - not supported by all themes) [<a href="#footeradplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_footer'>pool</a>]--></h3>
 	<table border="0" class="adinjtable">
 	<tr><td>
 	<textarea name="ad_code_footer_1" rows="10" cols="60"><?php echo $ops['ad_code_footer_1']; ?></textarea>
@@ -248,7 +249,7 @@ function adinj_tab_main(){
 function adinj_global_settings_box($ops){
 	adinj_postbox_start(__("Global settings", 'adinj'), 'global'); ?>
 	
-	<p>These settings apply to all ads (random, top, bottom, and widget). They will override all other settings.</p>
+	<p>These settings apply to all ads (top, random, bottom, footer, and widget). They will override all other settings.</p>
 	
 	<input type="radio" name="ads_enabled" value="on" <?php if ($ops['ads_enabled']=='on') echo 'checked="checked"'; ?> /> <b>On: <?php _e('Ads enabled', 'adinj') ?></b><br />
 	<input type="radio" name="ads_enabled" value="off" <?php if ($ops['ads_enabled']=='off' || $ops['ads_enabled']=='') echo 'checked="checked"'; ?> /> <b>Off</b><br />
@@ -348,13 +349,12 @@ function adinj_insertion_mode_box($ops){
 	</script>
 	
 	
-	<div class="inside" style="margin:10px">
 	<h4><a name="dynamic"></a>Show ads only to search engine visitors (dynamic feature)</h4>
 	
 	<blockquote>
 	<?php adinj_add_checkbox('sevisitors_only') ?><?php _e("Only show ads to search engine visitors (customise search engine referrers below if necessary).", 'adinj') ?><br />
 	<textarea name="ad_referrers" rows="2" cols="70"><?php echo $ops['ad_referrers']; ?></textarea>
-	<p>Comma separated list e.g.: <br /><code>.google., .bing., .yahoo., .ask., search?, search., /search/</code></p>
+	<p>Comma separated list e.g.: <br /><code>.google., .bing., .yahoo., .ask., search?, search.</code></p>
 	</blockquote>
 	
 	<h4>Blocked IP addresses (dynamic feature)</h4>
@@ -368,7 +368,6 @@ function adinj_insertion_mode_box($ops){
 	
 	<p>For reference your current IP address is <code><?php echo $_SERVER['REMOTE_ADDR'] ?></code></p>
 	</blockquote>
-	</div>
 	
 	<?php adinj_postbox_end();
 }
@@ -390,7 +389,7 @@ function adinj_add_exclude_row($name, $prefix=''){
 
 function adinj_random_ad_limit_table(){
 	?>
-	<tr><td>No ads if shorter than:</td>
+	<tr><td>&nbsp;<b>|_</b> No ads if shorter than:</td>
 	<?php
 	$prefixes = array("", "home_", "archive_");
 	$unit = adinj_counting_unit_description();
@@ -402,7 +401,7 @@ function adinj_random_ad_limit_table(){
 		echo '</td>';
 	} ?>
 	</tr>
-	<tr><td>Only 1 ad if content shorter than:</td>
+	<tr><td>&nbsp;&nbsp;<b>|_</b> Only 1 ad if post shorter than:</td>
 	<?php
 	foreach ($prefixes as $prefix){
 		echo '<td>';
@@ -410,7 +409,7 @@ function adinj_random_ad_limit_table(){
 		echo '</td>';
 	} ?>
 	</tr>
-	<tr><td>Only 2 ads if content shorter than:</td>
+	<tr><td>&nbsp;&nbsp;&nbsp;<b>|_</b> Only 2 ads if post shorter than:</td>
 	<?php
 	foreach ($prefixes as $prefix){
 		echo '<td>';
@@ -419,7 +418,7 @@ function adinj_random_ad_limit_table(){
 	}
 	?>
 	</tr>
-	<tr><td>Only 3 ads if content shorter than:</td>
+	<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<b>|_</b> Only 3 ads if post shorter than:</td>
 	<?php
 	foreach ($prefixes as $prefix){
 		echo '<td>';
@@ -540,7 +539,7 @@ function adinj_side_status_box(){
 				<td><b>A</b></td>
 			</tr>
 			<tr>
-				<td style="text-align:right"><b>Top</b></td>
+				<td style="text-align:right"><b><a href="#topadplacement">Top</a></b></td>
 				<td><?php echo adinj_count_live_ads('top', $ops); ?></td>
 				<td><?php echo adinj_count_live_ads('top_alt', $ops); ?></td>
 				<td><?php adinj_print_ad_dot('top', 'single') ?></td>
@@ -549,7 +548,7 @@ function adinj_side_status_box(){
 				<td><?php adinj_print_ad_dot('top', 'archive') ?></td>
 			</tr>
 			<tr>
-				<td style="text-align:right"><b>Random</b></td>
+				<td style="text-align:right"><b><a href="#randomadplacement">Random</a></b></td>
 				<td><?php echo adinj_count_live_ads('random', $ops); ?></td>
 				<td><?php echo adinj_count_live_ads('random_alt', $ops); ?></td>
 				<td><?php adinj_print_ad_dot('random', 'single') ?></td>
@@ -558,7 +557,7 @@ function adinj_side_status_box(){
 				<td><?php adinj_print_ad_dot('random', 'archive') ?></td>
 			</tr>
 			<tr>
-				<td style="text-align:right"><b>Bottom</b></td>
+				<td style="text-align:right"><b><a href="#bottomadplacement">Bottom</a></b></td>
 				<td><?php echo adinj_count_live_ads('bottom', $ops); ?></td>
 				<td><?php echo adinj_count_live_ads('bottom_alt', $ops); ?></td>
 				<td><?php adinj_print_ad_dot('bottom', 'single') ?></td>
@@ -567,7 +566,7 @@ function adinj_side_status_box(){
 				<td><?php adinj_print_ad_dot('bottom', 'archive') ?></td>
 			</tr>
 			<tr>
-				<td style="text-align:right"><b>Footer</b></td>
+				<td style="text-align:right"><b><a href="#footeradplacement">Footer</a></b></td>
 				<td><?php echo adinj_count_live_ads('footer', $ops); ?></td>
 				<td><?php echo adinj_count_live_ads('footer_alt', $ops); ?></td>
 				<td><?php adinj_print_ad_dot('footer', 'single') ?></td>

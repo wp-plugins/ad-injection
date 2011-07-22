@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 0.9.7.11
+Version: 1.1.0.1
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -29,7 +29,8 @@ define('ADINJ_NO_CONFIG_FILE', 1);
 // 10 = exclusion tick boxes for top, random, bottom, and new footer ad
 // 11 = options to disable rnd ad at bottom, and to get new ad for each rnd slot
 // 13 = post/page id restrictions
-define('ADINJ_DB_VERSION', 13);
+// 14 = template ads
+define('ADINJ_DB_VERSION', 14);
 
 // Files
 // TODO will these paths work on windows?
@@ -1034,6 +1035,26 @@ function adinj_db_version($ops){
 		return 1;
 	} else {
 		return $ops['db_version'];
+	}
+}
+
+// template ads
+function adinj_print_ad($adname=''){
+	$reason = adinj_ads_completely_disabled_from_page("");
+	if ($reason !== false){
+		return;
+	}
+	if (adinj_excluded_by_tick_box('template_')) return;
+	if ($adname == 'random'){
+		echo adinj_ad_code_random();
+	} else if ($adname == 'top'){
+		echo adinj_ad_code_top();
+	} else if ($adname == 'bottom'){
+		echo adinj_ad_code_bottom();
+	} else if ($adname == 'footer'){
+		echo adinj_ad_code_footer();
+	} else if (preg_match("/.+\.txt/i", $adname)){
+		adshow_display_ad_file_v2($adname);
 	}
 }
 

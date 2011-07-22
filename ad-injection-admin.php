@@ -339,7 +339,7 @@ function adinj_top_message_box(){
 		
 	} else if (!isset($_GET['tab'])){
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "1st July 2011: New options to filter ads based on post/page IDs and other minor fixes. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
+		echo "22nd July 2011: You can now put ads anywhere in your theme template - you just need to add some simple PHP - see the readme.txt for details (search for 'adinj_print_ad'. Also UI updates. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
 		echo '</strong></p></div>';
 	}
 }
@@ -393,7 +393,8 @@ function adinj_side_info_box(){
 		<div class="inside" style="margin:5px;">
 			<h4>More Ad Injection information</h4>
 			<ul>
-			<li><a href="http://wordpress.org/extend/plugins/ad-injection/" target="_new">Ad Injection at WordPress (docs, FAQ)</a></li>
+			<li><a href="http://wordpress.org/extend/plugins/ad-injection/faq/" target="_new">Ad Injection FAQ</a></li>
+			<li><a href="http://wordpress.org/extend/plugins/ad-injection/other_notes/" target="_new">Ad Injection Troubleshooting</a></li>
 			<li><a href="http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/" target="_new">Ad Injection at reviewmylife</a></li>
 			<li><b><a href="<?php echo adinj_feedback_url(); ?>" target="_new">Report a bug / give feedback</a></b></li>
 			</ul>
@@ -401,8 +402,8 @@ function adinj_side_info_box(){
 			<h4><font color="red">Important!</font></h4>
 			<p>You are responsible for making sure the ad settings and positioning you define are in compliance with your ad provider's terms of service! Failure to do so could get you banned by them!</p>
 		
-			<h4><font color="red">In developement</font></h4>
-			<p>I'm actively listening to your feedback and fixing any problems, and will hopefully be adding new features later in 2011. Please let me know if you like the plugin too!</p>
+			<h4><font color="red">Still in development</font></h4>
+			<p>I'm actively listening to your feedback and fixing problems, and will be adding new features later in 2011. Please let me know if you like the plugin too!</p>
 			
 			<h4>More by this author</h4>
 			<ul>
@@ -1418,6 +1419,14 @@ function adinj_default_options(){
 		'widget_exclude_archive' => '',
 		'widget_exclude_search' => '',
 		'widget_exclude_404' => '',
+		// template ads
+		'template_exclude_front' => '',
+		'template_exclude_home' => '',
+		'template_exclude_page' => '',
+		'template_exclude_single' => '',
+		'template_exclude_archive' => '',
+		'template_exclude_search' => '',
+		'template_exclude_404' => '',
 		// dynamic features
 		'ad_insertion_mode' => 'mfunc',
 		'sevisitors_only' => 'off',
