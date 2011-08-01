@@ -362,6 +362,13 @@ Here is an example of how to load a text file ad from the ad-injection-data dire
 
 The `function_exists` condition ensures that the ads will silently dissapear if the plugin is deactivated rather than generating an error.
 
+If you are using template ads with a compatible caching plugin you will need to include adshow.php (once on the page) using mfunc tags. You will need to alter the code below to include the correct path.
+
+`<!--mfunc include_once('/home/public_html/wordpress/wp-content/plugins/ad-injection/adshow.php') -->
+<?php include_once('/home/public_html/wordpress/wp-content/plugins/ad-injection/adshow.php'); ?>
+<!--/mfunc-->
+<?php if (function_exists('adinj_print_ad')){ adinj_print_ad('random'); } ?>`
+
 = How can I sell my ads / track my ad clicks? =
 
 These are advanced features which I have no plans for adding into the core Ad Injection. You might however be able to use Ad Injection with Google Ad Manager or OpenX Ad Server that should allow you to sell your own ads and track their clicks.
@@ -428,6 +435,10 @@ Check your style sheet to see if either the text or headings have the 'clear' at
 = I have configured four Google AdSense ad units but only three are showing. Why? =
 
 Google's AdSense TOS only allow allow three ad units, and three link units per page. If you have for example tried to insert four ad units on your page then Google will (probably) disable the forth one automatically. Read Google's AdSense [program policies](https://www.google.com/adsense/support/bin/answer.py?hl=en&answer=48182 "AdSense program policies") for more info.
+
+= Parts of the adverts are appearing in the snippets on the archive and home pages =
+
+Ad Injection does not currently have support for inserting adverts into snippets, however ads in snippets may or may not work depending on how your theme processes the pages's content. If you end up with unwanted parts of the ad code in your snippets you may need to disable the top/random/bottom ads from your archive, home or front pages using the tick boxes near the top of the UI.
 
 = If you are using a caching plugin =
 
