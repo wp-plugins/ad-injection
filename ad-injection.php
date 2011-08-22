@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 1.1.0.1
+Version: 1.1.0.2
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -30,7 +30,8 @@ define('ADINJ_NO_CONFIG_FILE', 1);
 // 11 = options to disable rnd ad at bottom, and to get new ad for each rnd slot
 // 13 = post/page id restrictions
 // 14 = template ads
-define('ADINJ_DB_VERSION', 14);
+// 15 = Remove duplicate 'Disabled' option from top/bottom ad section
+define('ADINJ_DB_VERSION', 15);
 
 // Files
 // TODO will these paths work on windows?
@@ -39,12 +40,13 @@ define('ADINJ_CONFIG_FILE', WP_CONTENT_DIR . '/ad-injection-config.php');
 define('ADINJ_AD_PATH', WP_PLUGIN_DIR.'/ad-injection-data');
 
 // Constants
-define('ADINJ_DISABLED', 'Disabled');
-define('ADINJ_RULE_DISABLED', 'Rule Disabled');
-define('ADINJ_ALWAYS_SHOW', 'Always show');
+define('ADINJ_DISABLED', 'Disabled'); // todo deprecated?
+define('ADINJ_RULE_DISABLED', 'Rule Disabled'); // todo depreacated?
+define('ADINJ_ALWAYS_SHOW', 'Always show'); // todo deprecated?
 //
 define('ADINJ_ONLY_SHOW_IN', 'Only show in');
 define('ADINJ_NEVER_SHOW_IN', 'Never show in');
+define('ADINJ_NA', 'n/a');
 
 // Global variables
 $adinj_total_top_ads_used = 0;
@@ -298,12 +300,12 @@ function adinj_formatting_options($adtype, $ops, $output_type="string"){
 	$padding_top = $ops[$prefix.'padding_top'];
 	$padding_bottom = $ops[$prefix.'padding_bottom'];
 	
-	if (adinj_disabled($align)) $align = "";
-	if (adinj_disabled($clear)) $clear = "";
-	if (adinj_disabled($margin_top)) $margin_top = "";
-	if (adinj_disabled($margin_bottom)) $margin_bottom = "";
-	if (adinj_disabled($padding_top)) $padding_top = "";
-	if (adinj_disabled($padding_bottom)) $padding_bottom = "";
+	if (adinj_not_set($align)) $align = "";
+	if (adinj_not_set($clear)) $clear = "";
+	if (adinj_not_set($margin_top)) $margin_top = "";
+	if (adinj_not_set($margin_bottom)) $margin_bottom = "";
+	if (adinj_not_set($padding_top)) $padding_top = "";
+	if (adinj_not_set($padding_bottom)) $padding_bottom = "";
 	
 	if ($output_type == "string"){
 		return "'align' => '$align', 'clear' => '$clear', 'margin_top' => '$margin_top', 'margin_bottom' => '$margin_bottom', 'padding_top' => '$padding_top', 'padding_bottom' => '$padding_bottom'";
@@ -844,7 +846,7 @@ function adinj_paragraph_to_start_ads(){
 		if (adinj_ticked('first_paragraph_ad')) return 1;
 		return -1;
 	}
-	if (adinj_disabled('start_from_paragraph')){
+	if (adinj_rule_disabled('start_from_paragraph')){
 		return -1;
 	} else {
 		return $ops['start_from_paragraph'];
@@ -888,7 +890,8 @@ function adinj_num_top_ads_to_insert($content_length){
 	if (!adinj_allowed_in_author('top', $ops)) return 0;
 	if (!adinj_allowed_in_id('top', $ops)) return 0;
 	
-	if (adinj_do_rule_if($ops[$prefix.'top_ad_if_longer_than'], '<', $content_length)){
+	$val = $ops[$prefix.'top_ad_if_longer_than'];
+	if (adinj_not_set($val) || adinj_true_if($content_length, '>', $val)){
 		return 1;
 	}
 	return 0;
@@ -912,7 +915,8 @@ function adinj_num_bottom_ads_to_insert($content_length){
 	if (!adinj_allowed_in_author('bottom', $ops)) return 0;
 	if (!adinj_allowed_in_id('bottom', $ops)) return 0;
 	
-	if (adinj_do_rule_if($ops[$prefix.'bottom_ad_if_longer_than'], '<', $content_length)){
+	$val = $ops[$prefix.'bottom_ad_if_longer_than'];
+	if (adinj_not_set($val) || adinj_true_if($content_length, '>', $val)){
 		return 1;
 	}
 	return 0;
@@ -944,18 +948,17 @@ function adinj_num_rand_ads_to_insert($content_length){
 	if (!adinj_allowed_in_tag('random', $ops)) return 0;
 	if (!adinj_allowed_in_author('random', $ops)) return 0;
 	if (!adinj_allowed_in_id('random', $ops)) return 0;
-	
 	$length = $content_length;
-	if (adinj_do_rule_if($ops[$prefix.'no_random_ads_if_shorter_than'], '>', $length)){
+	if (adinj_true_if($length, '<', $ops[$prefix.'no_random_ads_if_shorter_than'])){
 		return 0;
 	}
-	if (adinj_do_rule_if($ops[$prefix.'one_ad_if_shorter_than'], '>', $length)){
+	if (adinj_true_if($length, '<', $ops[$prefix.'one_ad_if_shorter_than'])){
 		return 1;
 	}
-	if (adinj_do_rule_if($ops[$prefix.'two_ads_if_shorter_than'], '>', $length)){
+	if (adinj_true_if($length, '<', $ops[$prefix.'two_ads_if_shorter_than'])){
 		return min(2, $max_num_rand_ads_to_insert);
 	}
-	if (adinj_do_rule_if($ops[$prefix.'three_ads_if_shorter_than'], '>', $length)){
+	if (adinj_true_if($length, '<', $ops[$prefix.'three_ads_if_shorter_than'])){
 		return min(3, $max_num_rand_ads_to_insert);
 	}
 	return $max_num_rand_ads_to_insert;
@@ -975,15 +978,14 @@ function adinj_num_footer_ads_to_insert(){
 	return 1;
 }
 
-function adinj_do_rule_if($rule_value, $condition, $content_length){
-	if (adinj_alwaysshow($rule_value)) return true;
-	if (adinj_disabled($rule_value)) return false;
+function adinj_true_if($rule_value, $condition, $content_length){
+	if (adinj_alwaysshow($rule_value)) return true; // todo deprecated
 	if ($condition == '>'){
-		return ($rule_value > $content_length);
+		return ($rule_value >= $content_length);
 	} else if ($condition == '<'){
-		return ($rule_value < $content_length);
+		return ($rule_value <= $content_length);
 	} else {
-		die("adinj_do_rule_if bad condition: $condition");
+		die("adinj_true_if bad condition: $condition");
 	}
 }
 
@@ -997,12 +999,16 @@ function adinj_mfunc_mode(){
 	return ($ops['ad_insertion_mode'] == 'mfunc');
 }
 
-function adinj_disabled($value){
+function adinj_alwaysshow($value){ // todo deprecated?
+	return "$value" == ADINJ_ALWAYS_SHOW || "$value" == 'a';
+}
+
+function adinj_rule_disabled($value){
 	return "$value" == ADINJ_RULE_DISABLED || "$value" == ADINJ_DISABLED || "$value" == 'd' || "$value" == '';
 }
 
-function adinj_alwaysshow($value){
-	return "$value" == ADINJ_ALWAYS_SHOW || "$value" == 'a';
+function adinj_not_set($value){
+	return adinj_rule_disabled($value);
 }
 
 function adinj_ticked($option, $ops=array()){

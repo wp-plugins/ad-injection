@@ -339,7 +339,7 @@ function adinj_top_message_box(){
 		
 	} else if (!isset($_GET['tab'])){
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "22nd July 2011: You can now put ads anywhere in your theme template - you just need to add some simple PHP - see the readme.txt for details (search for 'adinj_print_ad'. Also UI updates. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
+		echo "22nd August 2011: Please check your ads after this update! I've attempted to make the settings less confusing by removing some duplicate ways to enable/disable ads. Instead of 'Disabled/Always show' options on the pull down boxes I now have an 'n/a' value to signify that the settings isn't being used. Ads can be disabled using the tick boxes instead. If you have disabled ads using the 'Disabled' option the correct tick boxes should now be checked. I've tested as much as I can but there is a risk with this update so do check your settings/ads. Also some parts of the UI will now dissapear if the 'All' boxes are ticked. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
 		echo '</strong></p></div>';
 	}
 }
@@ -362,7 +362,7 @@ function adinj_side_donate_box(){
 <input type="hidden" name="currency_code" value="USD">
 <input type="hidden" name="bn" value="PP-DonationsBF:btn_donateCC_LG.gif:NonHosted">
 <p>Amount:<br>
-<input class="omni_donate_field" type="text" name="amount" size="9" title="The amount you wish to donate" value="10">
+<input class="omni_donate_field" type="text" name="amount" size="9" title="The amount you wish to donate" value="20">
 <select id="currency_code" name="currency_code">
 	<option value="USD">U.S. Dollars</option>
 	<option value="GBP">Pounds Sterling</option>
@@ -425,9 +425,20 @@ function adinj_feedback_url(){
 	return "https://spreadsheets.google.com/viewform?formkey=dFUwZzBYcG1HNzNKMmJZdWFDdFhkY0E6MQ&amp;entry_3=$data";
 }
 
-function adinj_add_checkbox($name){
+function adinj_add_checkbox($name, $class=NULL, $all=NULL){
+	$classhtml = '';
+	$jshtml = '';
+	if ($class != NULL) $classhtml=' class="'.$all.$class.'"';
+	if ($all != NULL) $jshtml = 'onClick="javascript:adinj_toggle_tick_boxes('."'".$class."',this.checked".');"';
 	echo '<input type="hidden" name="'.$name.'" value="off" />';
-	echo '<input type="checkbox" name="'.$name.'" '.adinj_ticked($name).' />';
+	echo '<input type="checkbox" name="'.$name.'" '.adinj_ticked($name)."$classhtml $jshtml />";
+	if ($all != NULL && adinj_ticked($name)){
+	?>
+	<script type="text/javascript">
+        document.write('<style type="text/css" media="screen">.<?php echo $class; ?> { display: none; }</style>');
+	</script>
+	<?php
+	}
 }
 
 // From WP Super cache
@@ -608,9 +619,9 @@ function adinj_max_num_ads($adtype, $pagetype){
 	}
 	if ($adtype == 'top' || $adtype == 'bottom'){
 		if ($pagetype == "single" || $pagetype == "page"){
-			if (!adinj_disabled($ops[$adtype.'_ad_if_longer_than'])) return 1;
+			return 1;
 		} else if ($pagetype == 'home' || $pagetype == 'archive'){
-			if (!adinj_disabled($ops[$pagetype.'_'.$adtype.'_ad_if_longer_than'])) return $ops[$pagetype.'_max_num_'.$adtype.'_ads_per_page'];
+			return $ops[$pagetype.'_max_num_'.$adtype.'_ads_per_page'];
 		} else if ($pagetype == "excerpt"){
 			//TODO
 		}
@@ -650,17 +661,18 @@ function adinj_selection_box($name, $values, $type="", $selected_value=NULL){
 		}
 		echo "<option value=\"$option_value\" ";
 		if("$selected_value" == "$option_value" ||
-			"$selected_value" == ADINJ_ALWAYS_SHOW && "$option_value" == 'a' ||
-			"$selected_value" == ADINJ_DISABLED && "$option_value" == 'd' || 
-			"$selected_value" == ADINJ_RULE_DISABLED && "$option_value" == 'd' || 
+			"$selected_value" == ADINJ_ALWAYS_SHOW && "$option_value" == 'a' || //todo remove?
+			"$selected_value" == ADINJ_DISABLED && "$option_value" == 'd' || //todo remove?
+			"$selected_value" == ADINJ_NA && "$option_value" == 'd' ||
+			"$selected_value" == ADINJ_RULE_DISABLED && "$option_value" == 'd' || //todo remove?
 			"$selected_value" == ADINJ_ONLY_SHOW_IN && "$option_value" == 'o' || 
 			"$selected_value" == ADINJ_NEVER_SHOW_IN && "$option_value" == 'n'){
 			echo 'selected="selected"';
 		}
 		$typetxt = $type;
-		if (adinj_disabled($option_value) || adinj_alwaysshow($display_value)) $typetxt = "";
-		if ("$option_value" === 'a') { $display_value = ADINJ_ALWAYS_SHOW; }
-		if ("$option_value" === 'd') { $display_value = ADINJ_DISABLED; }
+		if (adinj_not_set($option_value) || adinj_alwaysshow($display_value)) $typetxt = "";
+		if ("$option_value" === 'a') { $display_value = ADINJ_NA; } //TODO remove?
+		if ("$option_value" === 'd') { $display_value = ADINJ_NA; }
 		if ("$option_value" === 'o') { $display_value = ADINJ_ONLY_SHOW_IN; }
 		if ("$option_value" === 'n') { $display_value = ADINJ_NEVER_SHOW_IN; }
 		echo ">$display_value $typetxt</option>";
@@ -678,6 +690,13 @@ function adinj_javascript_addtext(){
 			separator = '';
 		}
 		element.value += (separator + value);
+	}
+	function adinj_toggle_tick_boxes(name, hide){
+		if (hide){
+			jQuery('.'+name).hide();
+		} else {
+			jQuery('.'+name).show();
+		}
 	}
 	</script>
 	<?php
@@ -708,7 +727,13 @@ HTML;
 
 function adinj_condition_tables($prefix, $show_setting){
 	$ops = adinj_options();
-	echo "Category tag, author, and post id conditions";
+	if (strlen($ops[$prefix.'category_condition_entries'])>0 || strlen($ops[$prefix.'tag_condition_entries'])>0 &&
+		strlen($ops[$prefix.'author_condition_entries'])>0 || strlen($ops[$prefix.'id_condition_entries'])>0){
+		$msg = "configured";
+	} else {
+		$msg = "empty";
+	}
+	echo "Category tag, author, and post id conditions [<b>".$msg."</b>]";
 	adinj_add_show_hide_section('ad_conditions_'.uniqid(''), $show_setting, $show_setting, $ops);
 	adinj_condition_table($prefix.'category', 'category slugs. e.g: cat1, cat2, cat3', 'category', $ops);
 	adinj_condition_table($prefix.'tag', 'tag slugs. e.g: tag1, tag2, tag3', 'tag', $ops);
@@ -1156,6 +1181,52 @@ function adinj_upgrade_db(){
 	
 	if ($stored_dbversion < 11){
 		$new_options['rnd_allow_ads_on_last_paragraph'] = 'on';
+	}
+	
+	if ($stored_dbversion < 15){
+		// values deliberately hard coded here to fix them on constants used for this version of db
+		
+		// if set to disabled
+		if ($stored_options['top_ad_if_longer_than'] == 'd' || $stored_options['top_ad_if_longer_than'] == 'Disabled' || $stored_options['top_ad_if_longer_than'] == 'Rule Disabled'){
+			$new_options['top_exclude_single'] = 'on';
+			$new_options['top_exclude_page'] = 'on';
+		}
+		if ($stored_options['home_top_ad_if_longer_than'] == 'd' || $stored_options['home_top_ad_if_longer_than'] == 'Disabled' || $stored_option['home_top_ad_if_longer_than'] == 'Rule Disabled'){
+			$new_options['top_exclude_home'] = 'on';
+		}
+		if ($stored_options['archive_top_ad_if_longer_than'] == 'd' || $stored_options['archive_top_ad_if_longer_than'] == 'Disabled' || $stored_options['archive_top_ad_if_longer_than'] == 'Rule Disabled'){
+			$new_options['top_exclude_archive'] = 'on';
+		}
+		if ($stored_options['bottom_ad_if_longer_than'] == 'd' || $stored_options['bottom_ad_if_longer_than'] == 'Disabled' || $stored_options['bottom_ad_if_longer_than'] == 'Rule Disabled'){
+			$new_options['bottom_exclude_single'] = 'on';
+			$new_options['bottom_exclude_page'] = 'on';
+		}
+		if ($stored_options['home_bottom_ad_if_longer_than'] == 'd' || $stored_options['home_bottom_ad_if_longer_than'] == 'Disabled' || $stored_options['home_bottom_ad_if_longer_than'] == 'Rule Disabled'){
+			$new_options['bottom_exclude_home'] = 'on';
+		}
+		if ($stored_options['archive_bottom_ad_if_longer_than'] == 'd' || $stored_options['archive_bottom_ad_if_longer_than'] == 'Disabled' || $stored_options['archive_bottom_ad_if_longer_than'] == 'Rule Disabled'){
+			$new_options['bottom_exclude_archive'] = 'on';
+		}
+
+		// if set to always show
+		if ($stored_options['top_ad_if_longer_than'] == 'a' || $stored_options['top_ad_if_longer_than'] == 'Always show'){
+			$new_options['top_ad_if_longer_than'] = 'd';
+		}
+		if ($stored_options['home_top_ad_if_longer_than'] == 'a' || $stored_options['home_top_ad_if_longer_than'] == 'Always show'){
+			$new_options['home_top_ad_if_longer_than'] = 'd';
+		}
+		if ($stored_options['archive_top_ad_if_longer_than'] == 'a' || $stored_options['archive_top_ad_if_longer_than'] == 'Always show'){
+			$new_options['archive_top_ad_if_longer_than'] = 'd';
+		}
+		if ($stored_options['bottom_ad_if_longer_than'] == 'a' || $stored_options['bottom_ad_if_longer_than'] == 'Always show'){
+			$new_options['bottom_ad_if_longer_than'] = 'd';
+		}
+		if ($stored_options['home_bottom_ad_if_longer_than'] == 'a' || $stored_options['home_bottom_ad_if_longer_than'] == 'Always show'){
+			$new_options['home_bottom_ad_if_longer_than'] = 'd';
+		}
+		if ($stored_options['archive_bottom_ad_if_longer_than'] == 'a' || $stored_options['archive_bottom_ad_if_longer_than'] == 'Always show'){
+			$new_options['archive_bottom_ad_if_longer_than'] = 'd';
+		}
 	}
 	
 	// 3. Bump up db version number.

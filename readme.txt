@@ -4,7 +4,7 @@ Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-w
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, widgets, sidebar, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog, ad rotation, A:B testing, split testing, WP Super Cache, W3 Total Cache, WP Cache
 Requires at least: 2.8.6
 Tested up to: 3.2.1
-Stable tag: 1.1.0.1
+Stable tag: 1.1.0.2
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
@@ -47,9 +47,9 @@ You can define multiple adverts for the same ad space which are rotated accordin
 
 The number of adverts can be set based on the length of the post. It is a good idea for longer posts to have more adverts than shorter posts for example. Adverts can also be turned off for very short posts.
 
-= Search engines only mode =
+= Search engines only mode (restrict by referrer) =
 
-You can specify that ads should only be shown to search engine visitors (or from any other referring websites) so that your regular visitors (who are unlikely to click your ads) get a better experience of your site. You can define which search engines or any other referring sites see your adverts. A visitor who enters the site by a search engine will see ads for the next hour.
+You can specify that ads should only be shown to search engine visitors, or to visitors from defined referring websites - e.g. Facebook, Wikipedia, etc. This will give your regular visitors (who are unlikely to click your ads) a better experience of your site. You can define which search engines or referring sites see your adverts. A visitor who enters the site by one of these referrers will see ads for the next hour.
 
 = Ads on old posts only =
 
@@ -487,6 +487,11 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 
 == Changelog ==
 
+= 1.1.0.2 =
+* Remove confusing Disabled/Enabled drop down options as all ads can be enabled/disabled from the tick boxes. Please check your ads after this update and report any problems!
+* Hide certain parts of the UI when the 'All' exclude boxes are ticked.
+* New configured/empty indicator on the category/tag/author/id settings.
+
 = 1.1.0.1 =
 * Template ads - you can now include ads anywhere in your theme template with some simple tags. You can load the top/random/bottom/footer ads, or you can load an ad from a text file on disk. Template ads inherit the same restrictions as for ads configured via the UI.
 * UI usability improvements.
@@ -663,6 +668,9 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 * First public release
 
 == Upgrade Notice ==
+
+= 1.1.0.2 =
+* Remove confusing Disabled/Enabled drop down options as all ads can be enabled/disabled from the tick boxes. Please check your ads after this update and report any problems!
 
 = 1.1.0.1 =
 * Template ads - you can now include ads anywhere in your theme template with some simple tags. UI usability improvements.

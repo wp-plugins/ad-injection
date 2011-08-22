@@ -50,36 +50,35 @@ function adinj_tab_main(){
 	
 	</p>
 	
-	<p><span style="font-size:10px;"><b>Notes:</b> Your home page is the page displaying your latest posts. It may be different to your front page if you have configured your front page to be a static page.</span></p>
-	<p><span style="font-size:10px;">If you have <a href='options-reading.php'>set your front page</a> to be a static 'page' rather than your latest posts, the 'page' tick box will also apply to the front page.</span></p>
+	<p><span style="font-size:10px;"><b>Notes:</b> Your home page is the page displaying your latest posts. It may be different to your front page if you have configured your front page to be a static page. If you have <a href='options-reading.php'>set your front page</a> to be a static 'page' rather than your latest posts, the 'page' tick box will also apply to the front page.</span></p>
 	<p><span style="font-size:10px;">Archive pages are the categories, tags, authors and date pages.</span></p>
 	
 	<p></p>
 	
-	<table border="0" class="adinjtable">
-	<tr><td></td><td><b>Single/Page</b></td><td><b>Home</b></td><td><b>Archive</b></td></tr>
+	<table border="0" class="adinjtable" width="95%">
+	<tr><td></td><td width="20%"><b>Single/Page</b></td><td width="20%"><b>Home</b></td><td width="20%"><b>Archive</b></td></tr>
 	<tr><td colspan="4"><h3><a name="topadplacement"></a>Top ad [<a href="#topadcode">code</a>] [<a href="#pagetypefilters">page type filters</a>]</h3></td></tr>
 	
-	<tr><td><b>Enabled/disabled</b> (on posts longer than):</td><td>
+	<tr><td>Only show on posts longer than:</td><td>
 	<?php
 	$unit = adinj_counting_unit_description();
-	$ad_if_longer_settings = array('d','a',100,200,300,500,1000,1500,2000,2500,3000,5000,10000,15000,20000);
+	$ad_if_longer_settings = array('d',100,200,300,500,750,1000,1500,2000,2500,3000,5000,10000,15000,20000);
 	adinj_selection_box("top_ad_if_longer_than", $ad_if_longer_settings, $unit);
-	echo '</td><td>';
+	echo '</td><td><div class="adinj_home">';
 	adinj_selection_box("home_top_ad_if_longer_than", $ad_if_longer_settings, $unit);
-	echo '</td><td>';
+	echo '</div></td><td><div class="adinj_archive">';
 	adinj_selection_box("archive_top_ad_if_longer_than", $ad_if_longer_settings, $unit);
 	?>
-	</td></tr>
+	</div></td></tr>
 	
-	<tr><td><b>|_</b> Max num of top ads on whole page:</td><td>1</td><td>
+	<tr><td><b>|_</b> Max num of ads on whole page:</td><td>1</td><td><div class="adinj_home">
 	<?php
 	$num_ads_array = array(0,1,2,3,4,5,6,7,8,9,10);
 	adinj_selection_box("home_max_num_top_ads_per_page", $num_ads_array);
-	echo '</td><td>';
+	echo '</div></td><td><div class="adinj_archive">';
 	adinj_selection_box("archive_max_num_top_ads_per_page", $num_ads_array);
 	?>
-	</td></tr>
+	</div></td></tr>
 	
 	
 	<tr><td colspan="4">
@@ -88,24 +87,24 @@ function adinj_tab_main(){
 	</td></tr>
 	
 	<tr><td colspan="4"><h3><a name="randomadplacement"></a>Random ads [<a href="#randomadcode">code</a>] [<a href="#pagetypefilters">page type filters</a>]</h3></td></tr>
-	<tr><td>Max num of random ads on whole page:</td><td>
+	<tr><td>Max num of ads on whole page:</td><td>
 	n/a
-	</td><td>
+	</td><td><div class="adinj_home">
 	<?php
 	adinj_selection_box("home_max_num_random_ads_per_page", $num_ads_array);
-	echo '</td><td>';
+	echo '</div></td><td><div class="adinj_archive">';
 	adinj_selection_box("archive_max_num_random_ads_per_page", $num_ads_array);
 	?>
-	</td></tr>
+	</div></td></tr>
 	<tr><td><b>|_ </b>Max num of random ads per post:</td><td>
 	<?php
 	adinj_selection_box("max_num_of_ads", $num_ads_array);
-	echo '</td><td>';
+	echo '</td><td><div class="adinj_home">';
 	adinj_selection_box("home_max_num_random_ads_per_post", $num_ads_array);
-	echo '</td><td>';
+	echo '</div></td><td><div class="adinj_archive">';
 	adinj_selection_box("archive_max_num_random_ads_per_post", $num_ads_array);
 	?>
-	</td></tr>
+	</div></td></tr>
 	<?php
 	adinj_random_ad_limit_table();
 	?>
@@ -115,7 +114,7 @@ function adinj_tab_main(){
 			echo '<tr><td>';
 			_e("Always put the first ad immediately after paragraph: ", 'adinj');
 			echo '</td><td>';
-			adinj_selection_box("start_from_paragraph", array(ADINJ_RULE_DISABLED,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), " ");
+			adinj_selection_box("start_from_paragraph", array('d',1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), " ");
 			echo '</td></tr>';
 		?>
 		</table>
@@ -128,23 +127,23 @@ function adinj_tab_main(){
 	
 	<tr><td colspan="4"><h3><a name="bottomadplacement"></a>Bottom ad [<a href="#bottomadcode">code</a>] [<a href="#pagetypefilters">page type filters</a>]</h3></td></tr>
 	
-	<tr><td><b>Enabled/disabled</b> (on posts longer than):</td><td>
+	<tr><td>Only show on posts longer than:</td><td>
 	<?php
 	adinj_selection_box("bottom_ad_if_longer_than", $ad_if_longer_settings, $unit);
-	echo '</td><td>';
+	echo '</td><td><div class="adinj_home">';
 	adinj_selection_box("home_bottom_ad_if_longer_than", $ad_if_longer_settings, $unit);
-	echo '</td><td>';
+	echo '</div></td><td><div class="adinj_archive">';
 	adinj_selection_box("archive_bottom_ad_if_longer_than", $ad_if_longer_settings, $unit);
 	?>
-	</td></tr>
+	</div></td></tr>
 	
-	<tr><td><b>|_ </b>Max num of bottom ads on whole page:</td><td>1</td><td>
+	<tr><td><b>|_ </b>Max num of ads on whole page:</td><td>1</td><td><div class="adinj_home">
 	<?php
 	adinj_selection_box("home_max_num_bottom_ads_per_page", $num_ads_array);
-	echo '</td><td>';
+	echo '</div></td><td><div class="adinj_archive">';
 	adinj_selection_box("archive_max_num_bottom_ads_per_page", $num_ads_array);
 	?>
-	</td></tr>
+	</div></td></tr>
 	
 	<tr><td colspan="4">
 	<b>|_ </b><?php adinj_condition_tables('bottom_', 'ui_bottom_conditions_show'); ?>
@@ -167,8 +166,8 @@ function adinj_tab_main(){
 	
 	<?php adinj_postbox_start(__("Adverts", 'adinj'), 'adverts'); ?>
 	
-	<h3><a name="topadcode"></a>Top ad (above the post content - this is not a 'header' ad) [<a href="#topadplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_top'>pool</a>]--></h3>
-	<table border="0" class="adinjtable">
+	<h3><a name="topadcode"></a>Top ad (below post title - this is not a 'header' ad) [<a href="#topadplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_top'>pool</a>]--></h3>
+	<table border="0" class="adinjtable" width="95%">
 	<tr><td>
 	<textarea name="ad_code_top_1" rows="10" cols="60"><?php echo $ops['ad_code_top_1']; ?></textarea>
 	<br />
@@ -183,7 +182,7 @@ function adinj_tab_main(){
 	<p><span style="font-size:10px;">Be especially careful if you decide to use the 'float' layout options. Make sure that you don't have adverts floated over the top of other page elements, or vice-versa.</span></p>
 	
 	<h3><a name="randomadcode"></a>Random ad (inserted randomly between paragraphs) [<a href="#randomadplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_random'>pool</a>]--></h3>
-	<table border="0" class="adinjtable">
+	<table border="0" class="adinjtable" width="95%">
 	<tr><td>
 	<textarea name="ad_code_random_1" rows="10" cols="60"><?php echo $ops['ad_code_random_1']; ?></textarea>
 	<br />
@@ -197,7 +196,7 @@ function adinj_tab_main(){
 	</table>
 	
 	<h3><a name="bottomadcode"></a>Bottom ad (below the post content) [<a href="#bottomadplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_bottom'>pool</a>]--></h3>
-	<table border="0" class="adinjtable">
+	<table border="0" class="adinjtable" width="95%">
 	<tr><td>
 	<textarea name="ad_code_bottom_1" rows="10" cols="60"><?php echo $ops['ad_code_bottom_1']; ?></textarea>
 	<br />
@@ -212,7 +211,7 @@ function adinj_tab_main(){
 	
 	
 	<h3><a name="footeradcode"></a>Footer ad (put into 'the_footer' hook - not supported by all themes) [<a href="#footeradplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_footer'>pool</a>]--></h3>
-	<table border="0" class="adinjtable">
+	<table border="0" class="adinjtable" width="95%">
 	<tr><td>
 	<textarea name="ad_code_footer_1" rows="10" cols="60"><?php echo $ops['ad_code_footer_1']; ?></textarea>
 	<br />
@@ -349,12 +348,12 @@ function adinj_insertion_mode_box($ops){
 	</script>
 	
 	
-	<h4><a name="dynamic"></a>Show ads only to search engine visitors (dynamic feature)</h4>
+	<h4><a name="dynamic"></a>Show ads only to visitors from these websites (dynamic feature)</h4>
 	
 	<blockquote>
-	<?php adinj_add_checkbox('sevisitors_only') ?><?php _e("Only show ads to search engine visitors (customise search engine referrers below if necessary).", 'adinj') ?><br />
+	<?php adinj_add_checkbox('sevisitors_only') ?><?php _e("Only show ads to visitors from these websites (customise search engine or website referrers below if necessary).", 'adinj') ?><br />
 	<textarea name="ad_referrers" rows="2" cols="70"><?php echo $ops['ad_referrers']; ?></textarea>
-	<p>Comma separated list e.g.: <br /><code>.google., .bing., .yahoo., .ask., search?, search.</code></p>
+	<p>Comma separated list e.g.: <br /><code>.google., .bing., .yahoo., .ask., search?, search., facebook.com</code></p>
 	</blockquote>
 	
 	<h4>Blocked IP addresses (dynamic feature)</h4>
@@ -373,57 +372,63 @@ function adinj_insertion_mode_box($ops){
 }
 
 function adinj_add_exclude_row($name, $prefix=''){
+	$all = '';
+	if ($name == 'All ads') $all='all';
 ?>
 	<tr>
 		<td><b><?php echo $name; ?></b></td>
-		<td><?php adinj_add_checkbox($prefix.'exclude_single') ?></td>
-		<td><?php adinj_add_checkbox($prefix.'exclude_page') ?></td>
-		<td><?php adinj_add_checkbox($prefix.'exclude_home') ?></td>
-		<td><?php adinj_add_checkbox($prefix.'exclude_archive') ?></td>
-		<td><?php adinj_add_checkbox($prefix.'exclude_front') ?></td>
-		<td><?php adinj_add_checkbox($prefix.'exclude_404') ?></td>
-		<td><?php adinj_add_checkbox($prefix.'exclude_search') ?></td>
+		<td><?php adinj_add_checkbox($prefix.'exclude_single', 'adinj_single', $all) ?></td>
+		<td><?php adinj_add_checkbox($prefix.'exclude_page', 'adinj_page', $all) ?></td>
+		<td><?php adinj_add_checkbox($prefix.'exclude_home', 'adinj_home', $all) ?></td>
+		<td><?php adinj_add_checkbox($prefix.'exclude_archive', 'adinj_archive', $all) ?></td>
+		<td><?php adinj_add_checkbox($prefix.'exclude_front', 'adinj_front', $all) ?></td>
+		<td><?php adinj_add_checkbox($prefix.'exclude_404', 'adinj_404', $all) ?></td>
+		<td><?php adinj_add_checkbox($prefix.'exclude_search', 'adinj_search', $all) ?></td>
 	</tr>
 <?php
 }
 
 function adinj_random_ad_limit_table(){
 	?>
-	<tr><td>&nbsp;<b>|_</b> No ads if shorter than:</td>
+	<tr><td>&nbsp;<b>|_</b> No ads if post shorter than:</td>
 	<?php
-	$prefixes = array("", "home_", "archive_");
+	$prefixes = array("", "home", "archive");
 	$unit = adinj_counting_unit_description();
-	$ad_limit_settings = array('d',100,200,300,500,1000,1500,2000,2500,3000,5000,10000,15000,20000);
+	$ad_limit_settings = array('d',100,200,300,500,750,1000,1500,2000,2500,3000,5000,10000,15000,20000);
 	
 	foreach ($prefixes as $prefix){
-		echo '<td>';
+		echo '<td><div class="adinj_'.$prefix.'">';
+		if (!empty($prefix)) $prefix = $prefix.'_';
 		adinj_selection_box($prefix."no_random_ads_if_shorter_than", $ad_limit_settings, $unit);
-		echo '</td>';
+		echo '</div></td>';
 	} ?>
 	</tr>
-	<tr><td>&nbsp;&nbsp;<b>|_</b> Only 1 ad if post shorter than:</td>
+	<tr><td>&nbsp;<b>|_</b> Only 1 ad if post shorter than:</td>
 	<?php
 	foreach ($prefixes as $prefix){
-		echo '<td>';
+		echo '<td><div class="adinj_'.$prefix.'">';
+		if (!empty($prefix)) $prefix = $prefix.'_';
 		adinj_selection_box($prefix."one_ad_if_shorter_than", $ad_limit_settings, $unit);
-		echo '</td>';
+		echo '</div></td>';
 	} ?>
 	</tr>
-	<tr><td>&nbsp;&nbsp;&nbsp;<b>|_</b> Only 2 ads if post shorter than:</td>
+	<tr><td>&nbsp;<b>|_</b> Only 2 ads if post shorter than:</td>
 	<?php
 	foreach ($prefixes as $prefix){
-		echo '<td>';
+		echo '<td><div class="adinj_'.$prefix.'">';
+		if (!empty($prefix)) $prefix = $prefix.'_';
 		adinj_selection_box($prefix."two_ads_if_shorter_than", $ad_limit_settings, $unit);
-		echo '</td>';
+		echo '</div></td>';
 	}
 	?>
 	</tr>
-	<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<b>|_</b> Only 3 ads if post shorter than:</td>
+	<tr><td>&nbsp;<b>|_</b> Only 3 ads if post shorter than:</td>
 	<?php
 	foreach ($prefixes as $prefix){
-		echo '<td>';
+		echo '<td><div class="adinj_'.$prefix.'">';
+		if (!empty($prefix)) $prefix = $prefix.'_';
 		adinj_selection_box($prefix."three_ads_if_shorter_than", $ad_limit_settings, $unit);
-		echo '</td>';
+		echo '</div></td>';
 	} ?>
 	</tr>
 	<?php
