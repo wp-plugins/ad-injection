@@ -1268,7 +1268,7 @@ function adinj_upgrade_db(){
 		}
 	}
 	
-	if ($stored_dbversion < 15){
+	if ($stored_dbversion < 16){
 		$new_options['widgets_on_page_older_than'] = $stored_options['ads_on_page_older_than'];
 	}
 	

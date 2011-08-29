@@ -4,7 +4,7 @@ Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-w
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, widgets, sidebar, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog, ad rotation, A:B testing, split testing, WP Super Cache, W3 Total Cache, WP Cache
 Requires at least: 2.8.6
 Tested up to: 3.2.1
-Stable tag: 1.1.0.3
+Stable tag: 1.1.0.4
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
@@ -514,7 +514,7 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 
 == Changelog ==
 
-= 1.1.0.3 =
+= 1.1.0.4 =
 * First ad can now be started at or after a paragraph or character position.
 * Override ad positions on individual posts using &lt;!--topad--&gt; &lt;!--randomad--&gt; &lt;!--bottomad--&gt;
 * Separate old post restriction for widget ads.
@@ -704,7 +704,7 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 
 == Upgrade Notice ==
 
-= 1.1.0.3 =
+= 1.1.0.4 =
 * First ad can now be started at or after a paragraph or character position. Position override tags. Separate old post restriction for widget ads. Template ad examples in the 'Test ads' section. Warning message improvements. Other fixes.
 
 = 1.1.0.2 =
