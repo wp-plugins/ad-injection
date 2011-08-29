@@ -16,42 +16,6 @@ function adinj_tab_main(){
 	
 	
 	<?php adinj_postbox_start(__("Ad placement settings", 'adinj'), 'adsettings'); ?>
-	<p><b><a name="pagetypefilters"></a>Exclude ads from page types</b></p>
-	<?php
-	$count_pages = wp_count_posts('page', 'readable'); 
-	$count_posts = wp_count_posts('post', 'readable'); 
-	?>
-	
-	
-	<table class="adinjstatustable">
-	<tr>
-		<td></td>
-		<td><b>Single(<?php echo $count_posts->publish; ?>)</b></td>
-		<td><b>Page(<?php echo $count_pages->publish; ?>)</b></td>
-		<td><b>Home</b></td>
-		<td><b>Archive</b></td>
-		<td><b><a href="<?php echo get_bloginfo('url'); ?>" target="_new">Front</a></b></td>
-		<td><b>404</b></td>
-		<td><b>Search</b></td>
-	</tr>
-	<?php
-	adinj_add_exclude_row('All ads');
-	adinj_add_exclude_row('|_&nbsp;&nbsp;<a href="#topadplacement">Top</a>', 'top_');
-	adinj_add_exclude_row('|_&nbsp;&nbsp;<a href="#randomadplacement">Random</a>', 'random_');
-	adinj_add_exclude_row('|_&nbsp;&nbsp;<a href="#bottomadplacement">Bottom</a>', 'bottom_');
-	adinj_add_exclude_row('|_&nbsp;&nbsp;<a href="#footeradplacement">Footer</a>', 'footer_');
-	adinj_add_exclude_row('|_&nbsp;&nbsp;Widget', 'widget_');
-	adinj_add_exclude_row('|_&nbsp;&nbsp;Template', 'template_');
-	?>
-	<tr><td colspan="8"><span style="font-size:10px;">Go to the <a href="widgets.php">widget control panel</a> to set up any widgets. See the <a href="http://wordpress.org/extend/plugins/ad-injection/faq/" target="_new">FAQ</a> for how to set up template ads.</span></td></tr>
-	</table>
-	
-	<p>
-	
-	</p>
-	
-	<p><span style="font-size:10px;"><b>Notes:</b> Your home page is the page displaying your latest posts. It may be different to your front page if you have configured your front page to be a static page. If you have <a href='options-reading.php'>set your front page</a> to be a static 'page' rather than your latest posts, the 'page' tick box will also apply to the front page.</span></p>
-	<p><span style="font-size:10px;">Archive pages are the categories, tags, authors and date pages.</span></p>
 	
 	<p></p>
 	
@@ -110,14 +74,41 @@ function adinj_tab_main(){
 	?>
 	<tr><td colspan="4">
 		<table class="adinjtable">
+		<tr><td>
 		<?php
-			echo '<tr><td>';
-			_e("Always put the first ad immediately after paragraph: ", 'adinj');
-			echo '</td><td>';
-			adinj_selection_box("start_from_paragraph", array('d',1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), " ");
-			echo '</td></tr>';
+			_e("Always start the first ad ", 'adinj');
 		?>
+		</td><td>
+			<input type="radio" name="random_ads_after_mode" value="at" <?php if ($ops['random_ads_after_mode']=='at') echo 'checked="checked"'; ?> /> <b>at</b><br />
+			<input type="radio" name="random_ads_after_mode" value="after" <?php if ($ops['random_ads_after_mode']=='after') echo 'checked="checked"'; ?> /> <b>at or after</b><br />
+		</td><td>
+			<input type="radio" name="random_ads_after_unit" value="paragraph" <?php if ($ops['random_ads_after_unit']=='paragraph') echo 'checked="checked"'; ?> /> <b>paragraph:</b><br />
+			<input type="radio" name="random_ads_after_unit" value="character" <?php if ($ops['random_ads_after_unit']=='character' || $ops['ads_enabled']=='') echo 'checked="checked"'; ?> /> <b>character:</b><br />
+		</td>
+		<td>
+		<?php
+			adinj_selection_box("start_from_paragraph", array('d',1,2,3,4,5,100,200,300,500,750,1000,1500,2000,3000,4000,5000,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), " ");
+		?>
+		</td></tr>
 		</table>
+		
+		<script type="text/javascript">
+		jQuery(document).ready(function(){
+		jQuery('input[name=random_ads_after_unit]:radio').change(function() {
+			if (jQuery('input[name=random_ads_after_unit]:checked').val() == "character"){
+				jQuery('#random_ads_after_warning').slideDown(300);
+			} else {
+				jQuery('#random_ads_after_warning').slideUp(300);
+			}
+			return true;
+			});
+		});
+		if ('<?php echo $ops['random_ads_after_unit'] ?>' == 'paragraph') {
+			document.write('<style type="text/css">#random_ads_after_warning { display: none; }</style>');
+		}
+		</script>
+		<div id="random_ads_after_warning"><span style="font-size:10px;color:red;">Note: If starting 'at character x', the start point will be the next paragraph.</span><br /></div>
+			
 	</td></tr>
 	<tr><td colspan="4">
 	<br />
@@ -169,7 +160,7 @@ function adinj_tab_main(){
 	<h3><a name="topadcode"></a>Top ad (below post title - this is not a 'header' ad) [<a href="#topadplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_top'>pool</a>]--></h3>
 	<table border="0" class="adinjtable" width="95%">
 	<tr><td>
-	<textarea name="ad_code_top_1" rows="10" cols="60"><?php echo $ops['ad_code_top_1']; ?></textarea>
+	<textarea name="ad_code_top_1" rows="10" cols="70"><?php echo $ops['ad_code_top_1']; ?></textarea>
 	<br />
 	<p><span style="font-size:10px;"><b>Docs:</b> Try a <a href="#468x15">468x15</a> or <a href="#336x280">336x280</a> advert.</span></p>
 	</td><td>
@@ -184,7 +175,7 @@ function adinj_tab_main(){
 	<h3><a name="randomadcode"></a>Random ad (inserted randomly between paragraphs) [<a href="#randomadplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_random'>pool</a>]--></h3>
 	<table border="0" class="adinjtable" width="95%">
 	<tr><td>
-	<textarea name="ad_code_random_1" rows="10" cols="60"><?php echo $ops['ad_code_random_1']; ?></textarea>
+	<textarea name="ad_code_random_1" rows="10" cols="70"><?php echo $ops['ad_code_random_1']; ?></textarea>
 	<br />
 	<p><span style="font-size:10px;"><b>Docs:</b> Try a <a href="#468x60">468x60</a> or <a href="#728x90">728x90</a> banner.</span></p>
 	</td><td>
@@ -198,7 +189,7 @@ function adinj_tab_main(){
 	<h3><a name="bottomadcode"></a>Bottom ad (below the post content) [<a href="#bottomadplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_bottom'>pool</a>]--></h3>
 	<table border="0" class="adinjtable" width="95%">
 	<tr><td>
-	<textarea name="ad_code_bottom_1" rows="10" cols="60"><?php echo $ops['ad_code_bottom_1']; ?></textarea>
+	<textarea name="ad_code_bottom_1" rows="10" cols="70"><?php echo $ops['ad_code_bottom_1']; ?></textarea>
 	<br />
 	<p><span style="font-size:10px;"><b>Docs:</b> Try a <a href="#336x280">336x280</a> advert.</span></p>
 	</td><td>
@@ -213,7 +204,7 @@ function adinj_tab_main(){
 	<h3><a name="footeradcode"></a>Footer ad (put into 'the_footer' hook - not supported by all themes) [<a href="#footeradplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_footer'>pool</a>]--></h3>
 	<table border="0" class="adinjtable" width="95%">
 	<tr><td>
-	<textarea name="ad_code_footer_1" rows="10" cols="60"><?php echo $ops['ad_code_footer_1']; ?></textarea>
+	<textarea name="ad_code_footer_1" rows="10" cols="70"><?php echo $ops['ad_code_footer_1']; ?></textarea>
 	<br />
 	Docs: footer ad information and troubleshooting
 	<?php adinj_add_show_hide_section('footer_docs_'.uniqid(''), 'ui_footer_docs_show', 'ui_footer_docs_show', $ops); ?>
@@ -243,12 +234,17 @@ function adinj_tab_main(){
 	adinj_docs();
 	
 	adinj_testads();
+	
+	global $adinj_warning_msg_chmod;
+	if (!empty($adinj_warning_msg_chmod)){
+		echo '<a name="warning_msg_chmod"></a>';
+		echo '<br clear="all" />';
+		echo $adinj_warning_msg_chmod;
+	}
 }
 
 function adinj_global_settings_box($ops){
-	adinj_postbox_start(__("Global settings", 'adinj'), 'global'); ?>
-	
-	<p>These settings apply to all ads (top, random, bottom, footer, and widget). They will override all other settings.</p>
+	adinj_postbox_start(__("Global settings (apply to all ads)", 'adinj'), 'global'); ?>
 	
 	<input type="radio" name="ads_enabled" value="on" <?php if ($ops['ads_enabled']=='on') echo 'checked="checked"'; ?> /> <b>On: <?php _e('Ads enabled', 'adinj') ?></b><br />
 	<input type="radio" name="ads_enabled" value="off" <?php if ($ops['ads_enabled']=='off' || $ops['ads_enabled']=='') echo 'checked="checked"'; ?> /> <b>Off</b><br />
@@ -271,15 +267,51 @@ function adinj_global_settings_box($ops){
 	</script>
 	<div id="test_mode_warning"><span style="font-size:10px;color:red;">Warning: Turn any caching plugin *off* before using test mode. If you leave the caching plugin on, the test adverts will be cached and shown to your real visitors.</span><br /></div>
 	
+	<p><b><a name="pagetypefilters"></a>Exclude ads from page types (tick to remove ads)</b></p>
+	<?php
+	$count_pages = wp_count_posts('page', 'readable'); 
+	$count_posts = wp_count_posts('post', 'readable'); 
+	?>
+	
+	
+	<table class="adinjstatustable">
+	<tr>
+		<td></td>
+		<td><b>Single(<?php echo $count_posts->publish; ?>)</b></td>
+		<td><b>Page(<?php echo $count_pages->publish; ?>)</b></td>
+		<td><b>Home</b></td>
+		<td><b>Archive</b></td>
+		<td><b><a href="<?php echo get_bloginfo('url'); ?>" target="_new">Front</a></b></td>
+		<td><b>404</b></td>
+		<td><b>Search</b></td>
+	</tr>
+	<?php
+	adinj_add_exclude_row('All ads');
+	adinj_add_exclude_row('|_&nbsp;&nbsp;<a href="#topadplacement">Top</a>', 'top_');
+	adinj_add_exclude_row('|_&nbsp;&nbsp;<a href="#randomadplacement">Random</a>', 'random_');
+	adinj_add_exclude_row('|_&nbsp;&nbsp;<a href="#bottomadplacement">Bottom</a>', 'bottom_');
+	adinj_add_exclude_row('|_&nbsp;&nbsp;<a href="#footeradplacement">Footer</a>', 'footer_');
+	adinj_add_exclude_row('|_&nbsp;&nbsp;Widget', 'widget_');
+	adinj_add_exclude_row('|_&nbsp;&nbsp;Template', 'template_');
+	?>
+	<tr><td colspan="8"><span style="font-size:10px;">Go to the <a href="widgets.php">widget control panel</a> to set up any widgets. See the <a href="http://wordpress.org/extend/plugins/ad-injection/faq/" target="_new">FAQ</a> for how to set up template ads. There are some template ad examples in the <a href="#testads">test ads</a> section of this page.</span></td></tr>
+	</table>
+	
+	<p>
+	
+	</p>
+	
+	<p><span style="font-size:10px;"><b>Notes:</b> Your home page is the page displaying your latest posts. It may be different to your front page if you have configured your front page to be a static page. If you have <a href='options-reading.php'>set your front page</a> to be a static 'page' rather than your latest posts, the 'page' tick box will also apply to the front page.</span></p>
+	<p><span style="font-size:10px;">Archive pages are the categories, tags, authors and date pages.</span></p>
+	
 	<style type="text/css">
 	.adinjtable td { vertical-align: top; }
 	</style>
-	
+	<p></p>
 	<table border="0" class="adinjtable">
 	<tr>
-	<td><p><?php _e("Only show ads on pages older than ", 'adinj') ?></p></td>
+	<td><?php _e("Only show normal ads on pages older than ", 'adinj') ?></td>
 	<td>
-	<p>
 	<select name='ads_on_page_older_than'>
 	<?php
 	$older_than_days = array(0, 1, 2, 3, 5, 7, 10, 14, 21, 28, 40, 50);
@@ -289,9 +321,25 @@ function adinj_global_settings_box($ops){
 		echo ">$older_than_days[$value]</option>";
 	}
 	?>
-	</select><?php _e(" (days)", 'adinj') ?> - only for single posts and pages</p>
+	</select><?php _e(" (days)", 'adinj') ?> - only for single posts and pages
+	</td></tr>
+	<tr>
+	<td><?php _e("Only show widget ads on pages older than ", 'adinj') ?></td>
+	<td>
+	<select name='widgets_on_page_older_than'>
+	<?php
+	for ($value=0; $value<sizeof($older_than_days); ++$value){
+		echo "<option value=\"$older_than_days[$value]\" ";
+		if($ops['widgets_on_page_older_than'] == $older_than_days[$value]) echo 'selected="selected"';
+		echo ">$older_than_days[$value]</option>";
+	}
+	?>
+	</select><?php _e(" (days)", 'adinj') ?> - only for single posts and pages
 	</td></tr>
 	</table>
+	
+	<p></p>
+	
 	<?php
 	adinj_condition_tables('global_', 'ui_conditions_show');
 	//TODO sometimes OOM here - just before drop down list is loaded
@@ -351,9 +399,9 @@ function adinj_insertion_mode_box($ops){
 	<h4><a name="dynamic"></a>Show ads only to visitors from these websites (dynamic feature)</h4>
 	
 	<blockquote>
-	<?php adinj_add_checkbox('sevisitors_only') ?><?php _e("Only show ads to visitors from these websites (customise search engine or website referrers below if necessary).", 'adinj') ?><br />
+	<?php adinj_add_checkbox('sevisitors_only') ?><?php _e("Only show ads to visitors from these websites (customise search engine or website referrers below). When a user visits from one of these referrers they will see ads <b>for the next hour</b> (sets a 1 hour cookie).", 'adinj') ?><br />
 	<textarea name="ad_referrers" rows="2" cols="70"><?php echo $ops['ad_referrers']; ?></textarea>
-	<p>Comma separated list e.g.: <br /><code>.google., .bing., .yahoo., .ask., search?, search., facebook.com</code></p>
+	<p>Comma separated list e.g.: <br /><code>.google., .bing., .yahoo., .ask., search?, search., facebook.com, t.co</code></p>
 	</blockquote>
 	
 	<h4>Blocked IP addresses (dynamic feature)</h4>

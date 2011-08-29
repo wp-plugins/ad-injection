@@ -22,7 +22,7 @@ class Ad_Injection_Widget extends WP_Widget {
 	}
 	
 	function widget( $args, $instance ) {
-		if (adinj_ads_completely_disabled_from_page()) return;
+		if (adinj_ads_completely_disabled_from_page('widget')) return;
 		
 		if ((is_front_page() && adinj_ticked('widget_exclude_front')) ||
 			(is_home() && adinj_ticked('widget_exclude_home')) ||
@@ -243,8 +243,8 @@ class Ad_Injection_Widget extends WP_Widget {
 		<?php $this->add_checkbox('exclude_page', $instance) ?>page - <?php echo $count_pages->publish; ?> single page(s)<br />
 		<?php $this->add_checkbox('exclude_single', $instance) ?>single - <?php echo $count_posts->publish; ?> single post(s)<br />
 		<?php $this->add_checkbox('exclude_archive', $instance) ?>archive - categories, tags, authors, dates<br />
-		<?php $this->add_checkbox('exclude_search', $instance) ?>search (widgets only for now)<br />
-		<?php $this->add_checkbox('exclude_404', $instance) ?>404 (widgets only for now)<br />
+		<?php $this->add_checkbox('exclude_search', $instance) ?>search<br />
+		<?php $this->add_checkbox('exclude_404', $instance) ?>404<br />
 		<span style="font-size:10px;"><b>Notes:</b> Your home page is the page displaying your latest posts. It may be different to your front page if you have configured your front page to be a static page.</span><br />
 		<span style="font-size:10px;">If you have <a href='options-reading.php'>set your front page</a> to be a static 'page' rather than your latest posts, the 'page' tick box will also apply to the front page.</span>
 		</div>
@@ -299,7 +299,7 @@ class Ad_Injection_Widget extends WP_Widget {
 		
 		<br />
 		
-		<p>Other options to define who sees these adverts (by page age, IP, referrer) are on the main <a href='options-general.php?page=ad-injection.php'>Ad Injection settings page</a>. You can also set a global <a href='options-general.php?page=ad-injection.php#adsettings'>page type</a> restrictions for the widgets.</p>
+		<p>Other options to define who sees these adverts (by page age, IP, referrer) are on the main <a href='options-general.php?page=ad-injection.php'>Ad Injection settings page</a>. You can also set a global <a href='options-general.php?page=ad-injection.php#global'>page type</a> restriction for the widgets.</p>
 		
 		<?php
 	}

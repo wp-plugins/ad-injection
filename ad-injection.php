@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 1.1.0.2
+Version: 1.1.0.3
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -30,8 +30,9 @@ define('ADINJ_NO_CONFIG_FILE', 1);
 // 11 = options to disable rnd ad at bottom, and to get new ad for each rnd slot
 // 13 = post/page id restrictions
 // 14 = template ads
-// 15 = Remove duplicate 'Disabled' option from top/bottom ad section
-define('ADINJ_DB_VERSION', 15);
+// 15 = remove duplicate 'Disabled' option from top/bottom ad section
+// 16 = after paragraph options, older option for widget
+define('ADINJ_DB_VERSION', 16);
 
 // Files
 // TODO will these paths work on windows?
@@ -353,9 +354,13 @@ function read_ad_from_file($ad_path){
 
 // Based on: http://www.wprecipes.com/wordpress-hack-how-to-display-ads-on-old-posts-only
 // Only use for pages and posts. Not for archives, categories, home page, etc.
-function adinj_is_old_post(){
+function adinj_is_old_post($adtype){
 	$ops = adinj_options();
-	$days = $ops['ads_on_page_older_than'];
+	if ($adtype == 'widget'){
+		$days = $ops['widgets_on_page_older_than'];
+	} else {
+		$days = $ops['ads_on_page_older_than'];
+	}
 	if ($days == 0) return true;
 	if(is_single() || is_page()) {
 		$current_date = time();
@@ -384,6 +389,9 @@ function adinj($content, $message){
 	global $adinj_total_top_ads_used, $adinj_total_random_ads_used, $adinj_total_bottom_ads_used, $adinj_total_all_ads_used;
 	$ops = adinj_options();
 	$para = adinj_paragraph_to_start_ads();
+	$random_mode = $ops['random_ads_after_mode'];
+	if ($random_mode == 'after') $random_mode = 'at or after';
+	$random_unit = $ops['random_ads_after_unit'];
 	$mode = $ops['ad_insertion_mode'];
 	
 	$posttype = get_post_type() . ' (';
@@ -411,6 +419,7 @@ $message
 \$adinj_total_bottom_ads_used=$adinj_total_bottom_ads_used
 \$adinj_total_all_ads_used=$adinj_total_all_ads_used
 paragraphtostartads=$para (fyi: -1 is disabled)
+random ads start $random_mode $random_unit $para (fyi: -1 is disabled)
 posttype=$posttype
 currentdate=$currentdate ($currentday)
 postdate=$postdate ($postday)
@@ -431,7 +440,7 @@ function adinj_excluded_by_tick_box($prefix){
 	return false;
 }
 
-function adinj_ads_completely_disabled_from_page($content=NULL){
+function adinj_ads_completely_disabled_from_page($adtype, $content=NULL){
 	$ops = adinj_options();
 	if ($ops['ads_enabled'] == 'off' ||
 		$ops['ads_enabled'] == ''){
@@ -456,7 +465,7 @@ function adinj_ads_completely_disabled_from_page($content=NULL){
 	if (adinj_adverts_disabled_flag()) return "NOADS: adverts_disabled_flag";
 	
 	// no ads on old posts/pages if rule is enabled
-	if((is_page() || is_single()) && !adinj_is_old_post()) return "NOADS: !is_old_post";
+	if((is_page() || is_single()) && !adinj_is_old_post($adtype)) return "NOADS: !is_old_post";
 	
 	if (!adinj_allowed_in_category('global', $ops)) return "NOADS: globally blocked from category";
 	if (!adinj_allowed_in_tag('global', $ops)) return "NOADS: globally blocked from tag";	
@@ -647,7 +656,7 @@ function adinj_content_hook($content){
 		$adinj_total_bottom_ads_used = 0;
 	}
 
-	$reason = adinj_ads_completely_disabled_from_page($content);
+	$reason = adinj_ads_completely_disabled_from_page('in-content', $content);
 	if ($reason !== false){
 		return adinj($content, $reason);
 	}
@@ -676,22 +685,37 @@ function adinj_content_hook($content){
 	$length = 0;
 	if ($ops['content_length_unit'] == 'all'){
 		$length = strlen($content);
-		if ($debug_on) $debug .= "\nnum chars: = $length (including HTML chars)";
+		if ($debug_on) $debug .= "\nnum chars: $length (including HTML chars)";
 	} else if ($ops['content_length_unit'] == 'viewable'){
 		$length = strlen(strip_tags($content));
-		if ($debug_on) $debug .= "\nnum chars: = $length (viewable chars only)";
+		if ($debug_on) $debug .= "\nnum chars: $length (viewable chars only)";
 	} else {
 		$length = str_word_count_utf8(strip_tags($content));
-		if ($debug_on) $debug .= "\nnum words: = $length";
+		if ($debug_on) $debug .= "\nnum words: $length";
 	}
 	# Insert top and bottom ads if necesary
-	if (adinj_num_top_ads_to_insert($length) > 0){
-		$content = $ad_include.adinj_ad_code_top().$content;
+	if(stripos($content, "<!--topad-->") == false){
+		if (adinj_num_top_ads_to_insert($length) > 0){
+			$content = $ad_include.adinj_ad_code_top().$content;
+			$ad_include = "";
+			++$adinj_total_top_ads_used;
+		}
+	} else {
+		if ($debug_on) $debug .= "\ntop ad position(s) fixed by 'topad' tag";
+		$content = str_replace('<!--topad-->', adinj_ad_code_top(), $content);
+		$content = $ad_include.$content;
 		$ad_include = "";
 		++$adinj_total_top_ads_used;
 	}
-	if (adinj_num_bottom_ads_to_insert($length) > 0){
-		$content = $content.adinj_ad_code_bottom();
+	
+	if(stripos($content, "<!--bottomad-->") == false){
+		if (adinj_num_bottom_ads_to_insert($length) > 0){
+			$content = $content.adinj_ad_code_bottom();
+			++$adinj_total_bottom_ads_used;
+		} 
+	} else {
+		if ($debug_on) $debug .= "\nbottom ad position(s) fixed by 'bottomad' tag";
+		$content = str_replace('<!--bottomad-->', adinj_ad_code_bottom(), $content);
 		++$adinj_total_bottom_ads_used;
 	}
 
@@ -702,8 +726,15 @@ function adinj_content_hook($content){
 	$ad = adinj_ad_code_random();
 	if (empty($ad)) return adinj($content, "no random ad defined");
 	
+	if(stripos($content, "<!--randomad-->") !== false){
+		if ($debug_on) $debug .= "\nrandom ad position(s) fixed by 'randomad' tag";
+		$content = str_replace('<!--randomad-->', $ad, $content);
+		return adinj($content, "Fixed random ads" . $debug);
+	}
+	
 	if (!$debug_on) $debugtags=false;
 	
+	$adstart_override = false;
 	$content_adfree_header = "";
 	$content_adfree_footer = "";
 	
@@ -714,6 +745,7 @@ function adinj_content_hook($content){
 	if (count($split) == 2){
 		$content_adfree_header = $split[0];
 		$content = $split[1];
+		$adstart_override = true;
 	}
 	
 	# Use the same naming convention for the end tag
@@ -727,6 +759,7 @@ function adinj_content_hook($content){
 	if (count($split) == 2){
 		$content_adfree_header = $split[0];
 		$content = $split[1];
+		$adstart_override = true;
 	}
 	
 	$split = adinj_split_by_tag($content, "<!--adend-->", $debugtags);
@@ -735,6 +768,28 @@ function adinj_content_hook($content){
 		$content_adfree_footer = $split[1];
 	}
 
+	if ($debug_on) $debug .= "\nContent length=". strlen($content);
+	
+	$startposition = adinj_paragraph_to_start_ads();
+	
+	if (!$adstart_override){
+		if ($ops['random_ads_after_unit'] == 'character' && $startposition > 0){
+			$split = adinj_split_by_index($content, $startposition);
+			if (count($split) == 2){
+				$content_adfree_header = $split[0];
+				$content = $split[1];
+				if ($ops['random_ads_after_mode'] == 'at'){
+					// Start ads at next paragraph
+					$startposition = 1;
+				} else {
+					$startposition = -1;
+				}
+			} else {
+				return adinj($content, "No random ads: content too short for 'start first ad at/after character $startposition' setting");
+			}
+		}
+	}
+	
 	// TODO add note explaining that start tags are processed before the 'first
 	// paragraph ad
 	
@@ -745,7 +800,7 @@ function adinj_content_hook($content){
 	if ($debug_on) $debug .= "\nTags=". htmlentities($debugtags);
 	
 	// Generate a list of all potential injection points
-	if ($debug_on) $debug .= "\nPotential positions: ";
+	if ($debug_on) $debug .= "\nInitial potential positions: ";
 	$potential_inj_positions = array();
 	$prevpos = -1;
 	while(($prevpos = stripos($content, $paragraphmarker, $prevpos+1)) !== false){
@@ -757,25 +812,37 @@ function adinj_content_hook($content){
 	if ($debug_on) $debug .= "\npotential_inj_positions:".sizeof($potential_inj_positions);
 	
 	if (sizeof($potential_inj_positions) == 0){
-		return adinj($content, "Error: no potential inj positions");
+		return adinj($content, "No random ads: no potential inj positions found in content");
 	}
 	
 	if (!adinj_ticked('rnd_allow_ads_on_last_paragraph')){
 		array_pop($potential_inj_positions);
+		if (sizeof($potential_inj_positions) == 0){
+			return adinj($content, "No random ads: no potential inj positions after removing last paragraph position");
+		}
 	}
 	
 	$inj_positions = array();
 	
-	$startparagraph = adinj_paragraph_to_start_ads();
-	if ($startparagraph > 0){
+	if ($startposition > 0){
 		$pos = NULL;
-		for ($i=0; $i<$startparagraph; ++$i){
-			// discard positions until we get to the starting paragraph
-			$pos = array_shift($potential_inj_positions);
+		if ($ops['random_ads_after_mode'] == 'at'){
+			for ($i=0; $i<$startposition; ++$i){
+				// discard positions until we get to the starting paragraph
+				$pos = array_shift($potential_inj_positions);
+			}
+			if ($pos != NULL && $ops['random_ads_after_mode'] == 'at'){
+				$inj_positions[] = $pos;
+				--$num_rand_ads_to_insert;
+			}
+		} else { // mode == at or after
+			for ($i=0; $i<$startposition-1; ++$i){
+				// discard positions before the starting paragraph
+				array_shift($potential_inj_positions);
+			}
 		}
-		if ($pos != NULL){
-			$inj_positions[] = $pos;
-			--$num_rand_ads_to_insert;
+		if (sizeof($potential_inj_positions) == 0){
+			return adinj($content, "No random ads: no potential inj positions left after applying 'start ads at/after paragraph' $startposition setting");
 		}
 	}
 
@@ -806,7 +873,7 @@ function adinj_content_hook($content){
 	}
 	
 	if (sizeof($inj_positions) == 0){
-		return adinj($content_adfree_header.$content.$content_adfree_footer, "Error: No ad injection positions: " . $debug);
+		return adinj($content_adfree_header.$content.$content_adfree_footer, "Error: No random ad injection positions: " . $debug);
 	}
 	foreach($inj_positions as $pos){
 		if ($debug_on) $debug = "$pos, $debug";
@@ -862,6 +929,15 @@ function adinj_split_by_tag($content, $tag, &$debugtags){
 		if (count($content_split) == 2){
 			$ret[] = $content_split[1];
 		}
+	}
+	return $ret;
+}
+
+function adinj_split_by_index($content, $index){
+	$ret = array();
+	if (strlen($content) > $index+4){ // +4 as there is no point splitting unless there is room for a </p> at end
+		$ret[0] = substr($content, 0, $index);
+		$ret[1] = substr($content, $index+1);
 	}
 	return $ret;
 }
@@ -966,7 +1042,7 @@ function adinj_num_rand_ads_to_insert($content_length){
 
 function adinj_num_footer_ads_to_insert(){
 	if (adinj_excluded_by_tick_box('footer_')) return 0;
-	$reason = adinj_ads_completely_disabled_from_page($content);
+	$reason = adinj_ads_completely_disabled_from_page('footer', $content);
 	if ($reason !== false){
 		return 0;
 	}
@@ -1046,7 +1122,7 @@ function adinj_db_version($ops){
 
 // template ads
 function adinj_print_ad($adname=''){
-	$reason = adinj_ads_completely_disabled_from_page("");
+	$reason = adinj_ads_completely_disabled_from_page('template', "");
 	if ($reason !== false){
 		return;
 	}

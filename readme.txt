@@ -4,17 +4,20 @@ Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-w
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, widgets, sidebar, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog, ad rotation, A:B testing, split testing, WP Super Cache, W3 Total Cache, WP Cache
 Requires at least: 2.8.6
 Tested up to: 3.2.1
-Stable tag: 1.1.0.2
+Stable tag: 1.1.0.3
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
 == Description ==
 
-Ad Injection from [reviewmylife](http://www.reviewmylife.co.uk/ "reviewmylife") injects any kind of advert (e.g. Google AdSense, Amazon Associates, ClickBank, TradeDoubler, etc) into the existing content of your WordPress posts and pages. You can control the number of adverts based on the post length, and it can restrict who sees adverts by post age, visitor referrer and IP address. Adverts can be configured in the post (random, top, and bottom positions) or in any widget/sidebar area. There's support for A:B split testing / ad rotation. And the dynamic restrictions (by IP and referrer) work with WP Super Cache, W3 Total Cache and WP Cache.
+Ad Injection from [reviewmylife](http://www.reviewmylife.co.uk/ "reviewmylife") injects any kind of advert or other content (e.g. Google AdSense, Amazon Associates, ClickBank, TradeDoubler, etc) into the existing content of your WordPress posts and pages. You can control the number of adverts based on the post length, and it can restrict who sees adverts by post age, visitor referrer and IP address. Adverts can be configured in the post (random, top, and bottom positions) or in any widget/sidebar area. There's support for A:B split testing / ad rotation. And the dynamic restrictions (by IP and referrer) work with WP Super Cache, W3 Total Cache and WP Cache.
 
 **New Features 1.1.x.x**
 
 * Template ads - you can now include ads anywhere in your theme template with some simple tags. You can load the top/random/bottom/footer ads, or you can load an ad from a text file on disk. Template ads inherit the same dynamic and global restrictions as for ads configured via the UI.
+* First ad can now be started at or after a paragraph or character position.
+* Override ad positions on individual posts using &lt;!--topad--&gt; &lt;!--randomad--&gt; &lt;!--bottomad--&gt;
+* Separate old post restriction for widget ads in case you want a different rule for the widget ads.
 
 **New Features 0.9.7.x**
 
@@ -33,7 +36,7 @@ Ad Injection from [reviewmylife](http://www.reviewmylife.co.uk/ "reviewmylife") 
 
 = Automatic advert injection =
 
-The ads can be injected into existing posts without requiring any modification of the post. The injection can be done randomly between paragraphs, and there is an option to always inject the first advert at a specified paragraph (e.g. the first or second). Randomly positioning the adverts helps to reduce 'ad blindness'. Two additional adverts can be defined for the top and bottom of the content. Widget adverts can be defined as well.
+The ads can be injected into existing posts without requiring any modification of the post. The injection can be done randomly between paragraphs, and there is an option to always inject the first advert at a specified paragraph (e.g. the first or second). Randomly positioning the adverts helps to reduce 'ad blindness'. Additional adverts can be defined for the top and bottom of the content, or the footer of the page. Widget adverts can be defined as well.
 
 = Widget support =
 
@@ -49,7 +52,7 @@ The number of adverts can be set based on the length of the post. It is a good i
 
 = Search engines only mode (restrict by referrer) =
 
-You can specify that ads should only be shown to search engine visitors, or to visitors from defined referring websites - e.g. Facebook, Wikipedia, etc. This will give your regular visitors (who are unlikely to click your ads) a better experience of your site. You can define which search engines or referring sites see your adverts. A visitor who enters the site by one of these referrers will see ads for the next hour.
+You can specify that ads should only be shown to search engine visitors, or to visitors from defined referring websites - e.g. Facebook, Wikipedia, Twitter, etc. This will give your regular visitors (who are unlikely to click your ads) a better experience of your site. You can define which search engines or referring sites see your adverts. A visitor who enters the site by one of these referrers will see ads for the next hour.
 
 = Ads on old posts only =
 
@@ -67,6 +70,10 @@ Ads can be included anywhere in your theme template with some simple tags. You c
 
 IP addresses of people who shouldn't see your ads can be defined. These could be the IP addresses of your friends, family, or even yourself.
 
+= Override ad positioning on individual posts =
+
+If you need to override the top, random, or bottom ad positions on a specific post you can use these in-content tags to manually set the ad positions: &lt;!--topad--&gt; &lt;!--randomad--&gt; &lt;!--bottomad--&gt; &lt;!--adstart--&gt; &lt;!--adend--&gt; &lt;!--noads--&gt;
+
 = Alternate content =
 
 This is content that is displayed when ads are blocked for the user. You could use this alternate content to show other content, some kind of layout filler, or even a different type of ad. I've added support for rotation of alternate content as well.
@@ -75,7 +82,18 @@ This is content that is displayed when ads are blocked for the user. You could u
 
 The advert code can be copied and pasted directly from your ad provider (Google AdSense, adBrite, ClickBank, etc) which will help you to comply with any terms of service (TOS) that state their ad code may not be modified. 
 
-= Flexible ad positioning =
+= Inject anything! =
+
+Although this plugin is usually used for injecting adverts it can in fact be used to inject anything. Here are some alternative uses for Ad Injection:
+
+* Inject an email opt-in form at the bottom of each post.
+* Insert a common header or footer block (e.g. copyright, disclaimers, website information).
+* Add tracking scripts (e.g. Google Analytics) into your site.
+* Use it to rotate random images or photos in your pages.
+* Put some time limited temporary content at the top or bottom of each post (e.g. sales offer, or web site announcement).
+* Inserting social networking buttons (e.g. Facebook, Twitter, Google +1) at the top or bottom of your posts.
+
+= Flexible ad alignment =
 
 Easy positioning options are provided for left, right, center, float left, and float right (or a random variant of these). Extra spacing can be set above and below the ad using the CSS margin and padding boxes. Or if that isn't flexible enough, you can write your own positioning code using HTML and CSS. And you can select which paragraph random ads should start from.
 
@@ -137,16 +155,17 @@ I used to use the excellent Adsense Injection by Dax Herrera, but found I needed
 
 = How is this plugin different to Adsense Injection by Dax Herrera? =
 
-One a basic level it can do the same job as Dax's excellent Adsense Injection. If you want it can just inject AdSense between paragraphs like his plugin does. I used to use his plugin, but found that I wanted a lot more features. Here are some of the extra features.
+One a basic level it can do the same job as Dax's Adsense Injection. If you want it can just inject AdSense between paragraphs like his plugin does. I used to use his plugin, but found that I wanted a lot more features. Here are some of the extra features.
 
 * Inject any type of advert from any ad provider.
 * Restrict ad display by referrer (e.g. can restrict display to search engine visitors).
 * Can prevent specific IP addresses from seeing adverts.
 * Can define randomly positioned adverts, and adverts at the top, bottom and footer of the posts.
 * Add adverts to the widget area.
-* Adverts can be put anywhere in your theme template.
+* Adverts can be positioned anywhere in your theme template.
 * Ad rotation / split testing.
 * Restrict adverts by category, tag, author, post ID.
+* Override ad positions for individual posts if necessary.
 * Vary number of adverts based on post length.
 * You can inject raw JavaScript and PHP.
 * Include ads anywhere in the theme template if you edit your theme's PHP.
@@ -362,7 +381,7 @@ Here is an example of how to load a text file ad from the ad-injection-data dire
 
 The `function_exists` condition ensures that the ads will silently dissapear if the plugin is deactivated rather than generating an error.
 
-If you are using template ads with a compatible caching plugin you will need to include adshow.php (once on the page) using mfunc tags. You will need to alter the code below to include the correct path.
+If you are using template ads with a compatible caching plugin you will need to include adshow.php (once on the page) using mfunc tags. You will need to alter the code below to include the correct path. If you look in the 'Test ads' section of the main settings page you should be able to find a version of this code customised for your web server.
 
 `<!--mfunc include_once('/home/public_html/wordpress/wp-content/plugins/ad-injection/adshow.php') -->
 <?php include_once('/home/public_html/wordpress/wp-content/plugins/ad-injection/adshow.php'); ?>
@@ -390,6 +409,14 @@ Problem: Random, top and bottom ads don't appear on syndicated posts.
 By default FeedWordPress prevents the syndicated post contents from being passed to 'the_content' hook which is where the random, top and bottom ads are added. There's an easy fix: 
 
 From the FeedWordPress settings page go to 'Posts & Links' and then in the 'Formatting' section set 'Formatting filters' to 'Expose syndicated posts to formatting filters'.
+
+**Shortcodes Ultimate**
+
+Problem: Random ads don't show.
+
+Reason: Shortcodes Ultimate disables the wpautop filter which adds the &lt;p&gt;&lt;/p&gt; tags to the page. It re-applies this filter at a priority of 99 which is after Ad Injection has run. Therefore when Ad Injection runs it can't find any &lt;/p&gt; tags which it needs to position the random adverts.
+
+Potential solution?: I could change the priority of the plugin so it runs after Shortcodes Ultimate. What I'd prefer to do is to make the priority of Ad Injection configurable. I haven't yet investigated whether this is possible.
 
 = Will Ad Injection work with the multi-blog version of WordPress? =
 
@@ -486,6 +513,14 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 3. Can choose to show the ads only to search engine visitors, or define IP addresses that ads aren't shown to.
 
 == Changelog ==
+
+= 1.1.0.3 =
+* First ad can now be started at or after a paragraph or character position.
+* Override ad positions on individual posts using &lt;!--topad--&gt; &lt;!--randomad--&gt; &lt;!--bottomad--&gt;
+* Separate old post restriction for widget ads.
+* Template ad examples in the 'Test ads' section.
+* Warning message improvements.
+* UI tweaks and other fixes.
 
 = 1.1.0.2 =
 * Remove confusing Disabled/Enabled drop down options as all ads can be enabled/disabled from the tick boxes. Please check your ads after this update and report any problems!
@@ -669,23 +704,14 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 
 == Upgrade Notice ==
 
+= 1.1.0.3 =
+* First ad can now be started at or after a paragraph or character position. Position override tags. Separate old post restriction for widget ads. Template ad examples in the 'Test ads' section. Warning message improvements. Other fixes.
+
 = 1.1.0.2 =
 * Remove confusing Disabled/Enabled drop down options as all ads can be enabled/disabled from the tick boxes. Please check your ads after this update and report any problems!
 
 = 1.1.0.1 =
 * Template ads - you can now include ads anywhere in your theme template with some simple tags. UI usability improvements.
-
-= 0.9.7.11 =
-* Filter ads by post/page ID and other misc fixes.
-
-= 0.9.7.10 =
-* UI fix for WordPress 3.2 and fix for users who are running PHP with no UTF8 support.
-
-= 0.9.7.9 =
-* New options to disable last paragraph random ad, re-pick random ad for each position, and other minor fixes.
-
-= 0.9.7.8 =
-* Fix bug that prevented ads appearing on archive/home pages when used with certain plugins/themes.
 
 = 0.8.3 =
 First public release.
