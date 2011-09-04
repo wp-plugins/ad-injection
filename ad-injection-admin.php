@@ -121,7 +121,6 @@ function extract_text_args($name, &$ops, $start=NULL, $end=NULL, $save_path_stem
 // so be careful if adding any new ones - they might not exist yet, but could
 // still be referenced by adshow.
 function adinj_write_config_file(){
-	$ops = adinj_options();
 	if (!adinj_mfunc_mode()) return;
 	
 	$sevisitors_only = adinj_ticked('sevisitors_only')?'true':'false';
@@ -130,18 +129,10 @@ function adinj_write_config_file(){
 	$block_ips = adinj_ticked('block_ips')?'true':'false';
 	$ip_list = adinj_quote_list('blocked_ips');
 	
-	// TODO
 	$block_keywords = adinj_ticked('block_keywords')?'true':'false';
 	$keyword_list = adinj_quote_list('blocked_keywords');
 	
 	$debug_mode = adinj_ticked('debug_mode')?'true':'false';
-	
-	// TODO remove these from config file later...
-	$legacy_funcs = '
-function adinj_config_add_tags_rnd($ad) { return ""; }
-function adinj_config_add_tags_top($ad) { return ""; }
-function adinj_config_add_tags_bottom($ad) { return ""; }
-';
 	
 	$config = <<<CONFIG
 <?php
@@ -157,14 +148,10 @@ function adinj_config_search_engine_referrers() { return array($referrer_list); 
 function adinj_config_block_ips() { return $block_ips; }
 function adinj_config_blocked_ips() { return array($ip_list); }
 
-//TODO not yet implemented
 function adinj_config_block_keywords() { return $block_keywords; }
 function adinj_config_blocked_keywords() { return array($blocked_keywords); }
 
 function adinj_config_debug_mode() { return $debug_mode; }
-
-// Don't use these - they will be deleted soon
-$legacy_funcs
 
 ?>
 CONFIG;
@@ -348,7 +335,7 @@ function adinj_top_message_box(){
 		
 	} else if (!isset($_GET['tab'])){
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "29th August 2011: Lots of small new features and fixes in this update. I've added more options for selecting where random ads start; tags to allow ad positions to be hardcoded in selected posts; a separate 'older than' option for the widget ads; and more. See the changelog for more details. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
+		echo "5th September 2011: New block ads by referrer feature - an example use would be to treat people who arrive at your site after searching for your site by name as direct visitors and block them from seeing ads. Load tags in batches to reduce memory usage for blogs with lots of tags. Plus other minor fixes. <font color='red'>Beta testers for 1.2.0.0 release</font> - If you are interested in testing the new 1.2.0.0 release a few days early contact me via the link at the end of this paragraph and I'll send you a zip when it is ready for testing. Thanks! Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
 		echo '</strong></p></div>';
 	}
 }
@@ -788,24 +775,35 @@ function adinj_condition_table($name, $description, $type, $ops, $dropdown_field
 	
 	<?php 
 	if ($type == 'category') { 
-		$categories = get_categories(); 
-		foreach ($categories as $cat) {
+		$categories = get_categories();
+		$cat = NULL;
+		foreach ($categories as &$cat) {
 			$nicename = rawurldecode($cat->category_nicename);
 			echo '<option value="'.$nicename.'">'.$nicename.' ('.$cat->category_count.')</option>';
 		}
-	} else if ($type == 'tag') { 
-		$tags = get_tags(); 
-		foreach ($tags as $tag) {
-			$slug = rawurldecode($tag->slug);
-			echo '<option value="'.$slug.'">'.$slug.' ('.$tag->count.')</option>';
+		unset ($cat);
+	} else if ($type == 'tag') {
+		/*s$testarray = array();
+		for ($i=0;$i<549999;++$i){ $testarray[$i] = 'test';	}*/
+
+		// A lot of blogs have large (1000+) tags. Loading this many tags at once can cause an OOM
+		// error. Break up tag loading into chunks to reduce memory usage.
+		$tagcount = 0;
+		$tagquantity = 100;
+		while (true){
+			$more = adinj_print_tags($tagquantity, $tagcount);
+			$tagcount += $tagquantity;
+			if (!$more) break;
 		}
 	} else if ($type == 'author') { 
 		$authors = adinj_get_authors();
-		foreach ($authors as $author) {
+		$author = NULL;
+		foreach ($authors as &$author) {
 			$login = $author->user_login;
 			$displayname = $author->display_name;
 			echo '<option value="'.$login.'">'.$login.' ('.$displayname.')</option>';
 		}
+		unset ($authors);
 	} else {
 		echo 'ADINJ DEBUG Type not defined: ' . $type;
 	}?>
@@ -821,6 +819,21 @@ function adinj_condition_table($name, $description, $type, $ops, $dropdown_field
 	</td></tr>
 	</table>
 	<?php
+}
+
+function adinj_print_tags($quantity, $offset){
+	$tags = get_tags(array('number' => $quantity, 'offset' => $offset));
+	if (count($tags) == 0) return false;
+	$tag = NULL;
+	foreach ($tags as &$tag) {
+		$slug = rawurldecode($tag->slug);
+		echo '<option value="'.$slug.'">'.$slug.' ('.$tag->count.')</option>';
+	}
+	unset ($tag);
+	if (count($tags) < $quantity) {
+		return false; 
+	}
+	return true;
 }
 
 // TODO Currently gets all users
@@ -1548,14 +1561,16 @@ function adinj_default_options(){
 		'ad_insertion_mode' => 'mfunc',
 		'sevisitors_only' => 'off',
 		'ad_referrers' => '.google., .bing., .yahoo., .ask., search?, search.',
-		'block_keywords' => 'off', //TODO change to blocked referrers?
-		'blocked_keywords' => '', //TODO
+		'block_keywords' => 'off',
+		'blocked_keywords' => '',
+		'block_ads_for_hours' => '24',
 		'block_ips' => 'off',
 		'blocked_ips' => '',
 		// ui main tab
 		'ui_global_hide' => 'false',
 		'ui_adsettings_hide' => 'false',
 		'ui_adverts_hide' => 'false',
+		'ui_filters_hide' => 'false',
 		'ui_restrictions_hide' => 'false',
 		'ui_docsquickstart_hide' => 'false',
 		'ui_testads_hide' => 'false',

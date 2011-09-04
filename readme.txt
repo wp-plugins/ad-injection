@@ -4,7 +4,7 @@ Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-w
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, widgets, sidebar, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog, ad rotation, A:B testing, split testing, WP Super Cache, W3 Total Cache, WP Cache
 Requires at least: 2.8.6
 Tested up to: 3.2.1
-Stable tag: 1.1.0.4
+Stable tag: 1.1.0.5
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
@@ -53,6 +53,10 @@ The number of adverts can be set based on the length of the post. It is a good i
 = Search engines only mode (restrict by referrer) =
 
 You can specify that ads should only be shown to search engine visitors, or to visitors from defined referring websites - e.g. Facebook, Wikipedia, Twitter, etc. This will give your regular visitors (who are unlikely to click your ads) a better experience of your site. You can define which search engines or referring sites see your adverts. A visitor who enters the site by one of these referrers will see ads for the next hour.
+
+= Block by referrer =
+
+Block ads to people coming from certain referring URLs. e.g. you may wish to treat people who arrive at your site after searching for your site name as direct visitors and disable the ads for them.
 
 = Ads on old posts only =
 
@@ -514,6 +518,12 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 
 == Changelog ==
 
+= 1.1.0.5 =
+* New block ads by referring keyword/URL feature.
+* Load tags in batches to reduce memory used when displaying main settings screen. Will help people with lots of tags.
+* Fix for &lt;!--randomad--&gt; tag.
+* Move tags/categories/authors/ids filters to separate area of UI.
+
 = 1.1.0.4 =
 * First ad can now be started at or after a paragraph or character position.
 * Override ad positions on individual posts using &lt;!--topad--&gt; &lt;!--randomad--&gt; &lt;!--bottomad--&gt;
@@ -703,6 +713,9 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 * First public release
 
 == Upgrade Notice ==
+
+= 1.1.0.5 =
+* New block ads by referrer feature. Reduce UI memory usage for people with lots of tags. Fix randomad override tag.
 
 = 1.1.0.4 =
 * First ad can now be started at or after a paragraph or character position. Position override tags. Separate old post restriction for widget ads. Template ad examples in the 'Test ads' section. Warning message improvements. Other fixes.

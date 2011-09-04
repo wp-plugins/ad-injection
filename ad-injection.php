@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 1.1.0.4
+Version: 1.1.0.5
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -32,7 +32,8 @@ define('ADINJ_NO_CONFIG_FILE', 1);
 // 14 = template ads
 // 15 = remove duplicate 'Disabled' option from top/bottom ad section
 // 16 = after paragraph options, older option for widget
-define('ADINJ_DB_VERSION', 16);
+// 17 = block ads for days
+define('ADINJ_DB_VERSION', 17);
 
 // Files
 // TODO will these paths work on windows?
@@ -97,17 +98,26 @@ function adinj_option($option){
 function adinj_print_referrers_hook(){
 	// TODO can re-enable this check once the widget ads are factored in.
 	//if (adinj_ads_completely_disabled_from_page()) return;
-	if (adinj_ticked('sevisitors_only')){
-		$referrer_list = adinj_quote_list('ad_referrers');
+	$sevisitors = adinj_ticked('sevisitors_only');
+	$block = adinj_ticked('block_keywords');
+	if (!$sevisitors && !$block) return;
+	
 	echo <<<SCRIPT
+
 <script type="text/javascript">
 // Ad Injection plugin
-var adinj_referrers = new Array($referrer_list);
-adinj_searchenginevisitor();
-</script>
 
 SCRIPT;
-	}
+
+	$ops = adinj_options();
+	$referrer_list = adinj_quote_list('ad_referrers');
+	$blocked_list = adinj_quote_list('blocked_keywords');
+	$blocked_hours = $ops['block_ads_for_hours'];
+	if ($sevisitors) echo "var adinj_referrers = new Array($referrer_list);\n";
+	if ($block) echo "var adinj_blocked_referrers = new Array($blocked_list);\n";
+	if ($block) echo "var adinj_blocked_hours = $blocked_hours;\n";
+	echo "adinj_check_referrer();\n";
+	echo "</script>\n";
 }
 
 function adinj_quote_list($option){
@@ -134,7 +144,7 @@ function adinj_quote_list($option){
 function adinj_addsevjs_hook(){
 	// TODO can re-enable this check once the widget ads are factored in.
 	//if (adinj_ads_completely_disabled_from_page()) return;
-	if (!adinj_ticked('sevisitors_only')) return;
+	if (!adinj_ticked('sevisitors_only') && !adinj_ticked('block_keywords')) return;
 	// Put the search engine detection / cookie setting script in the footer
 	wp_enqueue_script('adinj_sev', WP_PLUGIN_URL.'/ad-injection/adinj-sev.js', NULL, NULL, true);
 }
@@ -412,7 +422,7 @@ function adinj($content, $message){
 	}
 	return $content."
 <!--
-[ADINJ DEBUG]
+ADINJ DEBUG
 $message
 \$adinj_total_top_ads_used=$adinj_total_top_ads_used
 \$adinj_total_random_ads_used=$adinj_total_random_ads_used
@@ -424,7 +434,7 @@ posttype=$posttype
 currentdate=$currentdate ($currentday)
 postdate=$postdate ($postday)
 injection mode=$mode
-//-->\n";
+-->\n";
 }
 
 function adinj_excluded_by_tick_box($prefix){
@@ -678,8 +688,8 @@ function adinj_content_hook($content){
 	
 	# Ad sandwich mode
 	if(is_page() || is_single()){
-		if(stripos($content, "<!--adsandwich-->") !== false) return adinj($ad_include.adinj_ad_code_top().$content.adinj_ad_code_bottom(), "Ads=adsandwich");
-		if(stripos($content, "<!--adfooter-->") !== false) return adinj($content.$ad_include.adinj_ad_code_bottom(), "Ads=adfooter");
+		if(stripos($content, "<!--adsandwich-->") !== false) return adinj($ad_include.adinj_ad_code_top().$content.adinj_ad_code_bottom(), "Ads=adsandwich" . $debug);
+		if(stripos($content, "<!--adfooter-->") !== false) return adinj($content.$ad_include.adinj_ad_code_bottom(), "Ads=adfooter" . $debug);
 	}
 	
 	$length = 0;
@@ -721,16 +731,16 @@ function adinj_content_hook($content){
 
 	if ($ad_include !== "") $content = $ad_include.$content;
 	
-	$num_rand_ads_to_insert = adinj_num_rand_ads_to_insert($length);
-	if ($num_rand_ads_to_insert <= 0) return adinj($content, "no random ads on this post");
-	$ad = adinj_ad_code_random();
-	if (empty($ad)) return adinj($content, "no random ad defined");
-	
 	if(stripos($content, "<!--randomad-->") !== false){
 		if ($debug_on) $debug .= "\nrandom ad position(s) fixed by 'randomad' tag";
-		$content = str_replace('<!--randomad-->', $ad, $content);
+		$content = str_replace('<!--randomad-->', adinj_ad_code_random(), $content);
 		return adinj($content, "Fixed random ads" . $debug);
 	}
+	
+	$num_rand_ads_to_insert = adinj_num_rand_ads_to_insert($length);
+	if ($num_rand_ads_to_insert <= 0) return adinj($content, "no random ads on this post" . $debug);
+	$ad = adinj_ad_code_random();
+	if (empty($ad)) return adinj($content, "no random ad defined" . $debug);
 	
 	if (!$debug_on) $debugtags=false;
 	

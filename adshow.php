@@ -22,13 +22,13 @@ if (!function_exists('adshow_functions_exist')){
 // and so that a problem doesn't disable the whole website. 
 function adshow_functions_exist(){
 	if (!defined('ADINJ_NO_CONFIG_FILE')){
-		if (!adshow_functions_exist_impl('adinj_config_add_tags_rnd')){ return false; } //TODO delete
-		if (!adshow_functions_exist_impl('adinj_config_add_tags_top')){ return false; } //TODO delete
-		if (!adshow_functions_exist_impl('adinj_config_add_tags_bottom')){ return false; } //TODO delete
 		if (!adshow_functions_exist_impl('adinj_config_sevisitors_only')){ return false; }
 		if (!adshow_functions_exist_impl('adinj_config_search_engine_referrers')){ return false; }
-		//if (!adshow_functions_exist_impl('adinj_config_block_ips')){ return false; } // TODO enable
+		if (!adshow_functions_exist_impl('adinj_config_block_ips')){ return false; }
 		if (!adshow_functions_exist_impl('adinj_config_blocked_ips')){ return false; }
+		if (!adshow_functions_exist_impl('adinj_config_block_keywords')){ return false; }
+		if (!adshow_functions_exist_impl('adinj_config_blocked_keywords')){ return false; }
+		if (!adshow_functions_exist_impl('adinj_config_block_hours')){ return false; }
 		if (!adshow_functions_exist_impl('adinj_config_debug_mode')){ return false; }
 	}
 	return true;
@@ -52,13 +52,27 @@ function adinj_config_search_engine_referrers() {
 	return preg_split("/[,'\s]+/", $list, -1, PREG_SPLIT_NO_EMPTY);
 }
 
-function adinj_config_block_ips() { // TODO use this
+function adinj_config_block_ips() {
 	return adinj_ticked('block_ips');
 }
 
 function adinj_config_blocked_ips() { 
 	$list = adinj_quote_list('blocked_ips');
 	return preg_split("/[,'\s]+/", $list, -1, PREG_SPLIT_NO_EMPTY);
+}
+
+function adinj_config_block_keywords() {
+	return adinj_ticked('block_keywords');
+}
+
+function adinj_config_blocked_keywords() { 
+	$list = adinj_quote_list('blocked_keywords');
+	return preg_split("/[,'\s]+/", $list, -1, PREG_SPLIT_NO_EMPTY);
+}
+
+function adinj_config_block_hours() {
+	$ops = adinj_options();
+	return $ops['block_ads_for_hours'];
 }
 
 function adinj_config_debug_mode() { 
@@ -215,6 +229,10 @@ if (!function_exists('adshow_fromasearchengine')){
 function adshow_fromasearchengine(){
 	if (!adshow_functions_exist()){ return false; }
 
+	// return true if the visitor has recently come from a search engine
+	// and has the adinj cookie set.
+	if ($_COOKIE["adinj"]==1) return true;
+	
 	$referrer = $_SERVER['HTTP_REFERER'];
 	$searchengines = adinj_config_search_engine_referrers();
 	foreach ($searchengines as $se) {
@@ -222,9 +240,25 @@ function adshow_fromasearchengine(){
 			return true;
 		}
 	}
-	// Also return true if the visitor has recently come from a search engine
-	// and has the adinj cookie set.
-	return ($_COOKIE["adinj"]==1);
+	return false;
+}
+}
+
+if (!function_exists('adshow_blocked_referrer')){
+function adshow_blocked_referrer(){
+	if (!adshow_functions_exist()){ return false; }
+
+	// true if blocked cookie is set
+	if ($_COOKIE["adinjblocked"]==1) return true;
+	
+	$referrer = $_SERVER['HTTP_REFERER'];
+	$blocked = adinj_config_blocked_keywords();
+	foreach ($blocked as $bl) {
+		if (stripos($referrer, $bl) !== false) {
+			return true;
+		}
+	}
+	return false;
 }
 }
 
@@ -241,10 +275,11 @@ if (!function_exists('adshow_show_adverts')){
 function adshow_show_adverts(){
 	if (!adshow_functions_exist()){ return false; }
 
-	if (adshow_blocked_ip()) return "blockedip";
-	if (adinj_config_sevisitors_only()){
-		if (!adshow_fromasearchengine()) return "referrer";
-	}
+	//echo 'ref:'.$_SERVER['HTTP_REFERER'];
+	if (adinj_config_block_ips() && adshow_blocked_ip()) return "blockedip";
+	if (adinj_config_sevisitors_only()&& !adshow_fromasearchengine()) return "referrer";
+	if (adinj_config_block_keywords() && adshow_blocked_referrer()) return "blockedreferrer";
+	
 	return true;
 }
 }

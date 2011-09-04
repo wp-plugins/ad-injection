@@ -10,7 +10,7 @@ function adinj_tab_main(){
 	$ops = adinj_options();
 	?>
 	
-	<p><a href="#adsettings">Ad Placement settings</a> | <a href="#adverts">Adverts</a> | <a href="#restrictions">Ad insert mode/dynamic restrictions</a> | <a href="#docsquickstart">Quick Start</a> | <a href="#testads">Test ads</a></p>
+	<p><a href="#adsettings">Ad Placement settings</a> | <a href="#adverts">Ads</a> | <a href="#restrictions">Ad insert mode/dynamic restrictions</a> | <a href="#filters">Filters</a> | <a href="#docsquickstart">Quick Start</a> | <a href="#testads">Test ads</a></p>
 	
 	<?php adinj_global_settings_box($ops); ?>
 	
@@ -44,11 +44,6 @@ function adinj_tab_main(){
 	?>
 	</div></td></tr>
 	
-	
-	<tr><td colspan="4">
-	<b>|_</b><?php adinj_condition_tables('top_', 'ui_top_conditions_show'); ?>
-	<p></p>
-	</td></tr>
 	
 	<tr><td colspan="4"><h3><a name="randomadplacement"></a>Random ads [<a href="#randomadcode">code</a>] [<a href="#pagetypefilters">page type filters</a>]</h3></td></tr>
 	<tr><td>Max num of ads on whole page:</td><td>
@@ -110,11 +105,6 @@ function adinj_tab_main(){
 		<div id="random_ads_after_warning"><span style="font-size:10px;color:red;">Note: If starting 'at character x', the start point will be the next paragraph.</span><br /></div>
 			
 	</td></tr>
-	<tr><td colspan="4">
-	<br />
-	<?php adinj_condition_tables('random_', 'ui_random_conditions_show'); ?>
-	<p></p>
-	</td></tr>
 	
 	<tr><td colspan="4"><h3><a name="bottomadplacement"></a>Bottom ad [<a href="#bottomadcode">code</a>] [<a href="#pagetypefilters">page type filters</a>]</h3></td></tr>
 	
@@ -136,17 +126,7 @@ function adinj_tab_main(){
 	?>
 	</div></td></tr>
 	
-	<tr><td colspan="4">
-	<b>|_ </b><?php adinj_condition_tables('bottom_', 'ui_bottom_conditions_show'); ?>
-	<p></p>
-	</td></tr>
 	
-	<tr><td colspan="4"><h3><a name="footeradplacement"></a>Footer ad [<a href="#footeradcode">code</a>] [<a href="#pagetypefilters">page type filters</a>]</h3></td></tr>
-	<tr><td colspan="4">
-	<?php adinj_condition_tables('footer_', 'ui_footer_conditions_show'); ?>
-	<p></p>
-
-	</td></tr>
 	
 	</table>
 	
@@ -160,7 +140,7 @@ function adinj_tab_main(){
 	<h3><a name="topadcode"></a>Top ad (below post title - this is not a 'header' ad) [<a href="#topadplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_top'>pool</a>]--></h3>
 	<table border="0" class="adinjtable" width="95%">
 	<tr><td>
-	<textarea name="ad_code_top_1" rows="10" cols="70"><?php echo $ops['ad_code_top_1']; ?></textarea>
+	<textarea name="ad_code_top_1" rows="10" cols="<?php adinj_table_width('ad'); ?>"><?php echo $ops['ad_code_top_1']; ?></textarea>
 	<br />
 	<p><span style="font-size:10px;"><b>Docs:</b> Try a <a href="#468x15">468x15</a> or <a href="#336x280">336x280</a> advert.</span></p>
 	</td><td>
@@ -175,7 +155,7 @@ function adinj_tab_main(){
 	<h3><a name="randomadcode"></a>Random ad (inserted randomly between paragraphs) [<a href="#randomadplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_random'>pool</a>]--></h3>
 	<table border="0" class="adinjtable" width="95%">
 	<tr><td>
-	<textarea name="ad_code_random_1" rows="10" cols="70"><?php echo $ops['ad_code_random_1']; ?></textarea>
+	<textarea name="ad_code_random_1" rows="10" cols="<?php adinj_table_width('ad'); ?>"><?php echo $ops['ad_code_random_1']; ?></textarea>
 	<br />
 	<p><span style="font-size:10px;"><b>Docs:</b> Try a <a href="#468x60">468x60</a> or <a href="#728x90">728x90</a> banner.</span></p>
 	</td><td>
@@ -189,7 +169,7 @@ function adinj_tab_main(){
 	<h3><a name="bottomadcode"></a>Bottom ad (below the post content) [<a href="#bottomadplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_bottom'>pool</a>]--></h3>
 	<table border="0" class="adinjtable" width="95%">
 	<tr><td>
-	<textarea name="ad_code_bottom_1" rows="10" cols="70"><?php echo $ops['ad_code_bottom_1']; ?></textarea>
+	<textarea name="ad_code_bottom_1" rows="10" cols="<?php adinj_table_width('ad'); ?>"><?php echo $ops['ad_code_bottom_1']; ?></textarea>
 	<br />
 	<p><span style="font-size:10px;"><b>Docs:</b> Try a <a href="#336x280">336x280</a> advert.</span></p>
 	</td><td>
@@ -204,7 +184,7 @@ function adinj_tab_main(){
 	<h3><a name="footeradcode"></a>Footer ad (put into 'the_footer' hook - not supported by all themes) [<a href="#footeradplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_footer'>pool</a>]--></h3>
 	<table border="0" class="adinjtable" width="95%">
 	<tr><td>
-	<textarea name="ad_code_footer_1" rows="10" cols="70"><?php echo $ops['ad_code_footer_1']; ?></textarea>
+	<textarea name="ad_code_footer_1" rows="10" cols="<?php adinj_table_width('ad'); ?>"><?php echo $ops['ad_code_footer_1']; ?></textarea>
 	<br />
 	Docs: footer ad information and troubleshooting
 	<?php adinj_add_show_hide_section('footer_docs_'.uniqid(''), 'ui_footer_docs_show', 'ui_footer_docs_show', $ops); ?>
@@ -225,6 +205,8 @@ function adinj_tab_main(){
 	
 	<?php adinj_postbox_end(); ?>
 	
+	<?php adinj_filters_box($ops); ?>
+	
 	<?php adinj_insertion_mode_box($ops); ?>
 	
 	<br clear="all" />
@@ -240,6 +222,25 @@ function adinj_tab_main(){
 		echo '<a name="warning_msg_chmod"></a>';
 		echo '<br clear="all" />';
 		echo $adinj_warning_msg_chmod;
+	}
+}
+
+function adinj_table_width($table){
+	global $wp_db_version;
+	if ($table == 'ad'){
+		if ($wp_db_version < 18226){
+			echo '60';
+		} else { //WP3.2+
+			echo '70';
+		}
+	} else if ($table == 'dynamic'){
+		if ($wp_db_version < 18226){
+			echo '70';
+		} else { //WP3.2+
+			echo '80';
+		}
+	} else {
+		echo '61';
 	}
 }
 
@@ -267,16 +268,16 @@ function adinj_global_settings_box($ops){
 	</script>
 	<div id="test_mode_warning"><span style="font-size:10px;color:red;">Warning: Turn any caching plugin *off* before using test mode. If you leave the caching plugin on, the test adverts will be cached and shown to your real visitors.</span><br /></div>
 	
-	<p><b><a name="pagetypefilters"></a>Exclude ads from page types (tick to remove ads)</b></p>
+	<p></p>
 	<?php
 	$count_pages = wp_count_posts('page', 'readable'); 
 	$count_posts = wp_count_posts('post', 'readable'); 
 	?>
 	
-	
+	<a name="pagetypefilters"></a>
 	<table class="adinjstatustable">
 	<tr>
-		<td></td>
+		<td><b><font color="red">Tick to disable ads:</font></b></td>
 		<td><b>Single(<?php echo $count_posts->publish; ?>)</b></td>
 		<td><b>Page(<?php echo $count_pages->publish; ?>)</b></td>
 		<td><b>Home</b></td>
@@ -341,8 +342,23 @@ function adinj_global_settings_box($ops){
 	<p></p>
 	
 	<?php
-	adinj_condition_tables('global_', 'ui_conditions_show');
-	//TODO sometimes OOM here - just before drop down list is loaded
+	adinj_postbox_end();
+}
+
+function adinj_filters_box($ops){
+	adinj_postbox_start(__("Tag, category, author and post id filters", 'adinj'), 'filters'); ?>
+	<h4>Global filters</h4>
+	<?php adinj_condition_tables('global_', 'ui_conditions_show'); ?>
+	<p>The global filter apply to all ads, and are processed before the ad type specific filters.</p>
+	<h4>Top ad filters</h4>
+	<?php adinj_condition_tables('top_', 'ui_top_conditions_show'); ?>
+	<h4>Random ad filters</h4>
+	<?php adinj_condition_tables('random_', 'ui_top_conditions_show'); ?>
+	<h4>Bottom ad filters</h4>
+	<?php adinj_condition_tables('bottom_', 'ui_top_conditions_show'); ?>
+	<h4>Footer ad filters</h4>
+	<?php adinj_condition_tables('footer_', 'ui_top_conditions_show'); ?>
+	<?php
 	adinj_postbox_end();
 }
 
@@ -396,25 +412,38 @@ function adinj_insertion_mode_box($ops){
 	</script>
 	
 	
-	<h4><a name="dynamic"></a>Show ads only to visitors from these websites (dynamic feature)</h4>
+	<h4><a name="dynamic"></a>Show ads only to visitors from these search engines or websites (dynamic feature)</h4>
 	
 	<blockquote>
 	<?php adinj_add_checkbox('sevisitors_only') ?><?php _e("Only show ads to visitors from these websites (customise search engine or website referrers below). When a user visits from one of these referrers they will see ads <b>for the next hour</b> (sets a 1 hour cookie).", 'adinj') ?><br />
-	<textarea name="ad_referrers" rows="2" cols="70"><?php echo $ops['ad_referrers']; ?></textarea>
+	<textarea name="ad_referrers" rows="2" cols="<?php adinj_table_width('dynamic'); ?>"><?php echo $ops['ad_referrers']; ?></textarea>
 	<p>Comma separated list e.g.: <br /><code>.google., .bing., .yahoo., .ask., search?, search., facebook.com, t.co</code></p>
 	</blockquote>
+
+	
+	<h4>Blocked referrer keywords (dynamic feature)</h4>
+	
+	<blockquote>
+	<?php adinj_add_checkbox('block_keywords') ?><?php _e("Don't show ads to visitors from external sites if the referrer contains one of these keywords or substrings.", 'adinj') ?> If a blocked string is found block ads for: <?php	adinj_selection_box("block_ads_for_hours", array('1'=>'1 hour', '2'=>'2 hours', '3'=>'3 hours', '6'=>'6 hours', '24'=>'1 day', '48'=>'2 days', '72'=>'3 days', '168'=>'1 week', '720'=>'30 days', '8760'=>'1 year')); ?><br />
+	<textarea name="blocked_keywords" rows="2" cols="<?php adinj_table_width('dynamic'); ?>"><?php echo $ops['blocked_keywords']; ?></textarea>
+	<p>Comma separated list e.g.: <br /><code>myblogname.com, .ru, .in, james+bond</code></p>
+	</blockquote>
+
 	
 	<h4>Blocked IP addresses (dynamic feature)</h4>
 	
 	<blockquote>
 	<?php adinj_add_checkbox('block_ips') ?><?php _e("Exclude ads from these IP addresses.", 'adinj') ?><br />
-	<textarea name="blocked_ips" rows="4" cols="70"><?php echo $ops['blocked_ips']; ?></textarea>
+	<textarea name="blocked_ips" rows="4" cols="<?php adinj_table_width('dynamic'); ?>"><?php echo $ops['blocked_ips']; ?></textarea>
 	<p>Comma separated list e.g.: <br /><code>0.0.0.1, 0.0.0.2</code></p>
 	<p>Or you can list one IP per line with optional comments e.g.</p>
 	<code style="padding:0px 0px">192.168.0.1<br />0.0.0.2<br /><?php echo $_SERVER['REMOTE_ADDR'] ?> //my ip<br />0.0.0.3</code>
 	
 	<p>For reference your current IP address is <code><?php echo $_SERVER['REMOTE_ADDR'] ?></code></p>
 	</blockquote>
+
+	
+	
 	
 	<?php adinj_postbox_end();
 }
@@ -580,7 +609,7 @@ function adinj_side_status_box(){
 			
 			<tr><td colspan="2">
 			<p></p>
-			<b>Ad summary</b><br />
+			<b>Ads on/off summary</b><br />
 			<table class="adinjstatustable">
 			<tr>
 				<td></td>
@@ -635,6 +664,15 @@ function adinj_side_status_box(){
 				<td><?php adinj_print_ad_dot('widget', 'page') ?></td>
 				<td><?php adinj_print_ad_dot('widget', 'home') ?></td>
 				<td><?php adinj_print_ad_dot('widget', 'archive') ?></td>
+			</tr>
+			<tr>
+				<td style="text-align:right"><b>Template</b></td>
+				<td></td>
+				<td></td>
+				<td><?php adinj_print_ad_dot('template', 'single') ?></td>
+				<td><?php adinj_print_ad_dot('template', 'page') ?></td>
+				<td><?php adinj_print_ad_dot('template', 'home') ?></td>
+				<td><?php adinj_print_ad_dot('template', 'archive') ?></td>
 			</tr>
 			</table>
 			<p>S=single post<br />
