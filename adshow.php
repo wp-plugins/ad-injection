@@ -28,7 +28,7 @@ function adshow_functions_exist(){
 		if (!adshow_functions_exist_impl('adinj_config_blocked_ips')){ return false; }
 		if (!adshow_functions_exist_impl('adinj_config_block_keywords')){ return false; }
 		if (!adshow_functions_exist_impl('adinj_config_blocked_keywords')){ return false; }
-		if (!adshow_functions_exist_impl('adinj_config_block_hours')){ return false; }
+		//if (!adshow_functions_exist_impl('adinj_config_block_hours')){ return false; }
 		if (!adshow_functions_exist_impl('adinj_config_debug_mode')){ return false; }
 	}
 	return true;
