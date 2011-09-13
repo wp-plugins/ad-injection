@@ -149,7 +149,7 @@ function adinj_config_block_ips() { return $block_ips; }
 function adinj_config_blocked_ips() { return array($ip_list); }
 
 function adinj_config_block_keywords() { return $block_keywords; }
-function adinj_config_blocked_keywords() { return array($blocked_keywords); }
+function adinj_config_blocked_keywords() { return array($keyword_list); }
 
 function adinj_config_debug_mode() { return $debug_mode; }
 
@@ -335,7 +335,7 @@ function adinj_top_message_box(){
 		
 	} else if (!isset($_GET['tab'])){
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "5th September 2011: New block ads by referrer feature - an example use would be to treat people who arrive at your site after searching for your site by name as direct visitors and block them from seeing ads. Load tags in batches to reduce memory usage for blogs with lots of tags. Plus other minor fixes. <font color='red'>Beta testers for 1.2.0.0 release</font> - If you are interested in testing the new 1.2.0.0 release a few days early contact me via the link at the end of this paragraph and I'll send you a zip when it is ready for testing. Thanks! Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
+		echo "14th September 2011: This is a big update with many new positioning options for top/random/bottom ads and completely re-written ad insertion code. More details of some of the new features are on <a href='http://www.advancedhtml.co.uk/ad-injection-1-2-0-0-preview-wordpress-ad-management-plugin/' target='_new'>Advanced HTML</a>. I've tested this as much as I can, but some bugs may have slipped through. I'm waiting to fix them as soon as I hear about them! Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
 		echo '</strong></p></div>';
 	}
 }
@@ -431,7 +431,8 @@ function adinj_add_checkbox($name, $class=NULL, $all=NULL){
 	if ($all != NULL && adinj_ticked($name)){
 	?>
 	<script type="text/javascript">
-        document.write('<style type="text/css" media="screen">.<?php echo $class; ?> { display: none; }</style>');
+        //document.write('<style type="text/css" media="screen">.<?php echo $class; ?> { display: none; }</style>');
+	document.write('<style type="text/css" media="screen">.<?php echo $class; ?> { opacity:0.3; filter:alpha(opacity=30)" }</style>');
 	</script>
 	<?php
 	}
@@ -447,7 +448,7 @@ function adinj_admin_tabs( $current = 0 ) {
 			$current = 'main';
 		}
 	}
-	$tabs = array( 'main' => __( 'Main', 'ad-injection' ), 'adrotation' => __( 'Ad codes / rotation / misc', 'ad-injection' ), 'debug' => __( 'Debug' ) );
+	$tabs = array( 'main' => __( 'Main', 'ad-injection' ), 'adrotation' => __( 'Ad codes / Ad rotation', 'ad-injection' ), 'debug' => __( 'Debug' ) );
 	$links = array();
 	foreach( $tabs as $tab => $name ) {
 		if ( $current == $tab ) {
@@ -467,6 +468,7 @@ function adinj_postbox_start($title, $anchor, $width='650px'){
 	$ops = adinj_options();
 	?>
 	<div class='postbox-container' style='width:<?php echo $width; ?>;float:left; clear:left;'>
+	<a name="<?php echo $anchor; ?>"></a>
 	<div class="metabox-holder">
 	<div class="postbox">
 	<input type="submit" style="float:right" class="button-primary" name="adinj_action" value="<?php _e('Save all settings', 'adinj') ?>" />
@@ -501,7 +503,7 @@ echo <<<HTML
 HTML;
 	?>
 	
-	<h3><?php $info = adinj_get_status($anchor); echo adinj_dot($info[0]); ?> <a name="<?php echo $anchor; ?>"></a><?php echo adinj_get_logo() . ' ' . $title; ?></h3>
+	<h3><?php $info = adinj_get_status($anchor); echo adinj_dot($info[0]); ?> <?php echo adinj_get_logo() . ' ' . $title; ?></h3>
 	<?php if($hide == 'true'){ ?>
 		<div id="<?php echo $anchor; ?>-box" class="hiddenbox">
 	<?php } else { ?>
@@ -557,9 +559,20 @@ function adinj_get_status($name){
 		if ($ops['sevisitors_only'] == 'on'){
 			$status[1] .= 'referrer';
 		}
+		if ($ops['sevisitors_only'] == 'on'){
+			$status[1] .= ' keywords';
+		}
 		if ($ops['block_ips'] == 'on' && !empty($ops['blocked_ips'])){
 			$status[1] .= ' ip';
 		}
+	} else if ($name == 'older_than_normal'){
+		$status[0] = 'green';
+		$days = $ops['ads_on_page_older_than'];
+		$status[1] = "> $days days";
+	} else if ($name == 'older_than_widgets'){
+		$status[0] = 'green';
+		$days = $ops['widgets_on_page_older_than'];
+		$status[1] = "> $days days";
 	} else if ($name == 'adsettings'){
 		$status[0] = 'green';
 	} else if ($name == 'adverts'){
@@ -568,6 +581,8 @@ function adinj_get_status($name){
 		} else {
 			$status[0] = 'red';
 		}
+	} else if ($name == 'filters'){
+		$status[0] = 'green';
 	} else if ($name == 'debugging'){
 		$val = $ops['debug_mode'];
 		if ($val == 'on'){
@@ -661,7 +676,6 @@ function adinj_selection_box($name, $values, $type="", $selected_value=NULL){
 		}
 		echo "<option value=\"$option_value\" ";
 		if("$selected_value" == "$option_value" ||
-			"$selected_value" == ADINJ_ALWAYS_SHOW && "$option_value" == 'a' || //todo remove?
 			"$selected_value" == ADINJ_DISABLED && "$option_value" == 'd' || //todo remove?
 			"$selected_value" == ADINJ_NA && "$option_value" == 'd' ||
 			"$selected_value" == ADINJ_RULE_DISABLED && "$option_value" == 'd' || //todo remove?
@@ -670,7 +684,7 @@ function adinj_selection_box($name, $values, $type="", $selected_value=NULL){
 			echo 'selected="selected"';
 		}
 		$typetxt = $type;
-		if (adinj_not_set($option_value) || adinj_alwaysshow($display_value)) $typetxt = "";
+		if (adinj_not_set($option_value)) $typetxt = "";
 		if ("$option_value" === 'a') { $display_value = ADINJ_NA; } //TODO remove?
 		if ("$option_value" === 'd') { $display_value = ADINJ_NA; }
 		if ("$option_value" === 'o') { $display_value = ADINJ_ONLY_SHOW_IN; }
@@ -693,9 +707,15 @@ function adinj_javascript_addtext(){
 	}
 	function adinj_toggle_tick_boxes(name, hide){
 		if (hide){
-			jQuery('.'+name).hide();
+			//jQuery('.'+name).hide();
+			jQuery('.'+name).css({ opacity: 0.3 });
+			//jQuery('.'+name+' :input').attr('disabled', true);
+			//jQuery('.'+name+' :input').attr('readonly', true)
 		} else {
-			jQuery('.'+name).show();
+			//jQuery('.'+name).show();
+			jQuery('.'+name).css({ opacity: 1.0 });
+			//jQuery('.'+name+' :input').removeAttr('disabled');
+			//jQuery('.'+name+' :input').removeAttr('readonly');
 		}
 	}
 	</script>
@@ -777,7 +797,7 @@ function adinj_condition_table($name, $description, $type, $ops, $dropdown_field
 	if ($type == 'category') { 
 		$categories = get_categories();
 		$cat = NULL;
-		foreach ($categories as &$cat) {
+		foreach ($categories as $cat) {
 			$nicename = rawurldecode($cat->category_nicename);
 			echo '<option value="'.$nicename.'">'.$nicename.' ('.$cat->category_count.')</option>';
 		}
@@ -798,7 +818,7 @@ function adinj_condition_table($name, $description, $type, $ops, $dropdown_field
 	} else if ($type == 'author') { 
 		$authors = adinj_get_authors();
 		$author = NULL;
-		foreach ($authors as &$author) {
+		foreach ($authors as $author) {
 			$login = $author->user_login;
 			$displayname = $author->display_name;
 			echo '<option value="'.$login.'">'.$login.' ('.$displayname.')</option>';
@@ -825,7 +845,7 @@ function adinj_print_tags($quantity, $offset){
 	$tags = get_tags(array('number' => $quantity, 'offset' => $offset));
 	if (count($tags) == 0) return false;
 	$tag = NULL;
-	foreach ($tags as &$tag) {
+	foreach ($tags as $tag) {
 		$slug = rawurldecode($tag->slug);
 		echo '<option value="'.$slug.'">'.$slug.' ('.$tag->count.')</option>';
 	}
@@ -841,6 +861,31 @@ function adinj_get_authors(){
 	global $wpdb;
 	$authors = $wpdb->get_results( "SELECT user_login, display_name from $wpdb->users" );
 	return $authors;
+}
+
+function adinj_table_width($table){
+	global $wp_db_version;
+	if ($table == 'ad'){
+		if ($wp_db_version < 18226){
+			echo '60';
+		} else { //WP3.2+
+			echo '70';
+		}
+	} else if ($table == 'rotation'){
+		if ($wp_db_version < 18226){
+			echo '65';
+		} else { //WP3.2+
+			echo '75';
+		}
+	} else if ($table == 'dynamic'){
+		if ($wp_db_version < 18226){
+			echo '70';
+		} else { //WP3.2+
+			echo '80';
+		}
+	} else {
+		echo '61';
+	}
 }
 
 function adinj_add_alignment_options($prefix){
@@ -1285,6 +1330,17 @@ function adinj_upgrade_db(){
 		$new_options['widgets_on_page_older_than'] = $stored_options['ads_on_page_older_than'];
 	}
 	
+	if ($stored_dbversion < 18){
+		// todo test
+		$new_options['random_ads_start_mode'] = $stored_options['random_ads_after_mode'];
+		$new_options['random_ads_start_unit'] = $stored_options['random_ads_after_unit'];
+		$new_options['random_ads_start_at'] = $stored_options['start_from_paragraph'];
+		if ($new_options['random_ads_start_at'] == 'd'){
+			$new_options['random_ads_start_mode'] = 'anywhere';
+			$new_options['random_ads_start_at'] = '1';
+		}
+	}
+	
 	// 3. Bump up db version number.
 	$new_options['db_version'] = $new_dbversion;
 	
@@ -1305,74 +1361,23 @@ function adinj_default_options(){
 		'ads_enabled' => 'off',
 		'ads_on_page_older_than' => '0',
 		'widgets_on_page_older_than' => '0',
-		'exclude_front' => '',
-		'exclude_home' => '',
-		'exclude_page' => '',
-		'exclude_single' => '',
-		'exclude_archive' => '',
-		'exclude_search' => 'on',
-		'exclude_404' => 'on',
-		'global_category_condition_mode' => 'o',
-		'global_category_condition_entries' => '',
-		'global_tag_condition_mode' => 'o',
-		'global_tag_condition_entries' => '',
-		'global_author_condition_mode' => 'o',
-		'global_author_condition_entries' => '',
-		'global_id_condition_mode' => 'o',
-		'global_id_condition_entries' => '',
 		'content_length_unit' => 'words',
-		// Random ads
-		'ad_code_random_1' => '',
-		'ad_code_random_2' => '',
-		'ad_code_random_3' => '',
-		'ad_code_random_4' => '',
-		'ad_code_random_5' => '',
-		'ad_code_random_6' => '',
-		'ad_code_random_7' => '',
-		'ad_code_random_8' => '',
-		'ad_code_random_9' => '',
-		'ad_code_random_10' => '',
-		'ad_code_random_1_split' => '100',
-		'ad_code_random_2_split' => '100',
-		'ad_code_random_3_split' => '100',
-		'ad_code_random_4_split' => '100',
-		'ad_code_random_5_split' => '100',
-		'ad_code_random_6_split' => '100',
-		'ad_code_random_7_split' => '100',
-		'ad_code_random_8_split' => '100',
-		'ad_code_random_9_split' => '100',
-		'ad_code_random_10_split' => '100',
-		'ad_code_random_alt_1' => '',
-		'ad_code_random_alt_2' => '',
-		'ad_code_random_alt_1_split' => '100',
-		'ad_code_random_alt_2_split' => '100',
-		'rnd_align' => 'd',
-		'rnd_clear' => 'd',
-		'rnd_margin_top' => 'd',
-		'rnd_margin_bottom' => 'd',
-		'rnd_padding_top' => 'd',
-		'rnd_padding_bottom' => 'd',
-		'start_from_paragraph' => 'd',
-		'random_ads_after_mode' => 'at',
-		'random_ads_after_unit' => 'paragraph',
+		// random ad start/end position
+		'random_ads_start_mode' => 'anywhere',
+		'random_ads_start_unit' => 'paragraph',
+		'random_ads_start_at' => '1',
+		'random_ads_end_mode' => 'anywhere',
+		'random_ads_end_unit' => 'paragraph',
+		'random_ads_end_at' => '20',
+		'random_ads_end_direction' => 'fromstart',
 		'rnd_allow_ads_on_last_paragraph' => '',
 		'rnd_reselect_ad_per_position_in_post' => '',
 		'multiple_ads_at_same_position' => '',
-		'random_category_condition_mode' => 'o',
-		'random_category_condition_entries' => '',
-		'random_tag_condition_mode' => 'o',
-		'random_tag_condition_entries' => '',
-		'random_author_condition_mode' => 'o',
-		'random_author_condition_entries' => '',
-		'random_id_condition_mode' => 'o',
-		'random_id_condition_entries' => '',
-		'random_exclude_front' => '',
-		'random_exclude_home' => '',
-		'random_exclude_page' => '',
-		'random_exclude_single' => '',
-		'random_exclude_archive' => '',
-		'random_exclude_search' => '',
-		'random_exclude_404' => '',
+		// top/bottom ad position
+		'top_ad_position' => '0',
+		'top_ad_position_unit' => 'paragraph',
+		'bottom_ad_position' => '0',
+		'bottom_ad_position_unit' => 'paragraph',
 		// single posts and pages
 		'top_ad_if_longer_than' => 'd',
 		'max_num_of_ads' => '2', // random ads
@@ -1428,27 +1433,31 @@ function adinj_default_options(){
 		'ad_code_top_alt_2' => '',
 		'ad_code_top_alt_1_split' => '100',
 		'ad_code_top_alt_2_split' => '100',
-		'top_align' => 'd',
-		'top_clear' => 'd',
-		'top_margin_top' => 'd',
-		'top_margin_bottom' => 'd',
-		'top_padding_top' => 'd',
-		'top_padding_bottom' => 'd',
-		'top_category_condition_mode' => 'o',
-		'top_category_condition_entries' => '',
-		'top_tag_condition_mode' => 'o',
-		'top_tag_condition_entries' => '',
-		'top_author_condition_mode' => 'o',
-		'top_author_condition_entries' => '',
-		'top_id_condition_mode' => 'o',
-		'top_id_condition_entries' => '',
-		'top_exclude_front' => '',
-		'top_exclude_home' => '',
-		'top_exclude_page' => '',
-		'top_exclude_single' => '',
-		'top_exclude_archive' => '',
-		'top_exclude_search' => '',
-		'top_exclude_404' => '',
+		// Random ads
+		'ad_code_random_1' => '',
+		'ad_code_random_2' => '',
+		'ad_code_random_3' => '',
+		'ad_code_random_4' => '',
+		'ad_code_random_5' => '',
+		'ad_code_random_6' => '',
+		'ad_code_random_7' => '',
+		'ad_code_random_8' => '',
+		'ad_code_random_9' => '',
+		'ad_code_random_10' => '',
+		'ad_code_random_1_split' => '100',
+		'ad_code_random_2_split' => '100',
+		'ad_code_random_3_split' => '100',
+		'ad_code_random_4_split' => '100',
+		'ad_code_random_5_split' => '100',
+		'ad_code_random_6_split' => '100',
+		'ad_code_random_7_split' => '100',
+		'ad_code_random_8_split' => '100',
+		'ad_code_random_9_split' => '100',
+		'ad_code_random_10_split' => '100',
+		'ad_code_random_alt_1' => '',
+		'ad_code_random_alt_2' => '',
+		'ad_code_random_alt_1_split' => '100',
+		'ad_code_random_alt_2_split' => '100',
 		// Bottom ads
 		'ad_code_bottom_1' => '',
 		'ad_code_bottom_2' => '',
@@ -1474,27 +1483,6 @@ function adinj_default_options(){
 		'ad_code_bottom_alt_2' => '',
 		'ad_code_bottom_alt_1_split' => '100',
 		'ad_code_bottom_alt_2_split' => '100',
-		'bottom_align' => 'd',
-		'bottom_clear' => 'd',
-		'bottom_margin_top' => 'd',
-		'bottom_margin_bottom' => 'd',
-		'bottom_padding_top' => 'd',
-		'bottom_padding_bottom' => 'd',
-		'bottom_category_condition_mode' => 'o',
-		'bottom_category_condition_entries' => '',
-		'bottom_tag_condition_mode' => 'o',
-		'bottom_tag_condition_entries' => '',
-		'bottom_author_condition_mode' => 'o',
-		'bottom_author_condition_entries' => '',
-		'bottom_id_condition_mode' => 'o',
-		'bottom_id_condition_entries' => '',
-		'bottom_exclude_front' => '',
-		'bottom_exclude_home' => '',
-		'bottom_exclude_page' => '',
-		'bottom_exclude_single' => '',
-		'bottom_exclude_archive' => '',
-		'bottom_exclude_search' => '',
-		'bottom_exclude_404' => '',
 		// Footer ads
 		'ad_code_footer_1' => '',
 		'ad_code_footer_2' => '',
@@ -1520,43 +1508,6 @@ function adinj_default_options(){
 		'ad_code_footer_alt_2' => '',
 		'ad_code_footer_alt_1_split' => '100',
 		'ad_code_footer_alt_2_split' => '100',
-		'footer_align' => 'center',
-		'footer_clear' => 'd',
-		'footer_margin_top' => 'd',
-		'footer_margin_bottom' => 'd',
-		'footer_padding_top' => 'd',
-		'footer_padding_bottom' => '3',
-		'footer_category_condition_mode' => 'o',
-		'footer_category_condition_entries' => '',
-		'footer_tag_condition_mode' => 'o',
-		'footer_tag_condition_entries' => '',
-		'footer_author_condition_mode' => 'o',
-		'footer_author_condition_entries' => '',
-		'footer_id_condition_mode' => 'o',
-		'footer_id_condition_entries' => '',
-		'footer_exclude_front' => '',
-		'footer_exclude_home' => '',
-		'footer_exclude_page' => '',
-		'footer_exclude_single' => '',
-		'footer_exclude_archive' => '',
-		'footer_exclude_search' => '',
-		'footer_exclude_404' => '',
-		// widgets
-		'widget_exclude_front' => '',
-		'widget_exclude_home' => '',
-		'widget_exclude_page' => '',
-		'widget_exclude_single' => '',
-		'widget_exclude_archive' => '',
-		'widget_exclude_search' => '',
-		'widget_exclude_404' => '',
-		// template ads
-		'template_exclude_front' => '',
-		'template_exclude_home' => '',
-		'template_exclude_page' => '',
-		'template_exclude_single' => '',
-		'template_exclude_archive' => '',
-		'template_exclude_search' => '',
-		'template_exclude_404' => '',
 		// dynamic features
 		'ad_insertion_mode' => 'mfunc',
 		'sevisitors_only' => 'off',
@@ -1566,6 +1517,122 @@ function adinj_default_options(){
 		'block_ads_for_hours' => '24',
 		'block_ips' => 'off',
 		'blocked_ips' => '',
+		// ad display (layout) settings
+		'top_align' => 'd',
+		'top_clear' => 'd',
+		'top_margin_top' => 'd',
+		'top_margin_bottom' => 'd',
+		'top_padding_top' => 'd',
+		'top_padding_bottom' => 'd',
+		'rnd_align' => 'd',
+		'rnd_clear' => 'd',
+		'rnd_margin_top' => 'd',
+		'rnd_margin_bottom' => 'd',
+		'rnd_padding_top' => 'd',
+		'rnd_padding_bottom' => 'd',
+		'bottom_align' => 'd',
+		'bottom_clear' => 'd',
+		'bottom_margin_top' => 'd',
+		'bottom_margin_bottom' => 'd',
+		'bottom_padding_top' => 'd',
+		'bottom_padding_bottom' => 'd',
+		'footer_align' => 'center',
+		'footer_clear' => 'd',
+		'footer_margin_top' => 'd',
+		'footer_margin_bottom' => 'd',
+		'footer_padding_top' => 'd',
+		'footer_padding_bottom' => '3',
+		// category, tag, author, id filters
+		'global_category_condition_mode' => 'o',
+		'global_category_condition_entries' => '',
+		'global_tag_condition_mode' => 'o',
+		'global_tag_condition_entries' => '',
+		'global_author_condition_mode' => 'o',
+		'global_author_condition_entries' => '',
+		'global_id_condition_mode' => 'o',
+		'global_id_condition_entries' => '',
+		'top_category_condition_mode' => 'o',
+		'top_category_condition_entries' => '',
+		'top_tag_condition_mode' => 'o',
+		'top_tag_condition_entries' => '',
+		'top_author_condition_mode' => 'o',
+		'top_author_condition_entries' => '',
+		'top_id_condition_mode' => 'o',
+		'top_id_condition_entries' => '',
+		'random_category_condition_mode' => 'o',
+		'random_category_condition_entries' => '',
+		'random_tag_condition_mode' => 'o',
+		'random_tag_condition_entries' => '',
+		'random_author_condition_mode' => 'o',
+		'random_author_condition_entries' => '',
+		'random_id_condition_mode' => 'o',
+		'random_id_condition_entries' => '',
+		'bottom_category_condition_mode' => 'o',
+		'bottom_category_condition_entries' => '',
+		'bottom_tag_condition_mode' => 'o',
+		'bottom_tag_condition_entries' => '',
+		'bottom_author_condition_mode' => 'o',
+		'bottom_author_condition_entries' => '',
+		'bottom_id_condition_mode' => 'o',
+		'bottom_id_condition_entries' => '',
+		'footer_category_condition_mode' => 'o',
+		'footer_category_condition_entries' => '',
+		'footer_tag_condition_mode' => 'o',
+		'footer_tag_condition_entries' => '',
+		'footer_author_condition_mode' => 'o',
+		'footer_author_condition_entries' => '',
+		'footer_id_condition_mode' => 'o',
+		'footer_id_condition_entries' => '',
+		// exclusion tick boxes
+		'exclude_front' => '',
+		'exclude_home' => '',
+		'exclude_page' => '',
+		'exclude_single' => '',
+		'exclude_archive' => '',
+		'exclude_search' => 'on',
+		'exclude_404' => 'on',
+		'top_exclude_front' => '',
+		'top_exclude_home' => '',
+		'top_exclude_page' => '',
+		'top_exclude_single' => '',
+		'top_exclude_archive' => '',
+		'top_exclude_search' => '',
+		'top_exclude_404' => '',
+		'random_exclude_front' => '',
+		'random_exclude_home' => '',
+		'random_exclude_page' => '',
+		'random_exclude_single' => '',
+		'random_exclude_archive' => '',
+		'random_exclude_search' => '',
+		'random_exclude_404' => '',
+		'bottom_exclude_front' => '',
+		'bottom_exclude_home' => '',
+		'bottom_exclude_page' => '',
+		'bottom_exclude_single' => '',
+		'bottom_exclude_archive' => '',
+		'bottom_exclude_search' => '',
+		'bottom_exclude_404' => '',
+		'footer_exclude_front' => '',
+		'footer_exclude_home' => '',
+		'footer_exclude_page' => '',
+		'footer_exclude_single' => '',
+		'footer_exclude_archive' => '',
+		'footer_exclude_search' => '',
+		'footer_exclude_404' => '',
+		'widget_exclude_front' => '',
+		'widget_exclude_home' => '',
+		'widget_exclude_page' => '',
+		'widget_exclude_single' => '',
+		'widget_exclude_archive' => '',
+		'widget_exclude_search' => '',
+		'widget_exclude_404' => '',
+		'template_exclude_front' => '',
+		'template_exclude_home' => '',
+		'template_exclude_page' => '',
+		'template_exclude_single' => '',
+		'template_exclude_archive' => '',
+		'template_exclude_search' => '',
+		'template_exclude_404' => '',
 		// ui main tab
 		'ui_global_hide' => 'false',
 		'ui_adsettings_hide' => 'false',

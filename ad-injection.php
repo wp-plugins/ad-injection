@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 1.1.0.6
+Version: 1.2.0.0
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -33,7 +33,8 @@ define('ADINJ_NO_CONFIG_FILE', 1);
 // 15 = remove duplicate 'Disabled' option from top/bottom ad section
 // 16 = after paragraph options, older option for widget
 // 17 = block ads for days
-define('ADINJ_DB_VERSION', 17);
+// 18 = 1.2.0.0 New ad insertion engine and new top/random/bottom positioning options
+define('ADINJ_DB_VERSION', 18);
 
 // Files
 // TODO will these paths work on windows?
@@ -44,17 +45,17 @@ define('ADINJ_AD_PATH', WP_PLUGIN_DIR.'/ad-injection-data');
 // Constants
 define('ADINJ_DISABLED', 'Disabled'); // todo deprecated?
 define('ADINJ_RULE_DISABLED', 'Rule Disabled'); // todo depreacated?
-define('ADINJ_ALWAYS_SHOW', 'Always show'); // todo deprecated?
 //
 define('ADINJ_ONLY_SHOW_IN', 'Only show in');
 define('ADINJ_NEVER_SHOW_IN', 'Never show in');
 define('ADINJ_NA', 'n/a');
+//
+define('ADINJ_PARA', '</p>');
 
 // Global variables
 $adinj_total_top_ads_used = 0;
 $adinj_total_random_ads_used = 0;
 $adinj_total_bottom_ads_used = 0;
-$adinj_total_all_ads_used = 0;
 $adinj_data = array();
 
 require_once(ADINJ_PATH . '/adshow.php');
@@ -205,24 +206,15 @@ function adinj_ad_code_random(){
 }
 
 function adinj_ad_code_top(){
-	$ad = adinj_get_ad_code('top', adinj_options());
-	global $adinj_total_all_ads_used;
-	++$adinj_total_all_ads_used;
-	return $ad;
+	return adinj_get_ad_code('top', adinj_options());
 }
 
 function adinj_ad_code_bottom(){
-	$ad = adinj_get_ad_code('bottom', adinj_options());
-	global $adinj_total_all_ads_used;
-	++$adinj_total_all_ads_used;
-	return $ad;
+	return adinj_get_ad_code('bottom', adinj_options());
 }
 
 function adinj_ad_code_footer(){
-	$ad = adinj_get_ad_code('footer', adinj_options());
-	global $adinj_total_all_ads_used;
-	++$adinj_total_all_ads_used;
-	return $ad;
+	return adinj_get_ad_code('footer', adinj_options());
 }
 
 /**
@@ -345,6 +337,7 @@ function adinj_ad_code_include(){
 		// files from within ABSPATH. To remove this limitation we do the include
 		// using mfunc instead.
 		return adinj_ad_code_eval("\n
+<!--Ad Injection mfunc mode ad include code-->
 <!--mfunc include_once('$plugin_dir/adshow.php') -->
 <?php include_once('$plugin_dir/adshow.php'); ?>
 <!--/mfunc-->
@@ -396,12 +389,19 @@ function adinj_adverts_disabled_flag(){
 
 function adinj($content, $message){
 	if (!adinj_ticked('debug_mode')) return $content;
-	global $adinj_total_top_ads_used, $adinj_total_random_ads_used, $adinj_total_bottom_ads_used, $adinj_total_all_ads_used;
+	global $adinj_total_top_ads_used, $adinj_total_random_ads_used, $adinj_total_bottom_ads_used;
 	$ops = adinj_options();
-	$para = adinj_paragraph_to_start_ads();
-	$random_mode = $ops['random_ads_after_mode'];
-	if ($random_mode == 'after') $random_mode = 'at or after';
-	$random_unit = $ops['random_ads_after_unit'];
+	
+	$rnd_start_at = $ops['random_ads_start_at'];
+	$rnd_start_mode = $ops['random_ads_start_mode'];
+	if ($rnd_start_mode == 'after') $rnd_start_mode = 'at or after';
+	$rnd_start_unit = $ops['random_ads_start_unit'];
+	
+	$rnd_end_at = $ops['random_ads_end_at'];
+	$rnd_end_mode = $ops['random_ads_end_mode'];
+	$rnd_end_unit = $ops['random_ads_end_unit'];
+	$rnd_end_unit_dir = $ops['random_ads_end_direction'];
+	
 	$mode = $ops['ad_insertion_mode'];
 	
 	$posttype = get_post_type() . ' (';
@@ -427,9 +427,8 @@ $message
 \$adinj_total_top_ads_used=$adinj_total_top_ads_used
 \$adinj_total_random_ads_used=$adinj_total_random_ads_used
 \$adinj_total_bottom_ads_used=$adinj_total_bottom_ads_used
-\$adinj_total_all_ads_used=$adinj_total_all_ads_used
-paragraphtostartads=$para (fyi: -1 is disabled)
-random ads start $random_mode $random_unit $para (fyi: -1 is disabled)
+random ads start=$rnd_start_mode - $rnd_start_unit - $rnd_start_at
+random ads end=$rnd_end_mode - $rnd_end_unit - $rnd_end_at $rnd_end_unit_dir
 posttype=$posttype
 currentdate=$currentdate ($currentday)
 postdate=$postdate ($postday)
@@ -437,6 +436,7 @@ injection mode=$mode
 -->\n";
 }
 
+// todo check exclude options for hardcoded ads
 function adinj_excluded_by_tick_box($prefix){
 	if (is_front_page() && adinj_ticked($prefix.'exclude_front') ||
 		is_home() && adinj_ticked($prefix.'exclude_home') ||
@@ -529,6 +529,7 @@ function adinj_allowed_in_category($scope, $ops){
 	
 	$mode = $ops[$scope.'_category_condition_mode'];
 	
+	// widget ads and footer ad
 	if (!in_the_loop() && adinj_mode_only_show_in($mode) && !(is_single() || is_category())){
 		return false;
 	}
@@ -644,23 +645,29 @@ function adinj_footer_hook(){
 	echo adinj_ad_code_footer();
 }
 
+function adinj_debug_on(){
+	$ops = adinj_options();
+	return $ops['debug_mode'];
+}
+
 function adinj_content_hook($content){
 	if (is_feed()) return $content; // TODO feed specific ads
-	if (!in_the_loop()) return $content; // Don't insert ads into meta description tags TODOTODO
+	if (!in_the_loop()) return $content; // Don't insert ads into meta description tags
 	$ops = adinj_options();
 	if(empty($ops)){
 		return $content;
 	}
+	
 	$debug_on = $ops['debug_mode'];
-	if ($debug_on) echo "<!--adinj-->"; //TODO remove?
+	$debug = "";
+	if ($debug_on) echo "<!--adinj Ad Injection debug mode on-->";
 	
 	adinj_upgrade_db_if_necessary();
-	
-	global $adinj_total_all_ads_used, $adinj_total_random_ads_used, $adinj_total_top_ads_used, $adinj_total_bottom_ads_used;
+
+	global $adinj_total_random_ads_used, $adinj_total_top_ads_used, $adinj_total_bottom_ads_used;
 	if(!is_archive() && (is_page() || is_single())){
 		// On single page the_content may be called more than once - e.g. for
 		// description meta tag and for content.
-		$adinj_total_all_ads_used = 0;
 		$adinj_total_top_ads_used = 0;
 		$adinj_total_random_ads_used = 0;
 		$adinj_total_bottom_ads_used = 0;
@@ -670,9 +677,6 @@ function adinj_content_hook($content){
 	if ($reason !== false){
 		return adinj($content, $reason);
 	}
-	
-	$debug_on = $ops['debug_mode'];
-	$debug = "";
 	
 	if ($debug_on && adinj_direct_mode()){
 		$showads = adshow_show_adverts();
@@ -688,223 +692,356 @@ function adinj_content_hook($content){
 	
 	# Ad sandwich mode
 	if(is_page() || is_single()){
-		if(stripos($content, "<!--adsandwich-->") !== false) return adinj($ad_include.adinj_ad_code_top().$content.adinj_ad_code_bottom(), "Ads=adsandwich" . $debug);
-		if(stripos($content, "<!--adfooter-->") !== false) return adinj($content.$ad_include.adinj_ad_code_bottom(), "Ads=adfooter" . $debug);
+		if(stripos($content, "<!--adsandwich-->") !== false) return adinj($ad_include.adinj_ad_code_top().$content.adinj_ad_code_bottom(), "Ads=sandwich" . $debug);
+		if(stripos($content, "<!--adfooter-->") !== false) return adinj($content.$ad_include.adinj_ad_code_bottom(), "Ads=footer" . $debug);
 	}
 	
+	# Get content length for ad placement settings
+	$rawlength = strlen($content);
 	$length = 0;
 	if ($ops['content_length_unit'] == 'all'){
-		$length = strlen($content);
-		if ($debug_on) $debug .= "\nnum chars: $length (including HTML chars)";
+		$length = $rawlength;
 	} else if ($ops['content_length_unit'] == 'viewable'){
 		$length = strlen(strip_tags($content));
-		if ($debug_on) $debug .= "\nnum chars: $length (viewable chars only)";
 	} else {
 		$length = str_word_count_utf8(strip_tags($content));
-		if ($debug_on) $debug .= "\nnum words: $length";
 	}
-	# Insert top and bottom ads if necesary
-	if(stripos($content, "<!--topad-->") == false){
-		if (adinj_num_top_ads_to_insert($length) > 0){
-			$content = $ad_include.adinj_ad_code_top().$content;
-			$ad_include = "";
+	
+	# Record original paragraph positions
+	$original_paragraph_positions = array();
+	$prevpos = -1;
+	while(($prevpos = stripos($content, ADINJ_PARA, $prevpos+1)) !== false){
+		$original_paragraph_positions[] = $prevpos + strlen(ADINJ_PARA);
+	}
+	$paracount = count($original_paragraph_positions);
+	if ($debug_on) $debug .= "\nContent length=$length (".$ops['content_length_unit'].") Raw character length=$rawlength Paragraph count=$paracount";
+	if($paracount == 0) if ($debug_on) $debug .= "\nNo &lt;/p&gt; tags found";
+	
+	$topad = adinj_ad_code_top();
+	if (empty($topad)) { if ($debug_on) $debug .= "\nNo top ad defined in any of the ad code boxes"; }
+	$randomad = adinj_ad_code_random();
+	if (empty($randomad)) { if ($debug_on) $debug .= "\nNo random ad defined in any of the ad code boxes"; }
+	$bottomad = adinj_ad_code_bottom();
+	if (empty($bottomad)) { if ($debug_on) $debug .= "\nNo bottom ad defined in any of the ad code boxes"; }
+	
+	# Positions to insert ads
+	$top_ad_paragraph = -1;
+	$random_ad_paragraphs = array();
+	$bottom_ad_paragraph = -1;
+	
+	$fixed_top = stripos($content, "<!--topad-->");
+	$fixed_random = stripos($content, "<!--randomad-->");
+	$fixed_bottom = stripos($content, "<!--bottomad-->");
+	
+	# Find top ad position
+	if ($fixed_top === false){
+		if (adinj_num_top_ads_to_insert($length, $debug) > 0){
+			$top_ad_paragraph = adinj_get_paragraph('top', $content, $original_paragraph_positions, $debug);
+		}
+	}
+	if ($debug_on) $debug .= "\nTop ad paragraph: $top_ad_paragraph";
+	
+	# Find bottom ad position
+	if ($fixed_bottom === false){
+		if (adinj_num_bottom_ads_to_insert($length, $debug) > 0){
+			$bottom_ad_paragraph = adinj_get_paragraph('bottom', $content, $original_paragraph_positions, $debug);
+		}
+		if ($bottom_ad_paragraph !== -1){
+			$bottom_ad_paragraph = $paracount - $bottom_ad_paragraph;
+		}
+	}
+	if ($debug_on) $debug .= "\nBottom ad paragraph: $bottom_ad_paragraph";
+	
+	# Find random ad positions
+	if ($fixed_random === false){
+		$random_ad_paragraphs = adinj_get_random_paragraphs($content, $length, $original_paragraph_positions, $debug);
+		$random_ads_to_insert_count = sizeof($random_ad_paragraphs);
+		if ($random_ads_to_insert_count == 0){
+			if ($debug_on) $debug .= "\nWarning: No random ad injection positions";
+		}
+	}
+	
+	# Insert the adverts into the content. Scan through the paragraph list in reverse order.
+	$adpos = count($random_ad_paragraphs);
+	for ($i=$paracount; $i>0; --$i){
+		if ($i === $bottom_ad_paragraph){
+			$content = substr_replace($content, $bottomad, $original_paragraph_positions[$i-1], 0);
+			++$adinj_total_bottom_ads_used;
+		}
+		for ($j=$adpos-1; $j>=0; --$j){
+			$rnd = $random_ad_paragraphs[$j];
+			if ($i==$rnd){
+				if (adinj_ticked('rnd_reselect_ad_per_position_in_post')){
+					$randomad = adinj_ad_code_random();
+				}
+				$content = substr_replace($content, $randomad, $original_paragraph_positions[$rnd-1], 0);
+				++$adinj_total_random_ads_used;
+				--$adpos;
+			} else {
+				break;
+			}
+		}
+		if ($i === $top_ad_paragraph){
+			$content = substr_replace($content, $topad, $original_paragraph_positions[$i-1], 0);
 			++$adinj_total_top_ads_used;
 		}
-	} else {
-		if ($debug_on) $debug .= "\ntop ad position(s) fixed by 'topad' tag";
-		$content = str_replace('<!--topad-->', adinj_ad_code_top(), $content);
-		$content = $ad_include.$content;
-		$ad_include = "";
+	}
+	if ($top_ad_paragraph === 0){ // default is special case
+		$content = $topad.$content;
 		++$adinj_total_top_ads_used;
 	}
-	
-	if(stripos($content, "<!--bottomad-->") == false){
-		if (adinj_num_bottom_ads_to_insert($length) > 0){
-			$content = $content.adinj_ad_code_bottom();
-			++$adinj_total_bottom_ads_used;
-		} 
-	} else {
-		if ($debug_on) $debug .= "\nbottom ad position(s) fixed by 'bottomad' tag";
-		$content = str_replace('<!--bottomad-->', adinj_ad_code_bottom(), $content);
+	if ($bottom_ad_paragraph !== -1 && $adinj_total_bottom_ads_used == 0){
+		$content = $content.$bottomad;
 		++$adinj_total_bottom_ads_used;
 	}
+	
+	if($fixed_top) {
+		adinj_insert_fixed_ad($content, $topad, 'top', $adinj_total_top_ads_used, $debug);
+	}
+	if($fixed_random) {
+		adinj_insert_fixed_ad($content, $randomad, 'random', $adinj_total_random_ads_used, $debug);
+	}
+	if($fixed_bottom) {
+		adinj_insert_fixed_ad($content, $bottomad, 'bottom', $adinj_total_bottom_ads_used, $debug);
+	}
+	
+	$content = $ad_include.$content;
+	
+	return adinj($content, "Ad Injection in-content injections complete!" . $debug);
+}
 
-	if ($ad_include !== "") $content = $ad_include.$content;
-	
-	if(stripos($content, "<!--randomad-->") !== false){
-		if ($debug_on) $debug .= "\nrandom ad position(s) fixed by 'randomad' tag";
-		$content = str_replace('<!--randomad-->', adinj_ad_code_random(), $content);
-		return adinj($content, "Fixed random ads" . $debug);
+function adinj_insert_fixed_ad(&$content, $ad, $adname, &$counter, &$debug){
+	if (!adinj_excluded_by_tick_box($adname.'_')){
+		$tagname = $adname.'ad';
+		if (adinj_debug_on()) $debug .= "\n$adname ad position(s) fixed by '$tagname' tag";
+		$counter += substr_count($content, "<!--$tagname-->");
+		$content = str_replace("<!--$tagname-->", $ad, $content);
+	} else {
+		if (adinj_debug_on()) $debug .= "\nFixed $adname ad excluded by tick box";
 	}
-	
-	$num_rand_ads_to_insert = adinj_num_rand_ads_to_insert($length);
-	if ($num_rand_ads_to_insert <= 0) return adinj($content, "no random ads on this post" . $debug);
-	$ad = adinj_ad_code_random();
-	if (empty($ad)) return adinj($content, "no random ad defined" . $debug);
-	
-	if (!$debug_on) $debugtags=false;
-	
-	$adstart_override = false;
-	$content_adfree_header = "";
-	$content_adfree_footer = "";
-	
-	// TODO add docs explaining the significance of leaving blank lines
-	// before or after these tags
-	# 'Adsense Injection' tag compatibility
-	$split = adinj_split_by_tag($content, "<!--adsensestart-->", $debugtags);
-	if (count($split) == 2){
-		$content_adfree_header = $split[0];
-		$content = $split[1];
-		$adstart_override = true;
-	}
-	
-	# Use the same naming convention for the end tag
-	$split = adinj_split_by_tag($content, "<!--adsenseend-->", $debugtags);
-	if (count($split) == 2){
-		$content = $split[0];
-		$content_adfree_footer = $split[1];
-	}
-	
-	$split = adinj_split_by_tag($content, "<!--adstart-->", $debugtags);
-	if (count($split) == 2){
-		$content_adfree_header = $split[0];
-		$content = $split[1];
-		$adstart_override = true;
-	}
-	
-	$split = adinj_split_by_tag($content, "<!--adend-->", $debugtags);
-	if (count($split) == 2){
-		$content = $split[0];
-		$content_adfree_footer = $split[1];
-	}
+}
 
-	if ($debug_on) $debug .= "\nContent length=". strlen($content);
+// length here can be raw characters, displayable, or number of words
+// returns array of paragraph positions to insert rnd ads into
+function adinj_get_random_paragraphs($content, $length, $original_paragraph_positions, &$debug){
+	$ops = adinj_options();
+	$debug_on = adinj_debug_on();
+	$random_ad_paragraphs = array();
+	$random_start_paragraph = 0;
+	$random_end_paragraph = 0;
+	adinj_get_random_ad_start_end_paragraph($content, $original_paragraph_positions, $random_start_paragraph, $random_end_paragraph, $debug);
+	if ($debug_on) $debug .= "\n1st Injected random ads range starts at: $random_start_paragraph, and ends at: $random_end_paragraph";
 	
-	$startposition = adinj_paragraph_to_start_ads();
-	
-	if (!$adstart_override){
-		if ($ops['random_ads_after_unit'] == 'character' && $startposition > 0){
-			$split = adinj_split_by_index($content, $startposition);
-			if (count($split) == 2){
-				$content_adfree_header = $split[0];
-				$content = $split[1];
-				if ($ops['random_ads_after_mode'] == 'at'){
-					// Start ads at next paragraph
-					$startposition = 1;
-				} else {
-					$startposition = -1;
-				}
-			} else {
-				return adinj($content, "No random ads: content too short for 'start first ad at/after character $startposition' setting");
-			}
-		}
-	}
-	
-	// TODO add note explaining that start tags are processed before the 'first
-	// paragraph ad
-	
-	// Move onto random ad insertions
-	$paragraphmarker = "</p>";
-	if(stripos($content, $paragraphmarker) === false) return adinj($content, "no &lt;/p&gt; tags");
-	
-	if ($debug_on) $debug .= "\nTags=". htmlentities($debugtags);
-	
-	// Generate a list of all potential injection points
-	if ($debug_on) $debug .= "\nInitial potential positions: ";
-	$potential_inj_positions = array();
-	$prevpos = -1;
-	while(($prevpos = stripos($content, $paragraphmarker, $prevpos+1)) !== false){
-		$potentialposition = $prevpos + strlen($paragraphmarker);
-		$potential_inj_positions[] = $potentialposition;
-		if ($debug_on) $debug .= "$potentialposition, ";
-	}
-
-	if ($debug_on) $debug .= "\npotential_inj_positions:".sizeof($potential_inj_positions);
-	
-	if (sizeof($potential_inj_positions) == 0){
-		return adinj($content, "No random ads: no potential inj positions found in content");
-	}
-	
+	$paracount = count($original_paragraph_positions);
+	$random_end_paragraph = min($random_end_paragraph, $paracount);
 	if (!adinj_ticked('rnd_allow_ads_on_last_paragraph')){
-		array_pop($potential_inj_positions);
-		if (sizeof($potential_inj_positions) == 0){
-			return adinj($content, "No random ads: no potential inj positions after removing last paragraph position");
+		if ($random_end_paragraph == $paracount) --$random_end_paragraph;
+		if ($random_end_paragraph == 0){
+			if ($debug_on) $debug .= "\nNo random ads: no potential inj positions after removing last paragraph position";
+			return;
 		}
 	}
 	
-	$inj_positions = array();
-	
-	if ($startposition > 0){
-		$pos = NULL;
-		if ($ops['random_ads_after_mode'] == 'at'){
-			for ($i=0; $i<$startposition; ++$i){
-				// discard positions until we get to the starting paragraph
-				$pos = array_shift($potential_inj_positions);
-			}
-			if ($pos != NULL && $ops['random_ads_after_mode'] == 'at'){
-				$inj_positions[] = $pos;
-				--$num_rand_ads_to_insert;
-			}
-		} else { // mode == at or after
-			for ($i=0; $i<$startposition-1; ++$i){
-				// discard positions before the starting paragraph
-				array_shift($potential_inj_positions);
-			}
-		}
-		if (sizeof($potential_inj_positions) == 0){
-			return adinj($content, "No random ads: no potential inj positions left after applying 'start ads at/after paragraph' $startposition setting");
-		}
+	if ($random_start_paragraph <= 0 || $random_end_paragraph <= 0 ||
+		$random_end_paragraph - $random_start_paragraph < 0){
+		if ($debug_on) $debug .= "\nWarning: No paragraphs: random_start_paragraph:$random_start_paragraph random_end_paragraph:$random_end_paragraph";
+		return array();
 	}
-
-	// Pick the correct number of random injection points
-	if (sizeof($potential_inj_positions) > 0 && $num_rand_ads_to_insert > 0){
+	
+	if ($debug_on) $debug .= "\n2nd Injected random ads range starts at: $random_start_paragraph, and ends at: $random_end_paragraph";
+	
+	$potential_random_ad_paragraphs = range($random_start_paragraph, $random_end_paragraph);
+	if ($debug_on) $debug .= "\npotential_random_ad_paragraphs:".sizeof($potential_random_ad_paragraphs);
+	if (sizeof($potential_random_ad_paragraphs) == 0){
+		if ($debug_on) $debug .= "\nNo random ads: no potential inj positions found in content";
+		return array();
+	}
+	
+	# Checks to see if we can inject random ads
+	$requested_num_rand_ads_to_insert = adinj_num_rand_ads_to_insert($length, $debug);
+	if ($debug_on) $debug .= "\nrequested_num_rand_ads_to_insert:$requested_num_rand_ads_to_insert";
+	if ($requested_num_rand_ads_to_insert <= 0) {
+		if ($debug_on) $debug .= "\nNo random ads enabled on this post";
+		return array();
+	}
+	$num_rand_ads_to_insert = $requested_num_rand_ads_to_insert;
+	
+	# We have to put the first ad at the first position we already selected unless the first ad can start 'anywhere'
+	if ($ops['random_ads_start_mode'] != 'anywhere' && $ops['random_ads_start_mode'] != 'after'){
+		$random_ad_paragraphs[] = array_shift($potential_random_ad_paragraphs);
+		--$num_rand_ads_to_insert;
+	}
+	
+	# Pick the correct number of random injection points
+	if (sizeof($potential_random_ad_paragraphs) > 0 && $num_rand_ads_to_insert > 0){
 		if (!adinj_ticked('multiple_ads_at_same_position')){
 			// Each ad is inserted into a unique position
-			if (sizeof($potential_inj_positions) < $num_rand_ads_to_insert){
-				$debug .= "\nnum_rand_ads_to_insert requested=$num_rand_ads_to_insert. But restricted to ". sizeof($potential_inj_positions) . " due to limited injection points.";
-				$num_rand_ads_to_insert = sizeof($potential_inj_positions);
+			if (sizeof($potential_random_ad_paragraphs) < $num_rand_ads_to_insert){
+				$debug .= "\nNum random ads requested=$requested_num_rand_ads_to_insert. But restricted to ". (sizeof($potential_random_ad_paragraphs) + sizeof($random_ad_paragraphs)) . " due to limited injection points.";
+				$num_rand_ads_to_insert = sizeof($potential_random_ad_paragraphs);
 			}
-			$rand_positions = array_rand(array_flip($potential_inj_positions), $num_rand_ads_to_insert);
+			$rand_positions = array_rand(array_flip($potential_random_ad_paragraphs), $num_rand_ads_to_insert);
 			if ($num_rand_ads_to_insert == 1){
-				// Convert it back into an array
-				$inj_positions[] = $rand_positions;
+				// Add the single value to the array
+				$random_ad_paragraphs[] = $rand_positions;
 			} else {
-				$inj_positions = array_merge($inj_positions, $rand_positions);
+				// Merge the values with the array
+				$random_ad_paragraphs = array_merge($random_ad_paragraphs, $rand_positions);
 			}
 		} else {
 			// Multiple ads may be inserted at the same position
 			$injections = 0;
 			while($injections++ < $num_rand_ads_to_insert){
-				$rnd = array_rand($potential_inj_positions);
-				if ($debug_on) $debug = $potential_inj_positions[$rnd] . ", " . $debug;
-				$inj_positions[] = $potential_inj_positions[$rnd];
+				$rnd = array_rand($potential_random_ad_paragraphs);
+				$random_ad_paragraphs[] = $potential_random_ad_paragraphs[$rnd];
 			}
 		}
 	}
-	
-	if (sizeof($inj_positions) == 0){
-		return adinj($content_adfree_header.$content.$content_adfree_footer, "Error: No random ad injection positions: " . $debug);
-	}
-	foreach($inj_positions as $pos){
-		if ($debug_on) $debug = "$pos, $debug";
-	}
-	
-	// Sort positions
-	sort($inj_positions);
-	
-	// Insert ads in reverse order
-	global $adinj_total_random_ads_used, $adinj_total_all_ads_used;
-	for ($adnum=sizeof($inj_positions)-1; $adnum>=0; $adnum--){
-		$content = substr_replace($content, $ad, $inj_positions[$adnum], 0);
-		++$adinj_total_random_ads_used;
-		++$adinj_total_all_ads_used;
 
-		if (adinj_ticked('rnd_reselect_ad_per_position_in_post')){
-			$ad = adinj_ad_code_random();
+	# Sort positions
+	sort($random_ad_paragraphs);
+	
+	if ($debug_on){
+		$injected_list = '';
+		foreach($random_ad_paragraphs as $pos){
+			$injected_list .= "$pos ";
+		}
+		$debug .= "\nInjected ads at: $injected_list";
+	}
+	
+	return $random_ad_paragraphs;
+}
+
+// for top/bottom ad
+// returns valid paragraph or -1
+// will return 0 if the position is 0
+function adinj_get_paragraph($op, $content, $original_paragraph_positions, &$debug){ // op is top or bottom
+	$ops = adinj_options();
+	$position = $ops[$op.'_ad_position'];
+	$paracount = count($original_paragraph_positions);
+	$rawlength = strlen($content);
+	$ad_paragraph = 0;
+	if ($position != 0){
+		if ($ops[$op.'_ad_position_unit'] == 'paragraph'){
+			if ($paracount < $position){
+				$ad_paragraph = -1;
+				if (adinj_debug_on()) $debug .= "\nPost too short for $op ad paracount($paracount) < para-position($position)";
+			} else {
+				$ad_paragraph = $position;
+			}
+		} else { //unit==character
+			if ($rawlength < $position){
+				$ad_paragraph = -1;
+				if (adinj_debug_on()) $debug .= "\nPost too short for $op ad rawlength($rawlength) < char-position($position)";
+			} else {
+				$ad_paragraph = adinj_get_paragraph_from_position($content, $position, $original_paragraph_positions, 1);
+			}
 		}
 	}
+	return (int)$ad_paragraph;
+}
 
-	return adinj($content_adfree_header.$content.$content_adfree_footer, "Ads injected: " . $debug);
+// Return a valid paragraph or -1
+function adinj_get_paragraph_from_position($content, $offset, $original_paragraph_positions, $adjust=0, $mode='fromstart'){
+	$paracount = count($original_paragraph_positions);
+	if ($paracount == 0) return -1;
+	$contentlength = strlen($content);
+	if ($offset > $contentlength) return -1;
+	if ($mode == 'fromend') $offset = $contentlength - $offset;
+	$position = stripos($content, ADINJ_PARA, $offset);
+	if ($position === false) return -1;
+	$position += strlen(ADINJ_PARA);
+	for ($i=0; $i<$paracount; ++$i){
+		if ($position == $original_paragraph_positions[$i]) {
+			$paragraph = $i+$adjust;
+			return min($paragraph, $paracount);
+		}
+	}
+	return -1;
+}
+
+// Can return 0 as the end paragraph - meaning no random ads TODO check
+function adinj_get_random_ad_start_end_paragraph($content, $original_paragraph_positions, &$start, &$end, &$debug){
+	$ops = adinj_options();
+	$debug_on = adinj_debug_on();
+	
+	$paracount = count($original_paragraph_positions);
+	if ($paracount == 0){
+		$start = -1;
+		$end = -1;
+		return;
+	}
+
+	// initialise to 'anywhere' max range
+	$start = 1;
+	$end = $paracount;
+	
+	// todo docs: should include these tags on same line as paragraph or can affect paragraph count
+	$tagposition = stripos($content, '<!--adstart-->');
+	if ($tagposition === false) $tagposition = stripos($content, '<!--adsensestart-->');
+	if ($tagposition === false){
+		$start = adinj_get_random_ad_paragraph($content, $original_paragraph_positions, 'start', $start, $debug);
+	} else {
+		$start = adinj_get_paragraph_from_position($content, $tagposition, $original_paragraph_positions, 1);
+		if ($debug_on) $debug .= "\nFound hardcoded start tag. Starting ads at paragraph $start";
+	}
+	
+	$tagposition = stripos($content, '<!--adend-->');
+	if ($tagposition === false) $tagposition = stripos($content, '<!--adsenseend-->');
+	if ($tagposition === false){
+		$end = adinj_get_random_ad_paragraph($content, $original_paragraph_positions, 'end', $end, $debug);
+	} else {
+		$end = adinj_get_paragraph_from_position($content, $tagposition, $original_paragraph_positions, 0);
+		if ($debug_on) $debug .= "\nFound hardcoded end tag. Ending ads at paragraph $end";
+	}
+}
+
+// Returns -1 if paragraph can't be located
+function adinj_get_random_ad_paragraph($content, $original_paragraph_positions, $opname, $default, &$debug){
+	$ops = adinj_options();
+	$mode = $ops['random_ads_'.$opname.'_mode'];
+	$paracount = count($original_paragraph_positions);
+	$rawlength = strlen($content);
+	$paragraph = -1;
+	
+	if ($mode == 'anywhere'){
+		$paragraph = $default;
+	} else if ($mode == 'at' || $mode == 'after'){
+		$position = $ops['random_ads_'.$opname.'_at'];
+		$unit = $ops['random_ads_'.$opname.'_unit'];
+		$direction = $ops['random_ads_'.$opname.'_direction'];
+		if ($unit == 'character'){
+			$adjust = ($direction == 'fromend') ? 0 : 1;
+			$paragraph = adinj_get_paragraph_from_position($content, $position, $original_paragraph_positions, $adjust, $direction);
+			if ($opname == 'end' && $direction == 'fromstart' && $paragraph == -1){
+				$paragraph = $paracount;
+			}
+		} else {
+			// paragraph is same as value in UI
+			$paragraph = $position;
+			if ($direction == 'fromend'){
+				$paragraph = $paracount - $paragraph;
+			}
+		}
+	} else if ($mode == 'middleback'){
+		$pos = round(($rawlength / 2), 0);
+		$paragraph = adinj_get_paragraph_from_position($content, $pos, $original_paragraph_positions, 0);
+	} else if ($mode == 'middleforward'){
+		$pos = round(($rawlength / 2), 0);
+		$paragraph = adinj_get_paragraph_from_position($content, $pos, $original_paragraph_positions, 1);
+	} else if ($mode == 'middleparaback'){
+		$val = ($paracount % 2 == 0) ? 0 : 0.5;
+		$paragraph = intval(round((($paracount-$val) / 2), 0)); // todo test with 0 and 1 paragraphs
+	} else if ($mode == 'middleparaforward'){
+		$paragraph = intval(round(($paracount / 2), 0));
+	} else if ($mode == 'twothirds'){
+		$pos = round(($rawlength * 0.66), 0);
+		$paragraph = adinj_get_paragraph_from_position($content, $pos, $original_paragraph_positions, 1);
+	}
+	if ($paragraph == -1){
+		if ($debug_on) $debug .= "\nParagraph not found - mode:$randomaftermode op:$opname";
+	}
+	return $paragraph;
 }
 
 //http://php.net/manual/en/function.str-word-count.php
@@ -917,39 +1054,25 @@ function str_word_count_utf8($str){
 	}
 }
 
-function adinj_paragraph_to_start_ads(){
+function adinj_ads_filtered_out($adname, &$debug){
 	$ops = adinj_options();
-	if (adinj_db_version($ops) == 1){
-		if (adinj_ticked('first_paragraph_ad')) return 1;
-		return -1;
+	if (!adinj_allowed_in_category($adname, $ops)){
+		$debug .= "\n$adname ad filtered out by categories";
+		return true;
 	}
-	if (adinj_rule_disabled('start_from_paragraph')){
-		return -1;
-	} else {
-		return $ops['start_from_paragraph'];
+	if (!adinj_allowed_in_tag($adname, $ops)){
+		$debug .= "\n$adname ad filtered out by tags";
+		return true;
 	}
-}
-
-function adinj_split_by_tag($content, $tag, &$debugtags){
-	$ret = array();
-	if (strpos($content, $tag) !== false){
-		if ($debugtags !== false) $debugtags .= "$tag, ";
-		$content_split = explode($tag, $content, 2);
-		$ret[] = $content_split[0];
-		if (count($content_split) == 2){
-			$ret[] = $content_split[1];
-		}
+	if (!adinj_allowed_in_author($adname, $ops)){
+		$debug .= "\n$adname ad filtered out by authors";
+		return true;
 	}
-	return $ret;
-}
-
-function adinj_split_by_index($content, $index){
-	$ret = array();
-	if (strlen($content) > $index+4){ // +4 as there is no point splitting unless there is room for a </p> at end
-		$ret[0] = substr($content, 0, $index);
-		$ret[1] = substr($content, $index+1);
+	if (!adinj_allowed_in_id($adname, $ops)){
+		$debug .= "\n$adname ad filtered out by ids";
+		return true;
 	}
-	return $ret;
+	return false;
 }
 
 function adinj_get_current_page_type_prefix(){
@@ -958,7 +1081,7 @@ function adinj_get_current_page_type_prefix(){
 	return '';
 }
 
-function adinj_num_top_ads_to_insert($content_length){
+function adinj_num_top_ads_to_insert($content_length, &$debug){
 	if (adinj_excluded_by_tick_box('top_')) return 0;
 	$ops = adinj_options();
 	$prefix = adinj_get_current_page_type_prefix();
@@ -971,19 +1094,17 @@ function adinj_num_top_ads_to_insert($content_length){
 	}
 	if ($max_num_ads_to_insert <= 0) return 0;
 
-	if (!adinj_allowed_in_category('top', $ops)) return 0;
-	if (!adinj_allowed_in_tag('top', $ops)) return 0;
-	if (!adinj_allowed_in_author('top', $ops)) return 0;
-	if (!adinj_allowed_in_id('top', $ops)) return 0;
+	if (adinj_ads_filtered_out('top', $debug)) return 0;
 	
 	$val = $ops[$prefix.'top_ad_if_longer_than'];
 	if (adinj_not_set($val) || adinj_true_if($content_length, '>', $val)){
 		return 1;
 	}
+	$debug .= "\nNo top ad because post length < $val";
 	return 0;
 }
 
-function adinj_num_bottom_ads_to_insert($content_length){
+function adinj_num_bottom_ads_to_insert($content_length, &$debug){
 	if (adinj_excluded_by_tick_box('bottom_')) return 0;
 	$ops = adinj_options();
 	$prefix = adinj_get_current_page_type_prefix();
@@ -996,19 +1117,17 @@ function adinj_num_bottom_ads_to_insert($content_length){
 	}
 	if ($max_num_ads_to_insert <= 0) return 0;
 	
-	if (!adinj_allowed_in_category('bottom', $ops)) return 0;
-	if (!adinj_allowed_in_tag('bottom', $ops)) return 0;
-	if (!adinj_allowed_in_author('bottom', $ops)) return 0;
-	if (!adinj_allowed_in_id('bottom', $ops)) return 0;
+	if (adinj_ads_filtered_out('bottom', $debug)) return 0;
 	
 	$val = $ops[$prefix.'bottom_ad_if_longer_than'];
 	if (adinj_not_set($val) || adinj_true_if($content_length, '>', $val)){
 		return 1;
 	}
+	$debug .= "\nNo bottom ad because post length < $val";
 	return 0;
 }
 
-function adinj_num_rand_ads_to_insert($content_length){
+function adinj_num_rand_ads_to_insert($content_length, &$debug){
 	if (adinj_excluded_by_tick_box('random_')) return 0;
 	global $adinj_total_random_ads_used; // a page can be more than one post
 	$ops = adinj_options();
@@ -1021,30 +1140,38 @@ function adinj_num_rand_ads_to_insert($content_length){
 		$max_num_rand_ads_to_insert = $ops[$prefix.'max_num_random_ads_per_page'] - $adinj_total_random_ads_used;
 		$max_ads_in_post = $ops[$prefix.'max_num_random_ads_per_post'];
 	} else {
+		$debug .= "\nNo random ads because not correct page type";
 		return 0;
 	}
 	
 	$max_num_rand_ads_to_insert = min($max_num_rand_ads_to_insert, $max_ads_in_post);
 
 	if ($max_num_rand_ads_to_insert <= 0) {
+		$debug .= "\nNo random ads to insert in this post";
 		return 0;
 	}
 	
-	if (!adinj_allowed_in_category('random', $ops)) return 0;
-	if (!adinj_allowed_in_tag('random', $ops)) return 0;
-	if (!adinj_allowed_in_author('random', $ops)) return 0;
-	if (!adinj_allowed_in_id('random', $ops)) return 0;
+	if (adinj_ads_filtered_out('random', $debug)) return 0;
+
 	$length = $content_length;
-	if (adinj_true_if($length, '<', $ops[$prefix.'no_random_ads_if_shorter_than'])){
+	$conditionlength = $ops[$prefix.'no_random_ads_if_shorter_than'];
+	if (adinj_true_if($length, '<', $conditionlength)){
+		$debug .= "\nNo random ads because post length < $conditionlength";
 		return 0;
 	}
-	if (adinj_true_if($length, '<', $ops[$prefix.'one_ad_if_shorter_than'])){
+	$conditionlength = $ops[$prefix.'one_ad_if_shorter_than'];
+	if (adinj_true_if($length, '<', $conditionlength)){
+		$debug .= "\nOnly 1 random ad because post length < $conditionlength";
 		return 1;
 	}
-	if (adinj_true_if($length, '<', $ops[$prefix.'two_ads_if_shorter_than'])){
+	$conditionlength = $ops[$prefix.'two_ads_if_shorter_than'];
+	if (adinj_true_if($length, '<', $conditionlength)){
+		$debug .= "\nLimit on random ads because post length < $conditionlength";
 		return min(2, $max_num_rand_ads_to_insert);
 	}
-	if (adinj_true_if($length, '<', $ops[$prefix.'three_ads_if_shorter_than'])){
+	$conditionlength = $ops[$prefix.'three_ads_if_shorter_than'];
+	if (adinj_true_if($length, '<', $conditionlength)){
+		$debug .= "\nLimit on random ads because post length < $conditionlength";
 		return min(3, $max_num_rand_ads_to_insert);
 	}
 	return $max_num_rand_ads_to_insert;
@@ -1057,15 +1184,11 @@ function adinj_num_footer_ads_to_insert(){
 		return 0;
 	}
 	$ops = adinj_options();
-	if (!adinj_allowed_in_category('footer', $ops)) return 0;
-	if (!adinj_allowed_in_tag('footer', $ops)) return 0;
-	if (!adinj_allowed_in_author('footer', $ops)) return 0;
-	if (!adinj_allowed_in_id('footer', $ops)) return 0;
+	if (adinj_ads_filtered_out('footer', $debug)) return 0;
 	return 1;
 }
 
 function adinj_true_if($rule_value, $condition, $content_length){
-	if (adinj_alwaysshow($rule_value)) return true; // todo deprecated
 	if ($condition == '>'){
 		return ($rule_value >= $content_length);
 	} else if ($condition == '<'){
@@ -1083,10 +1206,6 @@ function adinj_direct_mode(){
 function adinj_mfunc_mode(){
 	$ops = adinj_options();
 	return ($ops['ad_insertion_mode'] == 'mfunc');
-}
-
-function adinj_alwaysshow($value){ // todo deprecated?
-	return "$value" == ADINJ_ALWAYS_SHOW || "$value" == 'a';
 }
 
 function adinj_rule_disabled($value){

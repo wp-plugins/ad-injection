@@ -39,6 +39,9 @@ function adinj_allowed_referrers_setting(){
 }
 
 function adinj_blocked(){
+	if (adinj_searchEngineCookieSet()){
+		return false;
+	}
 	if (adinj_blockedCookieSet()){
 		return true;
 	}

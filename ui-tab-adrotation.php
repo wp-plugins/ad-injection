@@ -10,7 +10,7 @@ function adinj_tab_adrotation(){
 	$ops = adinj_options();
 	
 	echo <<<DOCS
-	<p><a href="#multiple_top">Top adverts</a> | <a href="#multiple_random">Random adverts</a> | <a href="#multiple_bottom">Bottom adverts</a> | <a href="#multiple_footer">Footer adverts</a> | <a href="#misc">Misc settings</a> | <a href="#docs_tags">Tag docs</a> | <a href="#testads">Test ads</a></p>
+	<p><a href="#multiple_top">Top adverts</a> | <a href="#multiple_random">Random adverts</a> | <a href="#multiple_bottom">Bottom adverts</a> | <a href="#multiple_footer">Footer adverts</a> | <a href="#docs_tags">Tag docs</a> | <a href="#testads">Test ads</a></p>
 DOCS;
 	
 	$total_rand_split = adinj_total_split('ad_code_random_', $ops);
@@ -84,38 +84,9 @@ DOCS;
 	echo '</table>';
 	adinj_postbox_end();
 	
-
-	adinj_postbox_start(__("Misc options", 'adinj'), 'misc'); ?>
-	<table>
-	<tr>
-	<td>Content length counting method:</td>
-	<td>
-	<?php
-		adinj_selection_box("content_length_unit",
-			array('viewable' => 'viewable chars', 'all' => 'all chars', 'words' => 'words'));
-	?>
-	</td></tr>
-	<tr><td colspan="2"><p><span style="font-size:10px;">When defining conditions that refer to the length of the content; do you want to count viewable characters, all characters (which includes HTML tags), or number of words?</span></p></td></tr>
-	<tr><td>
-	<?php _e("Allow multiple random ads to be injected at the same positions.", 'adinj') ?></td><td><?php adinj_add_checkbox('multiple_ads_at_same_position') ?> (default is to inject ads at unique positions)
-	</td></tr>
-	
-	<tr><td>
-			<?php _e("Allow random ad on last paragraph");
-			echo '</td><td>';
-			adinj_add_checkbox('rnd_allow_ads_on_last_paragraph'); ?>
-	
-	<td></tr>
-	<tr><td>
-			<?php _e("Re-select an ad for each position on post");
-			echo '</td><td>';
-			adinj_add_checkbox('rnd_reselect_ad_per_position_in_post'); ?>
-	</td></tr>
-
-	</table>
-	<?php adinj_postbox_end();
 	
 	adinj_docs_tags();
+
 	
 	adinj_testads();
 	
@@ -131,7 +102,11 @@ echo <<<EOT
 	<tr><td>
 	<a name="$name"></a>
 	<span style="font-size:10px;"><b>$title $num</b></span><br />
-	<textarea name="$name" rows="8" cols="60">$ops[$name]</textarea>
+	<textarea name="$name" rows="8" cols="
+EOT;
+	adinj_table_width('rotation');
+echo <<<EOT
+">$ops[$name]</textarea>
 	</td><td>
 	<input name="$namesplit" size="7" value="$ops[$namesplit]" />
 	<br />
@@ -147,8 +122,29 @@ function adinj_docs_tags(){
 
 <p>These tags can be inserted into the page source to override the configured behaviour on single posts and pages. Because sometimes specific pages need to be treated differently.</p>
 
+<h3>Fully supported tags</h3><br />
+
+<ul>
+<li><code>&lt;!--topad--&gt;</code> OR <code>&lt;!--randomad--&gt;</code> OR <code>&lt;!--bottomad--&gt;</code> - These tags allow precise positioning of the adverts instead of using the computer calculated positions.</li>
+</ul>
+
+<ul>
+<li><code>&lt;!--adstart--&gt;</code> - Random ads will start from this point.</li>
+<li><code>&lt;!--adend--&gt;</code> - Random ads will not be inserted after this point.</li>
+</ul>
+
+<p>The above adstart/adend tags and below adsensestart tag will not affect the top and bottom ad.</p>
+
+<h3>Other tags</h3><br />
+
 <ul>
 <li><code>&lt;!--noadsense--&gt;</code> OR <code>&lt;!-no-adsense--&gt;</code> OR <code>&lt;!--NoAds--&gt;</code> OR <code>&lt;!--OffAds--&gt;</code> - disables all ads on this page. These tags are here to make this plugin compatible with the tags from Adsense Injection, Whydowork Adsense and Quick Adsense.</li>
+</ul>
+
+<p></p>
+
+<ul>
+<li><code>&lt;!--adsensestart--&gt;</code> - Random ads will start from this point. For compatibility with Adsense Injection.</li>
 </ul>
 
 <p></p>
@@ -157,17 +153,6 @@ function adinj_docs_tags(){
 <li><code>&lt;!--adsandwich--&gt;</code> - Inserts the top and bottom ad but no random ads. Disables all other ads.</li>
 <li><code>&lt;!--adfooter--&gt;</code> - Insert a single ad at the very bottom. Disables all other ads.</li>
 </ul>
-
-<p></p>
-
-<ol>
-<li><code>&lt;!--adsensestart--&gt;</code> - Random ads will start from this point*. For compatibility with Adsense Injection.</li>
-<li><code>&lt;!--adsenseend--&gt;</code> - Random ads will not be inserted after this point*. New tag but I've kept the Adsense Injection naming convention to make it fit with the above tag.</li>
-<li><code>&lt;!--adstart--&gt;</code> - Random ads will start from this point*.</li>
-<li><code>&lt;!--adend--&gt;</code> - Random ads will not be inserted after this point*.</li>
-</ol>
-
-<p>These four tags will not affect the top and bottom ad.</p>
 
 <h4>Custom field for disabling adverts</h4>
 

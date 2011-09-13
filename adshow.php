@@ -20,6 +20,8 @@ if (file_exists($adinj_dir.'/ad-injection-config.php')){
 if (!function_exists('adshow_functions_exist')){
 // Used to downgrade fatal errors to printed errors to make debugging easier
 // and so that a problem doesn't disable the whole website. 
+// TODO can't just add new checks to here as Ad Injection might now get run before config
+// file is regenerated - e.g. if cached versions of pages are served
 function adshow_functions_exist(){
 	if (!defined('ADINJ_NO_CONFIG_FILE')){
 		if (!adshow_functions_exist_impl('adinj_config_sevisitors_only')){ return false; }
@@ -226,12 +228,20 @@ function adshow_add_formatting($ad, $ops = array()){
 //////////////////////////////////////////////////////////////////////////////
 
 if (!function_exists('adshow_fromasearchengine')){
-function adshow_fromasearchengine(){
+function adshow_fromasearchengine(){ //todo rename to allowed_referrer
 	if (!adshow_functions_exist()){ return false; }
 
+	if ($_COOKIE["adinjblocked"]==1) {
+		if (adinj_config_debug_mode()){ echo "<!--ADINJ DEBUG: allowed referrer check ignored because adinjblocked cookie set-->\n"; }
+		return false;
+	}
+	
 	// return true if the visitor has recently come from a search engine
 	// and has the adinj cookie set.
-	if ($_COOKIE["adinj"]==1) return true;
+	if ($_COOKIE["adinj"]==1) {
+		if (adinj_config_debug_mode()){ echo "<!--ADINJ DEBUG: adinj cookie set-->\n"; }
+		return true;
+	}
 	
 	$referrer = $_SERVER['HTTP_REFERER'];
 	$searchengines = adinj_config_search_engine_referrers();
@@ -248,13 +258,24 @@ if (!function_exists('adshow_blocked_referrer')){
 function adshow_blocked_referrer(){
 	if (!adshow_functions_exist()){ return false; }
 
+	if ($_COOKIE["adinj"]==1) {
+		if (adinj_config_debug_mode()){ echo "<!--ADINJ DEBUG: blocked check ignored because adinj cookie set-->\n"; }
+		return false;
+	}
+	
 	// true if blocked cookie is set
-	if ($_COOKIE["adinjblocked"]==1) return true;
+	if ($_COOKIE["adinjblocked"]==1) {
+		if (adinj_config_debug_mode()){ echo "<!--ADINJ DEBUG: adinjblocked cookie set-->\n"; }
+		return true;
+	}
 	
 	$referrer = $_SERVER['HTTP_REFERER'];
+	if (adinj_config_debug_mode()){ echo "<!--ADINJ DEBUG: referrer=$referrer-->\n"; }
+
 	$blocked = adinj_config_blocked_keywords();
 	foreach ($blocked as $bl) {
 		if (stripos($referrer, $bl) !== false) {
+			if (adinj_config_debug_mode()){ echo "<!--ADINJ DEBUG: ads blocked - referrer contains $bl -->\n"; }
 			return true;
 		}
 	}

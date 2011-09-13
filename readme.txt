@@ -4,13 +4,22 @@ Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-w
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, widgets, sidebar, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog, ad rotation, A:B testing, split testing, WP Super Cache, W3 Total Cache, WP Cache
 Requires at least: 2.8.6
 Tested up to: 3.2.1
-Stable tag: 1.1.0.6
+Stable tag: 1.2.0.0
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
 == Description ==
 
 Ad Injection from [reviewmylife](http://www.reviewmylife.co.uk/ "reviewmylife") injects any kind of advert or other content (e.g. Google AdSense, Amazon Associates, ClickBank, TradeDoubler, etc) into the existing content of your WordPress posts and pages. You can control the number of adverts based on the post length, and it can restrict who sees adverts by post age, visitor referrer and IP address. Adverts can be configured in the post (random, top, and bottom positions) or in any widget/sidebar area. There's support for A:B split testing / ad rotation. And the dynamic restrictions (by IP and referrer) work with WP Super Cache, W3 Total Cache and WP Cache.
+
+**New Features 1.2.x.x**
+
+* Set the position of the top and bottom advert by paragraph or character.
+* Position the random ads to start or stop in the middle of the post.
+* Stop the random ads 2/3 of the way down a post, or at a paragraph/character position from the beginning/end of the post.
+* Fade unused Home/Archive options instead of making them dissapear.
+* Add page age settings to status.
+* Improve debug messages.
 
 **New Features 1.1.x.x**
 
@@ -56,7 +65,7 @@ You can specify that ads should only be shown to search engine visitors, or to v
 
 = Block by referrer =
 
-Block ads to people coming from certain referring URLs. e.g. you may wish to treat people who arrive at your site after searching for your site name as direct visitors and disable the ads for them.
+Block ads to people coming from certain referring URLs. e.g. you may wish to treat people who arrive at your site after searching for your name as direct visitors and disable the ads for them.
 
 = Ads on old posts only =
 
@@ -274,7 +283,7 @@ The top, random, bottom and footer ads can be placed into the category pages. Ca
 
 On the main settings page for Ad Injection just enter the number of adverts you want on these page types using the Archives column in the 'Ad placement settings' section.
 
-Ads will only appear on archives/category pages if you are showing the full post contents on these pages. They won't work if you are showing excerpts.
+These ads will only appear on archives/category pages if you are showing the full post contents on these pages. They won't work if you are showing excerpts. These restrictions don't apply to widget ads.
 
 = My adverts are overlapping with other page elements (e.g. images) =
 
@@ -285,6 +294,10 @@ If you always have a floated image at the top of the page you can set which para
 = I have set the ads to float but the text/headings aren't flowing around them =
 
 Check your style sheet to see if either the text or headings have the 'clear' attribute set. This may be preventing your text / headings from flowing around the advert.
+
+= After adding the ads my sidebar has dropped down the screen. Why? =
+
+This is because you have inserted adverts that are too wide for your site's layout. The browser can no longer fit all the parts of your layout side-by-side. Try using ads that are less wide.
 
 = I have configured four Google AdSense ad units but only three are showing. Why? =
 
@@ -315,6 +328,52 @@ See http://codex.wordpress.org/Function_Reference/in_category for more informati
 You can do the same for tags using has_tag. See http://codex.wordpress.org/Function_Reference/has_tag for info.
 
 Note - this will only work in direct insertion mode.
+
+== I want a different advert for each category. How can I do this? ==
+
+1. In your plugins directory create a sub-directory called 'ad-injection-ads'. e.g. /wordpress/wp-content/plugins/ad-injection-ads/
+
+2. Create a text files in this folder for each of the categories that you want an ad for. The text files should be named [category nicename].txt The 'nicename' of the category is the category name with spaces and dots converted to '-' and apostrophes removed. e.g.
+
+Liverpool = liverpool.txt
+Manchester United = manchester-united.txt
+A.F.C Aldermaston = a-f-c-aldermaston.txt
+Bishop's Stortford = bishops-stortford.txt
+
+3. Then put this code (from the starting `<?php` to the closing `?>`) into the ad box. It will load the text file ad matching the category name when the post is displayed.
+
+`<?php
+$plugin_dir = dirname(__FILE__);
+$ad_dir = dirname($plugin_dir).'/ad-injection-ads/';
+if (file_exists($ad_dir)){
+    global $post;
+    $categories = get_the_category($post->ID);
+    foreach ($categories as $cat){
+        // nicename: spaces and dots are converted to '-' and apostrophes are removed
+        $full_ad_path = $ad_dir.$cat->category_nicename.'.txt';
+        if (file_exists($full_ad_path)){
+            $ad = file_get_contents($full_ad_path);
+            if ($ad === false) echo "<!--ADINJ CATCODE: could not read ad from file: $full_ad_path-->\n";
+            echo $ad;
+            break; // only show first category ad that matches
+        } else {
+            echo "<!--ADINJ CATCODE: could not find ad at: $full_ad_path-->\n";
+        }
+    }
+} else {
+    echo "<!--ADINJ CATCODE: could not find ad directory: $ad_dir-->\n";
+}
+?>`
+
+Some extra information:
+* This code will load one text file ad per post. If for example you had a post with the categories 'Liverpool' and 'Manchester United' it would load which ever ad it found first.
+* If will ignore categories that have no text file in the directory. If you have a post with the categories 'Liverpool' and 'Latest News' then it will always load the liverpool.txt as long as you don't create a 'latest-news.txt'.
+* This code will only work in 'direct' ad insertion mode. It won't work in 'mfunc' mode.
+
+Expansion ideas:
+* Show a default advert if no text file exists.
+* Create multiple text files for each category and then randomly select one.
+* Use different code for top, random or bottom ads. e.g. you could have liverpool_top.txt and liverpool_random.txt
 
 = How can I show different ads for different post authors? =
 
@@ -349,9 +408,9 @@ You can download the Country Filter plugin from http://wordpress.org/extend/plug
 
 = If I restrict a widget to both a category and a tag it doesn't appear in the relevant category/tag archives. Why? =
 
-If you set an with a tag restriction of 'tag1' and a category restriction of 'cat1', then it will only appear on pages that have BOTH the tag1 and cat1 property.
+If you set an ad with a tag restriction of 'tag1' and a category restriction of 'cat1', then it will only appear on pages that have BOTH the tag1 and cat1 property.
 
-A post in this category with that tag will work as you spotted.
+A post in this category with that tag will have the ad.
 
 But if will not show in the 'tag1' archive or 'cat1' category. This is because the 'tag1' archive is not part of the 'cat1' category. A tag archive can't be part of a category, and a category archive can't be part of a tag.
 
@@ -512,11 +571,21 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 
 == Screenshots ==
 
-1. Easy to use interface which allows you to copy and paste your ad code directly from your ad provider. Options are provided to control when and where your ads appear.
-2. The ads are automatically injected into the pages of your blog.
-3. Can choose to show the ads only to search engine visitors, or define IP addresses that ads aren't shown to.
+1. Easy to use interface which allows you to select on what types of pages the ads appear.
+2. You can copy and paste your ad code directly from your ad provider.
+3. The ads are automatically injected into the pages of your blog.
+4. There are options to define how many ads appear on the post, and where they appear. The quantity of ads can be varied depending on post length.
+5. Can choose to show the ads only to search engine visitors, or define IP addresses that ads aren't shown to.
 
 == Changelog ==
+
+= 1.2.0.0 =
+* Set the position of the top and bottom advert by paragraph or character.
+* Position the random ads to start or stop in the middle of the post.
+* Stop the random ads 2/3 of the way down a post, or at a paragraph/character position from the beginning/end of the post.
+* Fade unused Home/Archive options instead of making them dissapear.
+* Add page age settings to status.
+* Improve debug messages.
 
 = 1.1.0.6 =
 * New block ads by referring keyword/URL feature.
@@ -713,6 +782,9 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 * First public release
 
 == Upgrade Notice ==
+
+= 1.2.0.0 =
+* New top, random and bottom positioning options. UI updates. Debug message improvements.
 
 = 1.1.0.6 =
 * New block ads by referrer feature. Reduce UI memory usage for people with lots of tags. Fix randomad override tag.

@@ -4,6 +4,8 @@ Part of the Ad Injection plugin for WordPress
 http://www.reviewmylife.co.uk/
 */
 
+//TODO widths changed from 95-98% check on 3.1
+
 if (!is_admin()) return;
 
 function adinj_tab_main(){
@@ -14,12 +16,36 @@ function adinj_tab_main(){
 	
 	<?php adinj_global_settings_box($ops); ?>
 	
+	<?php adinj_placement_settings_box($ops); ?>
+
+	<?php adinj_adverts_box($ops); ?>
 	
-	<?php adinj_postbox_start(__("Ad placement settings", 'adinj'), 'adsettings'); ?>
+	<?php adinj_insertion_mode_box($ops); ?>
+	
+	<?php adinj_filters_box($ops); ?>
+	
+	<br clear="all" />
+	
+	<?php
+	
+	adinj_docs();
+	
+	adinj_testads();
+	
+	global $adinj_warning_msg_chmod;
+	if (!empty($adinj_warning_msg_chmod)){
+		echo '<a name="warning_msg_chmod"></a>';
+		echo '<br clear="all" />';
+		echo $adinj_warning_msg_chmod;
+	}
+}
+
+function adinj_placement_settings_box($ops){
+	adinj_postbox_start(__("Ad placement settings", 'adinj'), 'adsettings'); ?>
 	
 	<p></p>
 	
-	<table border="0" class="adinjtable" width="95%">
+	<table border="0" class="adinjtable" width="98%">
 	<tr><td></td><td width="20%"><b>Single/Page</b></td><td width="20%"><b>Home</b></td><td width="20%"><b>Archive</b></td></tr>
 	<tr><td colspan="4"><h3><a name="topadplacement"></a>Top ad [<a href="#topadcode">code</a>] [<a href="#pagetypefilters">page type filters</a>]</h3></td></tr>
 	
@@ -35,7 +61,7 @@ function adinj_tab_main(){
 	?>
 	</div></td></tr>
 	
-	<tr><td><b>|_</b> Max num of ads on whole page:</td><td>1</td><td><div class="adinj_home">
+	<tr><td>|_ Max num of ads on whole page:</td><td>1</td><td><div class="adinj_home">
 	<?php
 	$num_ads_array = array(0,1,2,3,4,5,6,7,8,9,10);
 	adinj_selection_box("home_max_num_top_ads_per_page", $num_ads_array);
@@ -44,8 +70,30 @@ function adinj_tab_main(){
 	?>
 	</div></td></tr>
 	
+	<tr><td colspan="4">
+		<table class="adinjtable">
+		<tr><td>
+		<?php
+			_e("Put the top ad at", 'adinj');
+		?>
+		</td>
+		<td>
+			<input type="radio" name="top_ad_position_unit" value="paragraph" <?php if ($ops['top_ad_position_unit']=='paragraph') echo 'checked="checked"'; ?> /> paragraph:<br />
+			<input type="radio" name="top_ad_position_unit" value="character" <?php if ($ops['top_ad_position_unit']=='character') echo 'checked="checked"'; ?> /> character:<br />
+		</td>
+		<td>
+		<?php
+			adinj_selection_box("top_ad_position", array(0,1,2,3,4,5,100,200,300,500,750,1000,1500,2000,3000), " ");
+		?>
+		</td></tr>
+		</table>
+	</td></tr>
 	
-	<tr><td colspan="4"><h3><a name="randomadplacement"></a>Random ads [<a href="#randomadcode">code</a>] [<a href="#pagetypefilters">page type filters</a>]</h3></td></tr>
+	<tr><td colspan="4">
+	<p></p>
+	</td></tr>
+	
+	<tr><td colspan="4"><input type="submit" style="float:right" name="adinj_action" value="<?php _e('Save all settings', 'adinj') ?>" /><h3><a name="randomadplacement"></a>Random ads [<a href="#randomadcode">code</a>] [<a href="#pagetypefilters">page type filters</a>]</h3></td></tr>
 	<tr><td>Max num of ads on whole page:</td><td>
 	n/a
 	</td><td><div class="adinj_home">
@@ -55,7 +103,7 @@ function adinj_tab_main(){
 	adinj_selection_box("archive_max_num_random_ads_per_page", $num_ads_array);
 	?>
 	</div></td></tr>
-	<tr><td><b>|_ </b>Max num of random ads per post:</td><td>
+	<tr><td>|_ Max num of random ads per post:</td><td>
 	<?php
 	adinj_selection_box("max_num_of_ads", $num_ads_array);
 	echo '</td><td><div class="adinj_home">';
@@ -68,45 +116,131 @@ function adinj_tab_main(){
 	adinj_random_ad_limit_table();
 	?>
 	<tr><td colspan="4">
+	
+	
 		<table class="adinjtable">
 		<tr><td>
 		<?php
-			_e("Always start the first ad ", 'adinj');
+			_e("Start the random ad(s) ", 'adinj');
 		?>
-		</td><td>
-			<input type="radio" name="random_ads_after_mode" value="at" <?php if ($ops['random_ads_after_mode']=='at') echo 'checked="checked"'; ?> /> <b>at</b><br />
-			<input type="radio" name="random_ads_after_mode" value="after" <?php if ($ops['random_ads_after_mode']=='after') echo 'checked="checked"'; ?> /> <b>at or after</b><br />
-		</td><td>
-			<input type="radio" name="random_ads_after_unit" value="paragraph" <?php if ($ops['random_ads_after_unit']=='paragraph') echo 'checked="checked"'; ?> /> <b>paragraph:</b><br />
-			<input type="radio" name="random_ads_after_unit" value="character" <?php if ($ops['random_ads_after_unit']=='character' || $ops['ads_enabled']=='') echo 'checked="checked"'; ?> /> <b>character:</b><br />
+		</td>
+		<td colspan="3">
+			<input type="radio" name="random_ads_start_mode" value="anywhere" <?php if ($ops['random_ads_start_mode']=='anywhere') echo 'checked="checked"'; ?> /> anywhere<br />
+			<br />
+		</td>
+		</tr>
+		<tr>
+		<td>
 		</td>
 		<td>
+			<input type="radio" name="random_ads_start_mode" value="at" <?php if ($ops['random_ads_start_mode']=='at') echo 'checked="checked"'; ?> /> at<br />
+			<input type="radio" name="random_ads_start_mode" value="after" <?php if ($ops['random_ads_start_mode']=='after') echo 'checked="checked"'; ?> /> at or after<br />
+		</td><td colspan="2">
+			<table class="adinjtable">
+			<tr><td>
+				<input type="radio" name="random_ads_start_unit" value="paragraph" <?php if ($ops['random_ads_start_unit']=='paragraph') echo 'checked="checked"'; ?> /> paragraph:<br />
+				<input type="radio" name="random_ads_start_unit" value="character" <?php if ($ops['random_ads_start_unit']=='character') echo 'checked="checked"'; ?> /> character:<br />
+			</td><td>
+				<?php
+				adinj_selection_box("random_ads_start_at", array(1,2,3,4,5,100,200,300,500,750,1000,1500,2000,3000,4000,5000,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), " ");
+				?>
+			</td>
+			</tr>
+			</table>
+		</td>
+		</tr>
+		
+		<tr><td></td>
+		<td colspan="3">
+			<div id="random_ads_start_warning"><span style="font-size:10px;color:red;">Note: If starting 'at character x', the start point will be the next paragraph.</span><br /></div>
+			<br />
+		</td>
+		</tr>
+		
+		<tr><td></td>
+		<td colspan="3">
+			<input type="radio" name="random_ads_start_mode" value="middleback" <?php if ($ops['random_ads_start_mode']=='middleback') echo 'checked="checked"'; ?> /> in the middle of the post (uses raw char count - then back)<br />
+			<input type="radio" name="random_ads_start_mode" value="middleforward" <?php if ($ops['random_ads_start_mode']=='middleforward') echo 'checked="checked"'; ?> /> in the middle of the post (uses raw char count - then forward)<br />
+			<input type="radio" name="random_ads_start_mode" value="middleparaback" <?php if ($ops['random_ads_start_mode']=='middleparaback') echo 'checked="checked"'; ?> /> at the middle paragraph (if 4 paragraphs pos=2, if 7 pos=3)<br />
+			<input type="radio" name="random_ads_start_mode" value="middleparaforward" <?php if ($ops['random_ads_start_mode']=='middleparaforward') echo 'checked="checked"'; ?> /> at the middle paragraph (if 4 paragraphs pos=2, if 7 pos=4)<br />
+			<br />
+		</td>
+		</tr>
+		
+		<tr><td>
 		<?php
-			adinj_selection_box("start_from_paragraph", array('d',1,2,3,4,5,100,200,300,500,750,1000,1500,2000,3000,4000,5000,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), " ");
+			_e("Stop the random ad(s) ", 'adinj');
 		?>
+		</td><td>
+			<input type="radio" name="random_ads_end_mode" value="anywhere" <?php if ($ops['random_ads_end_mode']=='anywhere') echo 'checked="checked"'; ?> /> anywhere<br />
+			<br />
 		</td></tr>
+		<tr><td></td>
+		<td>
+			<input type="radio" name="random_ads_end_mode" value="at" <?php if ($ops['random_ads_end_mode']=='at') echo 'checked="checked"'; ?> /> at<br />
+		</td><td>
+			<table class="adinjtable">
+			<tr><td>
+			<input type="radio" name="random_ads_end_unit" value="paragraph" <?php if ($ops['random_ads_end_unit']=='paragraph') echo 'checked="checked"'; ?> /> paragraph:<br />
+			<input type="radio" name="random_ads_end_unit" value="character" <?php if ($ops['random_ads_end_unit']=='character') echo 'checked="checked"'; ?> /> character:<br />
+			</td><td>
+			<?php
+			adinj_selection_box("random_ads_end_at", array(1,2,3,4,5,100,200,300,500,750,1000,1500,2000,3000,4000,5000,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), " ");
+			?>
+			</td>
+			<td>
+			<?php
+			adinj_selection_box("random_ads_end_direction", array('fromstart'=>'from the start', 'fromend'=>'from the end'), " ");
+			?>
+			</td>
+			</table>
+			<br />
+		</td>
+		</tr>
+		<tr><td></td>
+		<td colspan="3">
+			<input type="radio" name="random_ads_end_mode" value="middleforward" <?php if ($ops['random_ads_end_mode']=='middleforward') echo 'checked="checked"'; ?> /> in the middle of the post (uses raw character count)<br />
+			<input type="radio" name="random_ads_end_mode" value="twothirds" <?php if ($ops['random_ads_end_mode']=='twothirds') echo 'checked="checked"'; ?> /> two thirds of the way down the post (uses raw character count)<br />
+			<br />
+		</td>
+		</tr>
+		
+		<tr><td colspan="3">
+				<?php _e("Allow random ad on last paragraph");
+				echo '</td><td colspan="1">';
+				adinj_add_checkbox('rnd_allow_ads_on_last_paragraph'); ?>
+		<td></tr>
+		<tr><td colspan="3">
+			<?php _e("Allow multiple random ads to be injected at the same position", 'adinj') ?></td>
+			<td colspan="1"><?php adinj_add_checkbox('multiple_ads_at_same_position') ?>
+		</td></tr>
+		<tr><td colspan="3">
+				<?php _e("Re-select an ad for each position on post");
+				echo '</td><td colspan="1">';
+				adinj_add_checkbox('rnd_reselect_ad_per_position_in_post'); ?>
+		</td></tr>
+		
 		</table>
 		
 		<script type="text/javascript">
 		jQuery(document).ready(function(){
-		jQuery('input[name=random_ads_after_unit]:radio').change(function() {
-			if (jQuery('input[name=random_ads_after_unit]:checked').val() == "character"){
-				jQuery('#random_ads_after_warning').slideDown(300);
+		jQuery('input[name=random_ads_start_unit]:radio').change(function() {
+			if (jQuery('input[name=random_ads_start_unit]:checked').val() == "character"){
+				jQuery('#random_ads_start_warning').slideDown(300);
 			} else {
-				jQuery('#random_ads_after_warning').slideUp(300);
+				jQuery('#random_ads_start_warning').slideUp(300);
 			}
 			return true;
 			});
 		});
-		if ('<?php echo $ops['random_ads_after_unit'] ?>' == 'paragraph') {
-			document.write('<style type="text/css">#random_ads_after_warning { display: none; }</style>');
+		if ('<?php echo $ops['random_ads_start_unit'] ?>' == 'paragraph') {
+			document.write('<style type="text/css">#random_ads_start_warning { display: none; }</style>');
 		}
-		</script>
-		<div id="random_ads_after_warning"><span style="font-size:10px;color:red;">Note: If starting 'at character x', the start point will be the next paragraph.</span><br /></div>
+		</script>		
 			
 	</td></tr>
 	
-	<tr><td colspan="4"><h3><a name="bottomadplacement"></a>Bottom ad [<a href="#bottomadcode">code</a>] [<a href="#pagetypefilters">page type filters</a>]</h3></td></tr>
+	<tr><td colspan="4"><input type="submit" style="float:right" name="adinj_action" value="<?php _e('Save all settings', 'adinj') ?>" /><h3><a name="bottomadplacement"></a>Bottom ad [<a href="#bottomadcode">code</a>] [<a href="#pagetypefilters">page type filters</a>]</h3></td></tr>
 	
 	<tr><td>Only show on posts longer than:</td><td>
 	<?php
@@ -118,7 +252,7 @@ function adinj_tab_main(){
 	?>
 	</div></td></tr>
 	
-	<tr><td><b>|_ </b>Max num of ads on whole page:</td><td>1</td><td><div class="adinj_home">
+	<tr><td>|_ Max num of ads on whole page:</td><td>1</td><td><div class="adinj_home">
 	<?php
 	adinj_selection_box("home_max_num_bottom_ads_per_page", $num_ads_array);
 	echo '</div></td><td><div class="adinj_archive">';
@@ -126,19 +260,49 @@ function adinj_tab_main(){
 	?>
 	</div></td></tr>
 	
+	<tr><td colspan="4">
+		<table class="adinjtable">
+		<tr><td>
+		<?php
+			_e("Put the bottom ad ", 'adinj');
+		?>
+		</td>
+		<td>
+		<?php
+			adinj_selection_box("bottom_ad_position", array(0,1,2,3,4,5,100,200,300,500,750,1000,1500,2000,3000), " ");
+		?>
+		</td>
+		<td>
+			<input type="radio" name="bottom_ad_position_unit" value="paragraph" <?php if ($ops['bottom_ad_position_unit']=='paragraph') echo 'checked="checked"'; ?> /> paragraph(s) before end of post<br />
+			<input type="radio" name="bottom_ad_position_unit" value="character" <?php if ($ops['bottom_ad_position_unit']=='character') echo 'checked="checked"'; ?> /> character(s) before end of post<br />
+		</td>
+		</tr>
+		</table>
+	</td></tr>
 	
-	
+	<tr><td colspan="4"><input type="submit" style="float:right" name="adinj_action" value="<?php _e('Save all settings', 'adinj') ?>" /><h3>Other ad placement settings</h3></td></tr>
+
+	<tr>
+	<td>Content length counting method:</td>
+	<td colspan="3">
+	<?php
+		adinj_selection_box("content_length_unit",
+			array('viewable' => 'viewable chars', 'all' => 'all chars', 'words' => 'words'));
+	?>
+	</td></tr>
+	<tr><td colspan="4"><p><span style="font-size:10px;">When defining 'post longer than' / 'post shorter than' conditions; do you want to count viewable characters, all characters (which includes HTML tags), or number of words?<br />This setting does not apply to the settings for positioning the ads near a character position - these use the raw character count.</span></p></td></tr>
+
 	</table>
 	
-	<?php adinj_postbox_end(); ?>
 	
-	
+	<?php adinj_postbox_end();
+}
 
-	
-	<?php adinj_postbox_start(__("Adverts", 'adinj'), 'adverts'); ?>
+function adinj_adverts_box($ops){
+	adinj_postbox_start(__("Adverts", 'adinj'), 'adverts'); ?>
 	
 	<h3><a name="topadcode"></a>Top ad (below post title - this is not a 'header' ad) [<a href="#topadplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_top'>pool</a>]--></h3>
-	<table border="0" class="adinjtable" width="95%">
+	<table border="0" class="adinjtable" width="98%">
 	<tr><td>
 	<textarea name="ad_code_top_1" rows="10" cols="<?php adinj_table_width('ad'); ?>"><?php echo $ops['ad_code_top_1']; ?></textarea>
 	<br />
@@ -153,7 +317,7 @@ function adinj_tab_main(){
 	<p><span style="font-size:10px;">Be especially careful if you decide to use the 'float' layout options. Make sure that you don't have adverts floated over the top of other page elements, or vice-versa.</span></p>
 	
 	<h3><a name="randomadcode"></a>Random ad (inserted randomly between paragraphs) [<a href="#randomadplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_random'>pool</a>]--></h3>
-	<table border="0" class="adinjtable" width="95%">
+	<table border="0" class="adinjtable" width="98%">
 	<tr><td>
 	<textarea name="ad_code_random_1" rows="10" cols="<?php adinj_table_width('ad'); ?>"><?php echo $ops['ad_code_random_1']; ?></textarea>
 	<br />
@@ -167,7 +331,7 @@ function adinj_tab_main(){
 	</table>
 	
 	<h3><a name="bottomadcode"></a>Bottom ad (below the post content) [<a href="#bottomadplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_bottom'>pool</a>]--></h3>
-	<table border="0" class="adinjtable" width="95%">
+	<table border="0" class="adinjtable" width="98%">
 	<tr><td>
 	<textarea name="ad_code_bottom_1" rows="10" cols="<?php adinj_table_width('ad'); ?>"><?php echo $ops['ad_code_bottom_1']; ?></textarea>
 	<br />
@@ -182,7 +346,7 @@ function adinj_tab_main(){
 	
 	
 	<h3><a name="footeradcode"></a>Footer ad (put into 'the_footer' hook - not supported by all themes) [<a href="#footeradplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_footer'>pool</a>]--></h3>
-	<table border="0" class="adinjtable" width="95%">
+	<table border="0" class="adinjtable" width="98%">
 	<tr><td>
 	<textarea name="ad_code_footer_1" rows="10" cols="<?php adinj_table_width('ad'); ?>"><?php echo $ops['ad_code_footer_1']; ?></textarea>
 	<br />
@@ -202,46 +366,7 @@ function adinj_tab_main(){
 	</td></tr>
 	</table>
 	
-	
-	<?php adinj_postbox_end(); ?>
-	
-	<?php adinj_filters_box($ops); ?>
-	
-	<?php adinj_insertion_mode_box($ops); ?>
-	
-	<br clear="all" />
-	
-	<?php
-	
-	adinj_docs();
-	
-	adinj_testads();
-	
-	global $adinj_warning_msg_chmod;
-	if (!empty($adinj_warning_msg_chmod)){
-		echo '<a name="warning_msg_chmod"></a>';
-		echo '<br clear="all" />';
-		echo $adinj_warning_msg_chmod;
-	}
-}
-
-function adinj_table_width($table){
-	global $wp_db_version;
-	if ($table == 'ad'){
-		if ($wp_db_version < 18226){
-			echo '60';
-		} else { //WP3.2+
-			echo '70';
-		}
-	} else if ($table == 'dynamic'){
-		if ($wp_db_version < 18226){
-			echo '70';
-		} else { //WP3.2+
-			echo '80';
-		}
-	} else {
-		echo '61';
-	}
+	<?php adinj_postbox_end();
 }
 
 function adinj_global_settings_box($ops){
@@ -280,9 +405,9 @@ function adinj_global_settings_box($ops){
 		<td><b><font color="red">Tick to disable ads:</font></b></td>
 		<td><b>Single(<?php echo $count_posts->publish; ?>)</b></td>
 		<td><b>Page(<?php echo $count_pages->publish; ?>)</b></td>
-		<td><b>Home</b></td>
+		<td><b>[ Home</b></td>
+		<td><b><a href="<?php echo get_bloginfo('url'); ?>" target="_new">Front</a> ]</b></td>
 		<td><b>Archive</b></td>
-		<td><b><a href="<?php echo get_bloginfo('url'); ?>" target="_new">Front</a></b></td>
 		<td><b>404</b></td>
 		<td><b>Search</b></td>
 	</tr>
@@ -291,7 +416,7 @@ function adinj_global_settings_box($ops){
 	adinj_add_exclude_row('|_&nbsp;&nbsp;<a href="#topadplacement">Top</a>', 'top_');
 	adinj_add_exclude_row('|_&nbsp;&nbsp;<a href="#randomadplacement">Random</a>', 'random_');
 	adinj_add_exclude_row('|_&nbsp;&nbsp;<a href="#bottomadplacement">Bottom</a>', 'bottom_');
-	adinj_add_exclude_row('|_&nbsp;&nbsp;<a href="#footeradplacement">Footer</a>', 'footer_');
+	adinj_add_exclude_row('|_&nbsp;&nbsp;Footer', 'footer_');
 	adinj_add_exclude_row('|_&nbsp;&nbsp;Widget', 'widget_');
 	adinj_add_exclude_row('|_&nbsp;&nbsp;Template', 'template_');
 	?>
@@ -353,11 +478,11 @@ function adinj_filters_box($ops){
 	<h4>Top ad filters</h4>
 	<?php adinj_condition_tables('top_', 'ui_top_conditions_show'); ?>
 	<h4>Random ad filters</h4>
-	<?php adinj_condition_tables('random_', 'ui_top_conditions_show'); ?>
+	<?php adinj_condition_tables('random_', 'ui_random_conditions_show'); ?>
 	<h4>Bottom ad filters</h4>
-	<?php adinj_condition_tables('bottom_', 'ui_top_conditions_show'); ?>
+	<?php adinj_condition_tables('bottom_', 'ui_bottom_conditions_show'); ?>
 	<h4>Footer ad filters</h4>
-	<?php adinj_condition_tables('footer_', 'ui_top_conditions_show'); ?>
+	<?php adinj_condition_tables('footer_', 'ui_footer_conditions_show'); ?>
 	<?php
 	adinj_postbox_end();
 }
@@ -367,9 +492,6 @@ function adinj_insertion_mode_box($ops){
 	<h4>Ad insertion mode</h4>
 	<blockquote>
 	<input type="radio" name="ad_insertion_mode" value="mfunc" <?php if (adinj_mfunc_mode()) echo 'checked="checked"'; ?> /> <b>mfunc: Insert ads using cache compatible mfunc tags</b> - Dynamic features will work with WP Super Cache, W3 Total Cache and WP Cache. Only select this mode if you are using one of those caching plugins and want to use dynamic features (IP / referrer restriction, alt content and ad roatation). If you aren't using dynamic features select direct mode.
-	<?php if (!is_supported_caching_plugin_active()) {
-		echo '<p><b><span style="font-size:10px;color:red;">Note: A supported caching plugin does not appear to be active. If you are not using WP Super Cache / W3 Total Cache / WP Cache you should use one of the direct insertion modes below.</span></b></p>';		
-	} ?>
 	
 	<?php if (!adinj_mfunc_mode()) { ?>
 	<script type="text/javascript">
@@ -379,6 +501,9 @@ function adinj_insertion_mode_box($ops){
 	<br />
 	
 	<div id="caching_plugin_msg" class="caching_plugin_msg">
+	<?php if (!is_supported_caching_plugin_active()) {
+		echo '<p><b><span style="font-size:10px;color:red;">Note: A supported caching plugin does not appear to be active. If you are not using WP Super Cache / W3 Total Cache / WP Cache you should use one of the direct insertion modes below.</span></b></p>';		
+	} ?>
 	<?php
 	if (is_plugin_active('wp-super-cache/wp-cache.php')){
 		adinj_wp_super_cache_msg();
@@ -426,7 +551,7 @@ function adinj_insertion_mode_box($ops){
 	<blockquote>
 	<?php adinj_add_checkbox('block_keywords') ?><?php _e("Don't show ads to visitors from external sites if the referrer contains one of these keywords or substrings.", 'adinj') ?> If a blocked string is found block ads for: <?php	adinj_selection_box("block_ads_for_hours", array('1'=>'1 hour', '2'=>'2 hours', '3'=>'3 hours', '6'=>'6 hours', '24'=>'1 day', '48'=>'2 days', '72'=>'3 days', '168'=>'1 week', '720'=>'30 days', '8760'=>'1 year')); ?><br />
 	<textarea name="blocked_keywords" rows="2" cols="<?php adinj_table_width('dynamic'); ?>"><?php echo $ops['blocked_keywords']; ?></textarea>
-	<p>Comma separated list e.g.: <br /><code>myblogname.com, .ru, .in, james+bond</code></p>
+	<p>Comma separated list e.g.: <br /><code>facebook.com, .org, james+bond</code></p>
 	</blockquote>
 
 	
@@ -457,8 +582,8 @@ function adinj_add_exclude_row($name, $prefix=''){
 		<td><?php adinj_add_checkbox($prefix.'exclude_single', 'adinj_single', $all) ?></td>
 		<td><?php adinj_add_checkbox($prefix.'exclude_page', 'adinj_page', $all) ?></td>
 		<td><?php adinj_add_checkbox($prefix.'exclude_home', 'adinj_home', $all) ?></td>
-		<td><?php adinj_add_checkbox($prefix.'exclude_archive', 'adinj_archive', $all) ?></td>
 		<td><?php adinj_add_checkbox($prefix.'exclude_front', 'adinj_front', $all) ?></td>
+		<td><?php adinj_add_checkbox($prefix.'exclude_archive', 'adinj_archive', $all) ?></td>
 		<td><?php adinj_add_checkbox($prefix.'exclude_404', 'adinj_404', $all) ?></td>
 		<td><?php adinj_add_checkbox($prefix.'exclude_search', 'adinj_search', $all) ?></td>
 	</tr>
@@ -467,7 +592,7 @@ function adinj_add_exclude_row($name, $prefix=''){
 
 function adinj_random_ad_limit_table(){
 	?>
-	<tr><td>&nbsp;<b>|_</b> No ads if post shorter than:</td>
+	<tr><td>&nbsp;|_ No ads if post shorter than:</td>
 	<?php
 	$prefixes = array("", "home", "archive");
 	$unit = adinj_counting_unit_description();
@@ -480,7 +605,7 @@ function adinj_random_ad_limit_table(){
 		echo '</div></td>';
 	} ?>
 	</tr>
-	<tr><td>&nbsp;<b>|_</b> Only 1 ad if post shorter than:</td>
+	<tr><td>&nbsp;|_ Max 1 ad if post shorter than:</td>
 	<?php
 	foreach ($prefixes as $prefix){
 		echo '<td><div class="adinj_'.$prefix.'">';
@@ -489,7 +614,7 @@ function adinj_random_ad_limit_table(){
 		echo '</div></td>';
 	} ?>
 	</tr>
-	<tr><td>&nbsp;<b>|_</b> Only 2 ads if post shorter than:</td>
+	<tr><td>&nbsp;|_ Max 2 ads if post shorter than:</td>
 	<?php
 	foreach ($prefixes as $prefix){
 		echo '<td><div class="adinj_'.$prefix.'">';
@@ -499,7 +624,7 @@ function adinj_random_ad_limit_table(){
 	}
 	?>
 	</tr>
-	<tr><td>&nbsp;<b>|_</b> Only 3 ads if post shorter than:</td>
+	<tr><td>&nbsp;|_ Max 3 ads if post shorter than:</td>
 	<?php
 	foreach ($prefixes as $prefix){
 		echo '<td><div class="adinj_'.$prefix.'">';
@@ -590,13 +715,25 @@ function adinj_side_status_box(){
 			</td></tr>
 
 			<tr><td style="text-align:right">
+			<b><a href='#global'>Ads on posts</a></b>
+			</td><td>
+			<?php $info = adinj_get_status('older_than_normal'); echo adinj_dot($info[0]).' '.$info[1]; ?>
+			</td></tr>
+
+			<tr><td style="text-align:right">
+			<b><a href='#global'>Widgets on posts</a></b>
+			</td><td>
+			<?php $info = adinj_get_status('older_than_widgets'); echo adinj_dot($info[0]).' '.$info[1]; ?>
+			</td></tr>
+			
+			<tr><td style="text-align:right">
 			<b><a href="#restrictions">Mode</a></b>
 			</td><td>
 			<?php $info = adinj_get_status('mode'); echo adinj_dot($info[0]).' '.$info[1]; ?>
 			</td></tr>
 			
 			<tr><td style="text-align:right">
-			<b><a href="#dynamic">Restrictions</a></b>
+			<b><a href="#restrictions">Restrictions</a></b>
 			</td><td>
 			<?php $info = adinj_get_status('restrictions'); echo adinj_dot($info[0]).' '.$info[1]; ?>
 			</td></tr>
@@ -708,17 +845,15 @@ function adinj_docs(){
 
 <?php adinj_postbox_start(__("Quick Start", 'adinj'), "docsquickstart", '95%'); ?>
 
-<p>1. Copy and paste your ad code into the ad code boxes.</p>
+<p>1. Copy and paste your ad code into the ad code boxes. [<a href="#adverts">Goto adverts</a>]</p>
 
-<p>2. Choose how many ads of each type you want displayed.</p>
+<p>2. Choose how many ads of each type you want displayed. [<a href="#adsettings">Goto ad placement settings</a>]</p>
 
-<p>3. Configure any ad positioning (optional).</p>
+<p>3. Make sure ads are enabled for the page types you want them to be enabled for. [<a href="#global">Goto global settings</a>]</p>
 
-<p>4. Check the ad insertion mode (in the Insertion mode and ad display restriction section).</p>
+<p>4. Check the ad insertion mode. You will probably want 'direct' mode unless you are 1) using a caching plugin AND 2) are using the dynamic features (dynamic restrictions or ad rotation). [<a href="#restrictions">Goto 'Ad insertion mode and dynamic ad display restriction'</a>]</p>
 
-<p>5. If you are using a compatible ad insertion mode you may configure dynamic ad display restrictions. i.e. showing ads only to certain people (e.g. search engine visitors), or blocking ads from specific IPs.</p>
-
-<p>6. Enable your ads (tick box at the very top).</p>
+<p>5. Enable your ads by selecting the 'on' option at the top. [<a href="#global">Goto global settings</a>]</p>
 
 <?php adinj_postbox_end();
 
