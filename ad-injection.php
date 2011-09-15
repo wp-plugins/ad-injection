@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 1.2.0.1
+Version: 1.2.0.2
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -159,9 +159,7 @@ function adinj_get_ad_code($adtype, $ads_db){
 	$formatting = NULL;
 	if (adinj_mfunc_mode()){
 		adinj_live_ads_array($adtype, $ads_db, $ads_live, $ads_split, 'string');
-		if (adinj_db_version($ads_db) >= 2){
-			adinj_live_ads_array($adtype.'_alt', $ads_db, $alt_live, $alt_split, 'string');
-		}
+		adinj_live_ads_array($adtype.'_alt', $ads_db, $alt_live, $alt_split, 'string');
 		$formatting = adinj_formatting_options($adtype, $ads_db, 'string');
 	} else {
 		$ads_live = array();
@@ -169,9 +167,7 @@ function adinj_get_ad_code($adtype, $ads_db){
 		$alt_live = array();
 		$alt_split = array();
 		adinj_live_ads_array($adtype, $ads_db, $ads_live, $ads_split, 'array');
-		if (adinj_db_version($ads_db) >= 2){
-			adinj_live_ads_array($adtype.'_alt', $ads_db, $alt_live, $alt_split, 'array');
-		}
+		adinj_live_ads_array($adtype.'_alt', $ads_db, $alt_live, $alt_split, 'array');
 		$formatting = adinj_formatting_options($adtype, $ads_db, 'array');
 	}
 	if (empty($ads_live) && empty($alt_live)){
@@ -612,10 +608,6 @@ function adinj_allowed_in_id($scope, $ops){
 	$conditions = adinj_split_comma_list($ops[$scope.'_id_condition_entries']);
 	if (empty($conditions)) return true;
 	
-	if (!is_single() && !is_page()){
-		return true;
-	}
-	
 	$postid = -1;
 	if (in_the_loop()){
 		global $post;
@@ -790,11 +782,7 @@ function adinj_content_hook($content){
 		$content = $topad.$content;
 		++$adinj_total_top_ads_used;
 	}
-	if ($ops['bottom_ad_position'] == 0){ // default is special case
-		$content = $content.$bottomad;
-		++$adinj_total_bottom_ads_used;
-	}
-	if ($bottom_ad_paragraph !== -1 && $adinj_total_bottom_ads_used == 0){
+	if ($bottom_ad_paragraph !== -1 && $ops['bottom_ad_position'] == 0){ // default is special case as themes can't be trusted to close the final paragraph
 		$content = $content.$bottomad;
 		++$adinj_total_bottom_ads_used;
 	}
