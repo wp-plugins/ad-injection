@@ -329,7 +329,7 @@ You can do the same for tags using has_tag. See http://codex.wordpress.org/Funct
 
 Note - this will only work in direct insertion mode.
 
-== I want a different advert for each category. How can I do this? ==
+= I want a different advert for each category. How can I do this? =
 
 1. In your plugins directory create a sub-directory called 'ad-injection-ads'. e.g. /wordpress/wp-content/plugins/ad-injection-ads/
 
