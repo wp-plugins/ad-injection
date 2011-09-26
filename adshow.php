@@ -4,6 +4,8 @@ Part of the Ad Injection plugin for WordPress
 http://www.reviewmylife.co.uk/
 */
 
+// TODO set cookies here as well so blocking / showing works without JS
+
 if (!defined('ADINJ_NO_CONFIG_FILE')){
 $adinj_dir = dirname(__FILE__);
 if (file_exists($adinj_dir.'/ad-injection-config.php')){
@@ -24,13 +26,14 @@ if (!function_exists('adshow_functions_exist')){
 // file is regenerated - e.g. if cached versions of pages are served
 function adshow_functions_exist(){
 	if (!defined('ADINJ_NO_CONFIG_FILE')){
-		if (!adshow_functions_exist_impl('adinj_config_sevisitors_only')){ return false; }
-		if (!adshow_functions_exist_impl('adinj_config_search_engine_referrers')){ return false; }
+		if (!adshow_functions_exist_impl('adinj_config_allow_referrers')){ return false; }
+		if (!adshow_functions_exist_impl('adinj_config_allowed_referrers_list')){ return false; }
 		if (!adshow_functions_exist_impl('adinj_config_block_ips')){ return false; }
-		if (!adshow_functions_exist_impl('adinj_config_blocked_ips')){ return false; }
-		if (!adshow_functions_exist_impl('adinj_config_block_keywords')){ return false; }
-		if (!adshow_functions_exist_impl('adinj_config_blocked_keywords')){ return false; }
+		if (!adshow_functions_exist_impl('adinj_config_blocked_ips_list')){ return false; }
+		if (!adshow_functions_exist_impl('adinj_config_block_referrers')){ return false; }
+		if (!adshow_functions_exist_impl('adinj_config_blocked_referrers_list')){ return false; }
 		//if (!adshow_functions_exist_impl('adinj_config_block_hours')){ return false; }
+		//if (!adshow_functions_exist_impl('adinj_config_block_after_ad_click')){ return false; }
 		if (!adshow_functions_exist_impl('adinj_config_debug_mode')){ return false; }
 	}
 	return true;
@@ -45,11 +48,11 @@ function adshow_functions_exist_impl($function){
 }
 
 if (defined('ADINJ_NO_CONFIG_FILE')){
-function adinj_config_sevisitors_only() { 
+function adinj_config_allow_referrers() { 
 	return adinj_ticked('sevisitors_only');
 }
 
-function adinj_config_search_engine_referrers() {
+function adinj_config_allowed_referrers_list() {
 	$list = adinj_quote_list('ad_referrers');
 	return preg_split("/[,'\s]+/", $list, -1, PREG_SPLIT_NO_EMPTY);
 }
@@ -58,23 +61,28 @@ function adinj_config_block_ips() {
 	return adinj_ticked('block_ips');
 }
 
-function adinj_config_blocked_ips() { 
+function adinj_config_blocked_ips_list() { 
 	$list = adinj_quote_list('blocked_ips');
 	return preg_split("/[,'\s]+/", $list, -1, PREG_SPLIT_NO_EMPTY);
 }
 
-function adinj_config_block_keywords() {
+function adinj_config_block_referrers() {
 	return adinj_ticked('block_keywords');
 }
 
-function adinj_config_blocked_keywords() { 
+function adinj_config_blocked_referrers_list() { 
 	$list = adinj_quote_list('blocked_keywords');
 	return preg_split("/[,'\s]+/", $list, -1, PREG_SPLIT_NO_EMPTY);
 }
 
-function adinj_config_block_hours() {
+function adinj_config_block_hours() {  // if blocked by referrer
 	$ops = adinj_options();
 	return $ops['block_ads_for_hours'];
+}
+
+function adinj_config_block_after_ad_click() {
+	return false;
+	//return adinj_ticked('block_after_ad_click'); //TODO maybe this should be checking something else
 }
 
 function adinj_config_debug_mode() { 
@@ -227,14 +235,55 @@ function adshow_add_formatting($ad, $ops = array()){
 
 //////////////////////////////////////////////////////////////////////////////
 
-if (!function_exists('adshow_fromasearchengine')){
-function adshow_fromasearchengine(){ //todo rename to allowed_referrer
+if (!function_exists('adshow_show_adverts')){
+function adshow_show_adverts(){
 	if (!adshow_functions_exist()){ return false; }
-
-	if ($_COOKIE["adinjblocked"]==1) {
-		if (adinj_config_debug_mode()){ echo "<!--ADINJ DEBUG: allowed referrer check ignored because adinjblocked cookie set-->\n"; }
-		return false;
+	//echo 'ref:'.$_SERVER['HTTP_REFERER'];
+	//if (adinj_config_block_after_ad_click() && adshow_clicked_ad()) return "click_blocked"; //TODO
+	
+	if (adinj_config_block_ips() && adshow_blocked_ip()) return "blocked_ip";
+	
+	if ($_COOKIE["adinj"]==1) {
+		if (adinj_config_debug_mode()){ echo "<!--ADINJ DEBUG: blocked check ignored because adinj cookie set-->\n"; }
+		return true;
 	}
+	
+	if ($_COOKIE["adinjblocked"]==1) {
+		if (adinj_config_debug_mode()){ echo "<!--ADINJ DEBUG: no ads because adinjblocked cookie set-->\n"; }
+		return true;
+	}
+	
+	if (adinj_config_block_referrers() && adshow_blocked_referrer()) return "blocked_referrer";
+	
+	if (adinj_config_allow_referrers() && !adshow_allowed_referrer()) return "not_an_allowed_referrer";
+	
+	return true;
+}
+}
+
+// Redirect new config method to old config methods until the config file gets re-generated.
+// TODO test!
+if (!function_exists('adinj_config_allow_referrers') && function_exists('adinj_config_sevisitors_only')){ 
+function adinj_config_allow_referrers() { return adinj_config_sevisitors_only(); }
+}
+if (!function_exists('adinj_config_allowed_referrers_list') && function_exists('adinj_config_search_engine_referrers')){ 
+function adinj_config_allowed_referrers_list() { return adinj_config_search_engine_referrers(); }
+}
+//
+if (!function_exists('adinj_config_block_referrers') && function_exists('adinj_config_block_keywords')){ 
+function adinj_config_block_referrers() { return adinj_config_block_keywords(); }
+}
+if (!function_exists('adinj_config_blocked_referrers_list') && function_exists('adinj_config_blocked_keywords')){ 
+function adinj_config_blocked_referrers_list() { return adinj_config_blocked_keywords(); }
+}
+//
+if (!function_exists('adinj_config_blocked_ips_list') && function_exists('adinj_config_blocked_ips')){ 
+function adinj_config_blocked_ips_list() { return adinj_config_blocked_ips(); }
+}
+
+if (!function_exists('adshow_allowed_referrer')){
+function adshow_allowed_referrer(){
+	if (!adshow_functions_exist()){ return false; }
 	
 	// return true if the visitor has recently come from a search engine
 	// and has the adinj cookie set.
@@ -244,9 +293,9 @@ function adshow_fromasearchengine(){ //todo rename to allowed_referrer
 	}
 	
 	$referrer = $_SERVER['HTTP_REFERER'];
-	$searchengines = adinj_config_search_engine_referrers();
-	foreach ($searchengines as $se) {
-		if (stripos($referrer, $se) !== false) {
+	$allowedreferrers = adinj_config_allowed_referrers_list();
+	foreach ($allowedreferrers as $allowed) {
+		if (stripos($referrer, $allowed) !== false) {
 			return true;
 		}
 	}
@@ -258,21 +307,10 @@ if (!function_exists('adshow_blocked_referrer')){
 function adshow_blocked_referrer(){
 	if (!adshow_functions_exist()){ return false; }
 
-	if ($_COOKIE["adinj"]==1) {
-		if (adinj_config_debug_mode()){ echo "<!--ADINJ DEBUG: blocked check ignored because adinj cookie set-->\n"; }
-		return false;
-	}
-	
-	// true if blocked cookie is set
-	if ($_COOKIE["adinjblocked"]==1) {
-		if (adinj_config_debug_mode()){ echo "<!--ADINJ DEBUG: adinjblocked cookie set-->\n"; }
-		return true;
-	}
-	
 	$referrer = $_SERVER['HTTP_REFERER'];
 	if (adinj_config_debug_mode()){ echo "<!--ADINJ DEBUG: referrer=$referrer-->\n"; }
 
-	$blocked = adinj_config_blocked_keywords();
+	$blocked = adinj_config_blocked_referrers_list();
 	foreach ($blocked as $bl) {
 		if (stripos($referrer, $bl) !== false) {
 			if (adinj_config_debug_mode()){ echo "<!--ADINJ DEBUG: ads blocked - referrer contains $bl -->\n"; }
@@ -288,20 +326,19 @@ function adshow_blocked_ip(){
 	if (!adshow_functions_exist()){ return false; }
 
 	$visitorIP = $_SERVER['REMOTE_ADDR'];
-	return in_array($visitorIP, adinj_config_blocked_ips());
+	return in_array($visitorIP, adinj_config_blocked_ips_list());
 }
 }
 
-if (!function_exists('adshow_show_adverts')){
-function adshow_show_adverts(){
+if (!function_exists('adshow_clicked_ad')){
+function adshow_clicked_ad(){
 	if (!adshow_functions_exist()){ return false; }
 
-	//echo 'ref:'.$_SERVER['HTTP_REFERER'];
-	if (adinj_config_block_ips() && adshow_blocked_ip()) return "blockedip";
-	if (adinj_config_sevisitors_only()&& !adshow_fromasearchengine()) return "referrer";
-	if (adinj_config_block_keywords() && adshow_blocked_referrer()) return "blockedreferrer";
-	
-	return true;
+	if ($_COOKIE["adlogblocked"]==1) {
+		if (adinj_config_debug_mode()){ echo "<!--ADINJ DEBUG: blocked because adlogblocked cookie set-->\n"; }
+		return true;
+	}
+	return false;
 }
 }
 

@@ -579,15 +579,29 @@ function adinj_add_exclude_row($name, $prefix=''){
 ?>
 	<tr>
 		<td><b><?php echo $name; ?></b></td>
-		<td><?php adinj_add_checkbox($prefix.'exclude_single', 'adinj_single', $all) ?></td>
-		<td><?php adinj_add_checkbox($prefix.'exclude_page', 'adinj_page', $all) ?></td>
-		<td><?php adinj_add_checkbox($prefix.'exclude_home', 'adinj_home', $all) ?></td>
-		<td><?php adinj_add_checkbox($prefix.'exclude_front', 'adinj_front', $all) ?></td>
-		<td><?php adinj_add_checkbox($prefix.'exclude_archive', 'adinj_archive', $all) ?></td>
-		<td><?php adinj_add_checkbox($prefix.'exclude_404', 'adinj_404', $all) ?></td>
-		<td><?php adinj_add_checkbox($prefix.'exclude_search', 'adinj_search', $all) ?></td>
+		<?php
+		adinj_add_exclude_row_td($prefix, 'exclude_single', 'adinj_single', $all);
+		adinj_add_exclude_row_td($prefix, 'exclude_page', 'adinj_page', $all);
+		adinj_add_exclude_row_td($prefix, 'exclude_home', 'adinj_home', $all);
+		adinj_add_exclude_row_td($prefix, 'exclude_front', 'adinj_front', $all);
+		adinj_add_exclude_row_td($prefix, 'exclude_archive', 'adinj_archive', $all);
+		adinj_add_exclude_row_td($prefix, 'exclude_404', 'adinj_404', $all);
+		adinj_add_exclude_row_td($prefix, 'exclude_search', 'adinj_search', $all);
+		?>
 	</tr>
 <?php
+}
+
+function adinj_add_exclude_row_td($prefix, $setting, $class, $all){
+	if (adinj_ticked($setting) || adinj_ticked($prefix.$setting)){
+		?>
+		<td style="background-color:#ff9999"><?php adinj_add_checkbox($prefix.$setting, $class, $all) ?></td>
+		<?php
+	} else {
+		?>
+		<td style="background-color:#ccff99"><?php adinj_add_checkbox($prefix.$setting, $class, $all) ?></td>
+		<?php
+	}
 }
 
 function adinj_random_ad_limit_table(){
@@ -755,6 +769,7 @@ function adinj_side_status_box(){
 				<td><b>S</b></td>
 				<td><b>P</b></td>
 				<td><b>H</b></td>
+				<td><b>F</b></td>
 				<td><b>A</b></td>
 			</tr>
 			<tr>
@@ -764,6 +779,7 @@ function adinj_side_status_box(){
 				<td><?php adinj_print_ad_dot('top', 'single') ?></td>
 				<td><?php adinj_print_ad_dot('top', 'page') ?></td>
 				<td><?php adinj_print_ad_dot('top', 'home') ?></td>
+				<td><?php adinj_print_ad_dot('top', 'front') ?></td>
 				<td><?php adinj_print_ad_dot('top', 'archive') ?></td>
 			</tr>
 			<tr>
@@ -773,6 +789,7 @@ function adinj_side_status_box(){
 				<td><?php adinj_print_ad_dot('random', 'single') ?></td>
 				<td><?php adinj_print_ad_dot('random', 'page') ?></td>
 				<td><?php adinj_print_ad_dot('random', 'home') ?></td>
+				<td><?php adinj_print_ad_dot('random', 'front') ?></td>
 				<td><?php adinj_print_ad_dot('random', 'archive') ?></td>
 			</tr>
 			<tr>
@@ -782,6 +799,7 @@ function adinj_side_status_box(){
 				<td><?php adinj_print_ad_dot('bottom', 'single') ?></td>
 				<td><?php adinj_print_ad_dot('bottom', 'page') ?></td>
 				<td><?php adinj_print_ad_dot('bottom', 'home') ?></td>
+				<td><?php adinj_print_ad_dot('bottom', 'front') ?></td>
 				<td><?php adinj_print_ad_dot('bottom', 'archive') ?></td>
 			</tr>
 			<tr>
@@ -791,6 +809,7 @@ function adinj_side_status_box(){
 				<td><?php adinj_print_ad_dot('footer', 'single') ?></td>
 				<td><?php adinj_print_ad_dot('footer', 'page') ?></td>
 				<td><?php adinj_print_ad_dot('footer', 'home') ?></td>
+				<td><?php adinj_print_ad_dot('footer', 'front') ?></td>
 				<td><?php adinj_print_ad_dot('footer', 'archive') ?></td>
 			</tr>
 			<tr>
@@ -800,6 +819,7 @@ function adinj_side_status_box(){
 				<td><?php adinj_print_ad_dot('widget', 'single') ?></td>
 				<td><?php adinj_print_ad_dot('widget', 'page') ?></td>
 				<td><?php adinj_print_ad_dot('widget', 'home') ?></td>
+				<td><?php adinj_print_ad_dot('widget', 'front') ?></td>
 				<td><?php adinj_print_ad_dot('widget', 'archive') ?></td>
 			</tr>
 			<tr>
@@ -809,13 +829,11 @@ function adinj_side_status_box(){
 				<td><?php adinj_print_ad_dot('template', 'single') ?></td>
 				<td><?php adinj_print_ad_dot('template', 'page') ?></td>
 				<td><?php adinj_print_ad_dot('template', 'home') ?></td>
+				<td><?php adinj_print_ad_dot('template', 'front') ?></td>
 				<td><?php adinj_print_ad_dot('template', 'archive') ?></td>
 			</tr>
 			</table>
-			<p>S=single post<br />
-			P=single page<br />
-			H=home<br />
-			A=archive<br />
+			<p>S=single post | P=single page | H=home | F=front | A=archive
 			<!--E=excerpt--></p>
 			</td></tr>
 

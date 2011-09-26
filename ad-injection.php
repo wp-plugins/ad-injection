@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 1.2.0.2
+Version: 1.2.0.3
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -16,7 +16,7 @@ License: GPLv2
 //
 define('ADINJ_NO_CONFIG_FILE', 1);
 
-// DB Version
+// DB Versions
 // _ = before split testing
 // 2 = split testing support
 // 3 = added front options
@@ -34,7 +34,8 @@ define('ADINJ_NO_CONFIG_FILE', 1);
 // 16 = after paragraph options, older option for widget
 // 17 = block ads for days
 // 18 = 1.2.0.0 New ad insertion engine and new top/random/bottom positioning options
-define('ADINJ_DB_VERSION', 18);
+// 20 = 1.2.0.3 the_content_filter_priority setting
+define('ADINJ_DB_VERSION', 20);
 
 // Files
 // TODO will these paths work on windows?
@@ -93,6 +94,16 @@ function adinj_option($option){
 	return $ops[$option];
 }
 
+function adinj_addsevjs_hook(){
+	// TODO can re-enable this check once the widget ads are factored in.
+	//if (adinj_ads_completely_disabled_from_page()) return;
+	if (!adinj_ticked('sevisitors_only') && !adinj_ticked('block_keywords')) return;
+	// Put the search engine detection / cookie setting script in the footer
+	// TODO would be better to use plugin version, but that only seems accessible in admin
+	$version = adinj_db_version(adinj_options());
+	wp_enqueue_script('adinj_sev', WP_PLUGIN_URL.'/ad-injection/adinj-sev.js?v='.$version, NULL, NULL, true);
+}
+
 // TODO make the cookie domain from wp-config.php accessible to script
 //$cookie_domain = COOKIE_DOMAIN; // TODO test
 //var adinj_cookie_domain = "$cookie_domain"; //JS line. TODO test
@@ -117,7 +128,7 @@ SCRIPT;
 	if ($sevisitors) echo "var adinj_referrers = new Array($referrer_list);\n";
 	if ($block) echo "var adinj_blocked_referrers = new Array($blocked_list);\n";
 	if ($block) echo "var adinj_blocked_hours = $blocked_hours;\n";
-	echo "adinj_check_referrer();\n";
+	echo "adinj_dynamic_checks();\n";
 	echo "</script>\n";
 }
 
@@ -140,14 +151,6 @@ function adinj_quote_list($option){
 		$newlist[] = "'" . $referrer . "'";
 	}
 	return implode(", ", $newlist);
-}
-
-function adinj_addsevjs_hook(){
-	// TODO can re-enable this check once the widget ads are factored in.
-	//if (adinj_ads_completely_disabled_from_page()) return;
-	if (!adinj_ticked('sevisitors_only') && !adinj_ticked('block_keywords')) return;
-	// Put the search engine detection / cookie setting script in the footer
-	wp_enqueue_script('adinj_sev', WP_PLUGIN_URL.'/ad-injection/adinj-sev.js', NULL, NULL, true);
 }
 
 function adinj_get_ad_code($adtype, $ads_db){
@@ -236,24 +239,6 @@ function adinj_live_ads_array($type, $ads_option, &$ads, &$split, $output_type="
 			$op_stem = 'advert_alt_';
 		}
 		$file_stem = 'ad_'.$type.'_';
-	}
-	
-	if (adinj_db_version($ads_option) == 1){
-		// old DB support (no ad rotation support) - TODO  delete later
-		if ($type == 'random'|| $type == 'top' || $type == 'bottom'){
-			if ($output_type == "string"){
-				$ads = "'ad_".$type."_1.txt'";
-			} else {
-				$ads[] = 'ad_code_'.$type.'_1';
-			}
-		} else if (preg_match("/widget_[\d+]/i", $type)){
-			if ($output_type == "string"){
-				$ads = "'ad_".$type.".txt'";
-			} else {
-				$ads[] = 'advert';
-			}
-		}
-		return;
 	}
 	
 	// DB with support for ad rotation
@@ -707,7 +692,14 @@ function adinj_content_hook($content){
 	}
 	$paracount = count($original_paragraph_positions);
 	if ($debug_on) $debug .= "\nContent length=$length (".$ops['content_length_unit'].") Raw character length=$rawlength Paragraph count=$paracount";
-	if($paracount == 0) if ($debug_on) $debug .= "\nNo &lt;/p&gt; tags found";
+	if($paracount == 0) {
+		if ($debug_on) $debug .= "\nWarning: No paragraph (&lt;/p&gt;) tags found.\n
+	Your theme or one of your plugins may have changed the priority of the wpautop\n
+	filter so it is getting run later than expected (after Ad Injection has run).\n
+	You can try modifying the priority setting of Ad Injection's wp_content filter\n
+	from the settings screen.\n
+	Try 100, or if that fails 200!";
+	}
 	
 	$topad = adinj_ad_code_top();
 	if (empty($topad)) { if ($debug_on) $debug .= "\nNo top ad defined in any of the ad code boxes"; }
@@ -755,8 +747,9 @@ function adinj_content_hook($content){
 	
 	# Insert the adverts into the content. Scan through the paragraph list in reverse order.
 	$adpos = count($random_ad_paragraphs);
+	$bottomadsetting = $ops['bottom_ad_position'];
 	for ($i=$paracount; $i>0; --$i){
-		if ($i === $bottom_ad_paragraph && $ops['bottom_ad_position'] != 0){
+		if ($i === $bottom_ad_paragraph && $bottomadsetting != 0){
 			$content = substr_replace($content, $bottomad, $original_paragraph_positions[$i-1], 0);
 			++$adinj_total_bottom_ads_used;
 		}
@@ -782,7 +775,7 @@ function adinj_content_hook($content){
 		$content = $topad.$content;
 		++$adinj_total_top_ads_used;
 	}
-	if ($bottom_ad_paragraph !== -1 && $ops['bottom_ad_position'] == 0){ // default is special case as themes can't be trusted to close the final paragraph
+	if ($bottom_ad_paragraph !== -1 && $bottomadsetting == 0){ // default is special case as themes can't be trusted to close the final paragraph
 		$content = $content.$bottomad;
 		++$adinj_total_bottom_ads_used;
 	}
@@ -1268,12 +1261,17 @@ function adinj_widgets_init() {
 	register_widget('Ad_Injection_Widget');
 }
 
-// activate
-register_activation_hook(__FILE__, 'adinj_activate_hook');
-// Content injection
-add_action('wp_enqueue_scripts', 'adinj_addsevjs_hook');
-add_filter('the_content', 'adinj_content_hook'); // TODO allow priority to be changed? e.g. TheTravelTheme is setting its formatting at priority 99
-add_action('wp_footer', 'adinj_footer_hook');
-add_action('wp_footer', 'adinj_print_referrers_hook');
+adinj_setup_hooks_and_filters();
+function adinj_setup_hooks_and_filters(){
+	// activate
+	register_activation_hook(__FILE__, 'adinj_activate_hook');
+	// Content injection
+	add_action('wp_enqueue_scripts', 'adinj_addsevjs_hook');
+	$setting = adinj_option('the_content_filter_priority');
+	$priority = isset($setting) ? $setting : 10; // 10 is the WordPress default filter priority
+	add_filter('the_content', 'adinj_content_hook', $priority);
+	add_action('wp_footer', 'adinj_footer_hook');
+	add_action('wp_footer', 'adinj_print_referrers_hook');
+}
 
 ?>

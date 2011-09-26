@@ -10,7 +10,7 @@ function adinj_tab_adrotation(){
 	$ops = adinj_options();
 	
 	echo <<<DOCS
-	<p><a href="#multiple_top">Top adverts</a> | <a href="#multiple_random">Random adverts</a> | <a href="#multiple_bottom">Bottom adverts</a> | <a href="#multiple_footer">Footer adverts</a> | <a href="#docs_tags">Tag docs</a> | <a href="#testads">Test ads</a></p>
+	<p><a href="#multiple_top">Top adverts</a> | <a href="#multiple_random">Random adverts</a> | <a href="#multiple_bottom">Bottom adverts</a> | <a href="#multiple_footer">Footer adverts</a> | <a href="#advanced">Advanced</a> | <a href="#docs_tags">Tag docs</a> | <a href="#testads">Test ads</a></p>
 DOCS;
 	
 	$total_rand_split = adinj_total_split('ad_code_random_', $ops);
@@ -85,8 +85,9 @@ DOCS;
 	adinj_postbox_end();
 	
 	
+	adinj_advanced();
+	
 	adinj_docs_tags();
-
 	
 	adinj_testads();
 	
@@ -114,6 +115,16 @@ echo <<<EOT
 	</td></tr>
 EOT;
 }
+
+
+function adinj_advanced(){
+	adinj_postbox_start(__("Advanced settings", 'adinj'), "advanced");
+	echo "<p>If your theme or another plugin is causing problems with Ad Injection (e.g. by changing the priority of the 'wpautop' filter which may prevent the random ads from being added) you can try modifying Ad Injection's the_content filter priority here. Try '100', if that doesn't work try something higher. ";
+	adinj_selection_box("the_content_filter_priority", array(0,1,10,11,100,200,1000));
+	echo ' Default: 10</p>';
+	adinj_postbox_end();
+}
+
 
 function adinj_docs_tags(){
 ?>

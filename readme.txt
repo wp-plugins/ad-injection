@@ -4,7 +4,7 @@ Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-w
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, widgets, sidebar, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog, ad rotation, A:B testing, split testing, WP Super Cache, W3 Total Cache, WP Cache
 Requires at least: 2.8.6
 Tested up to: 3.2.1
-Stable tag: 1.2.0.2
+Stable tag: 1.2.0.3
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
@@ -329,7 +329,7 @@ You can do the same for tags using has_tag. See http://codex.wordpress.org/Funct
 
 Note - this will only work in direct insertion mode.
 
-== I want a different advert for each category. How can I do this? ==
+= I want a different advert for each category. How can I do this? =
 
 1. In your plugins directory create a sub-directory called 'ad-injection-ads'. e.g. /wordpress/wp-content/plugins/ad-injection-ads/
 
@@ -479,7 +479,13 @@ Problem: Random ads don't show.
 
 Reason: Shortcodes Ultimate disables the wpautop filter which adds the &lt;p&gt;&lt;/p&gt; tags to the page. It re-applies this filter at a priority of 99 which is after Ad Injection has run. Therefore when Ad Injection runs it can't find any &lt;/p&gt; tags which it needs to position the random adverts.
 
-Potential solution?: I could change the priority of the plugin so it runs after Shortcodes Ultimate. What I'd prefer to do is to make the priority of Ad Injection configurable. I haven't yet investigated whether this is possible.
+Solution: Follow the below advice for the 'theme conflicts'.
+
+= Are there any known theme conflicts? =
+
+Ad Injection (when injection random ads) works by looking for the end paragraph tags (&lt;p&gt;&lt;/p&gt;). Some themes override the wpautop filter and set it to run after the plugins. This means that Ad Injection can't find the end paragraph tags, and so can't inject any random ads. If this happens try changing the the_content filter priority from the Advanced tab in the Ad Injection UI. Try values of 100, and if that doesn't work 200.
+
+Themes which I know have this issue include 'Avenue', 'TheTravelTheme' and 'Vectors'.
 
 = Will Ad Injection work with the multi-blog version of WordPress? =
 
@@ -579,11 +585,15 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 
 == Changelog ==
 
+= 1.2.0.3 =
+* New: Setting to allow priority of Ad Injection's the_content filter to be changed. This may help with some themes that are overriding the WordPress default 'wpautop' behaviour.
+* Fix: Start at paragraph setting may have been incorrectly upgraded if previously using an old version of this plugin.
+
 = 1.2.0.2 =
 * Fix: Problem with repeating bottom ads and ID filters not being properly applied to archives.
 
 = 1.2.0.1 =
-* Fix: Bottom ad moved can potentially move up a paragraph if theme doesn't put closing paragraph at end of post.
+* Fix: Bottom ad can potentially move up a paragraph if theme doesn't put closing paragraph at end of post.
 
 = 1.2.0.0 =
 * Set the position of the top and bottom advert by paragraph or character.
@@ -789,26 +799,12 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 
 == Upgrade Notice ==
 
+= 1.2.0.3 =
+* New: Setting to allow priority of Ad Injection's the_content filter to be changed to help with problem themes.
+* Fix: Start at paragraph setting may have been incorrectly upgraded if previously using an old version of this plugin.
+
 = 1.2.0.2 =
 * Fix: Problem with repeating bottom ads and ID filters not being properly applied to archives.
-
-= 1.2.0.1 =
-* Fix: Bottom ad moved can potentially move up a paragraph if theme doesn't put closing paragraph at end of post.
-
-= 1.2.0.0 =
-* New top, random and bottom positioning options. UI updates. Debug message improvements.
-
-= 1.1.0.6 =
-* New block ads by referrer feature. Reduce UI memory usage for people with lots of tags. Fix randomad override tag.
-
-= 1.1.0.4 =
-* First ad can now be started at or after a paragraph or character position. Position override tags. Separate old post restriction for widget ads. Template ad examples in the 'Test ads' section. Warning message improvements. Other fixes.
-
-= 1.1.0.2 =
-* Remove confusing Disabled/Enabled drop down options as all ads can be enabled/disabled from the tick boxes. Please check your ads after this update and report any problems!
-
-= 1.1.0.1 =
-* Template ads - you can now include ads anywhere in your theme template with some simple tags. UI usability improvements.
 
 = 0.8.3 =
 First public release.
