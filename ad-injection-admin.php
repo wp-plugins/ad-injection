@@ -342,7 +342,7 @@ function adinj_top_message_box(){
 		
 	} else if (!isset($_GET['tab'])){
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "27th September 2011: New option to allow priority of Ad Injection's priority to be changed in case your theme causes problems with it (in the Advanced tab). Plus other fixes. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
+		echo "27th September 2011: New option to allow Ad Injection's priority to be changed in case your theme causes problems with it (in the Advanced tab). Plus other fixes. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
 		echo '</strong></p></div>';
 	}
 }
