@@ -255,7 +255,7 @@ function adshow_show_adverts(){
 	
 	if ($_COOKIE["adinjblocked"]==1) {
 		if (adinj_config_debug_mode()){ echo "<!--ADINJ DEBUG: no ads because adinjblocked cookie set-->\n"; }
-		return true;
+		return "blocked_referrer";
 	}
 	
 	if (adinj_config_block_referrers() && adshow_blocked_referrer()) return "blocked_referrer";
