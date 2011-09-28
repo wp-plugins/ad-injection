@@ -93,6 +93,58 @@ function adinj_placement_settings_box($ops){
 	<p></p>
 	</td></tr>
 	
+	<script type="text/javascript">
+	<?php
+	foreach (array("home_", "archive_") as $prefix){
+	echo <<<JQUERYOPACITY
+	jQuery(document).ready(function(){
+	jQuery('#{$prefix}max_num_random_ads_per_page').change(function() {
+		if (jQuery('#{$prefix}max_num_random_ads_per_page').val() == "0"){
+			jQuery('.{$prefix}max_num_random_ads_per_page').css({ opacity: 0.3 });
+		} else {
+			jQuery('.{$prefix}max_num_random_ads_per_page').css({ opacity: 1.0 });
+		}
+		return true;
+		});
+	jQuery('#{$prefix}max_num_random_ads_per_post').change(function() {
+		if (jQuery('#{$prefix}max_num_random_ads_per_post').val() == "0"){
+			jQuery('.{$prefix}max_num_random_ads_per_post').css({ opacity: 0.3 });
+		} else {
+			jQuery('.{$prefix}max_num_random_ads_per_post').css({ opacity: 1.0 });
+		}
+		return true;
+		});
+	});
+JQUERYOPACITY;
+	}
+	?>
+	jQuery(document).ready(function(){
+	jQuery('#max_num_of_ads').change(function() { //todo change to make consistent with home/archive
+		if (jQuery('#max_num_of_ads').val() == "0"){
+			jQuery('._max_num_random_ads_per_post').css({ opacity: 0.3 });
+		} else {
+			jQuery('._max_num_random_ads_per_post').css({ opacity: 1.0 });
+		}
+		return true;
+		});
+	});
+	
+	<?php
+	foreach (array("page", "post") as $type){
+	foreach (array("home_", "archive_") as $prefix){
+	?>
+		if (<?php echo $ops[$prefix.'max_num_random_ads_per_'.$type]; ?> == "0") {
+			document.write('<style type="text/css">.<?php echo $prefix.'max_num_random_ads_per_'.$type; ?> {  opacity:0.3; filter:alpha(opacity=30)  }</style>');
+		}
+	<?php
+	}
+	}
+	?>
+	if (<?php echo $ops['max_num_of_ads']; ?> == "0") {
+		document.write('<style type="text/css">._max_num_random_ads_per_post {  opacity:0.3; filter:alpha(opacity=30)  }</style>');
+	}
+	</script>
+	
 	<tr><td colspan="4"><input type="submit" style="float:right" name="adinj_action" value="<?php _e('Save all settings', 'adinj') ?>" /><h3><a name="randomadplacement"></a>Random ads [<a href="#randomadcode">code</a>] [<a href="#pagetypefilters">page type filters</a>]</h3></td></tr>
 	<tr><td>Max num of ads on whole page:</td><td>
 	n/a
@@ -106,9 +158,9 @@ function adinj_placement_settings_box($ops){
 	<tr><td>|_ Max num of random ads per post:</td><td>
 	<?php
 	adinj_selection_box("max_num_of_ads", $num_ads_array);
-	echo '</td><td><div class="adinj_home">';
+	echo '</td><td><div class="adinj_home"><div class="home_max_num_random_ads_per_page">';
 	adinj_selection_box("home_max_num_random_ads_per_post", $num_ads_array);
-	echo '</div></td><td><div class="adinj_archive">';
+	echo '</div></div></td><td><div class="adinj_archive">';
 	adinj_selection_box("archive_max_num_random_ads_per_post", $num_ads_array);
 	?>
 	</div></td></tr>
@@ -138,12 +190,16 @@ function adinj_placement_settings_box($ops){
 		</td><td colspan="2">
 			<table class="adinjtable">
 			<tr><td>
+				<div class="random_ads_start_unit">
 				<input type="radio" name="random_ads_start_unit" value="paragraph" <?php if ($ops['random_ads_start_unit']=='paragraph') echo 'checked="checked"'; ?> /> paragraph:<br />
 				<input type="radio" name="random_ads_start_unit" value="character" <?php if ($ops['random_ads_start_unit']=='character') echo 'checked="checked"'; ?> /> character:<br />
+				</div>
 			</td><td>
+				<div class="random_ads_start_unit">
 				<?php
 				adinj_selection_box("random_ads_start_at", array(1,2,3,4,5,100,200,300,500,750,1000,1500,2000,3000,4000,5000,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), " ");
 				?>
+				</div>
 			</td>
 			</tr>
 			</table>
@@ -152,7 +208,7 @@ function adinj_placement_settings_box($ops){
 		
 		<tr><td></td>
 		<td colspan="3">
-			<div id="random_ads_start_warning"><span style="font-size:10px;color:red;">Note: If starting 'at character x', the start point will be the next paragraph.</span><br /></div>
+			<div id="random_ads_start_warning"><div class="random_ads_start_unit"><span style="font-size:10px;color:red;">Note: If starting 'at character x', the start point will be the next paragraph.</span></div><br /></div>
 			<br />
 		</td>
 		</tr>
@@ -181,17 +237,23 @@ function adinj_placement_settings_box($ops){
 		</td><td>
 			<table class="adinjtable">
 			<tr><td>
+			<div class="random_ads_end_unit">
 			<input type="radio" name="random_ads_end_unit" value="paragraph" <?php if ($ops['random_ads_end_unit']=='paragraph') echo 'checked="checked"'; ?> /> paragraph:<br />
 			<input type="radio" name="random_ads_end_unit" value="character" <?php if ($ops['random_ads_end_unit']=='character') echo 'checked="checked"'; ?> /> character:<br />
+			</div>
 			</td><td>
+			<div class="random_ads_end_unit">
 			<?php
 			adinj_selection_box("random_ads_end_at", array(1,2,3,4,5,100,200,300,500,750,1000,1500,2000,3000,4000,5000,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), " ");
 			?>
+			</div>
 			</td>
 			<td>
+			<div class="random_ads_end_unit">
 			<?php
 			adinj_selection_box("random_ads_end_direction", array('fromstart'=>'from the start', 'fromend'=>'from the end'), " ");
 			?>
+			</div>
 			</td>
 			</table>
 			<br />
@@ -224,6 +286,24 @@ function adinj_placement_settings_box($ops){
 		
 		<script type="text/javascript">
 		jQuery(document).ready(function(){
+		jQuery('input[name=random_ads_start_mode]:radio').change(function() {
+			if (jQuery('input[name=random_ads_start_mode]:checked').val() != "at" && jQuery('input[name=random_ads_start_mode]:checked').val() != "after"){
+				jQuery('.random_ads_start_unit').css({ opacity: 0.3 });
+			} else {
+				jQuery('.random_ads_start_unit').css({ opacity: 1.0 });
+			}
+			return true;
+			});
+		//
+		jQuery('input[name=random_ads_end_mode]:radio').change(function() {
+			if (jQuery('input[name=random_ads_end_mode]:checked').val() != "at" && jQuery('input[name=random_ads_end_mode]:checked').val() != "after"){
+				jQuery('.random_ads_end_unit').css({ opacity: 0.3 });
+			} else {
+				jQuery('.random_ads_end_unit').css({ opacity: 1.0 });
+			}
+			return true;
+			});
+		//
 		jQuery('input[name=random_ads_start_unit]:radio').change(function() {
 			if (jQuery('input[name=random_ads_start_unit]:checked').val() == "character"){
 				jQuery('#random_ads_start_warning').slideDown(300);
@@ -233,7 +313,13 @@ function adinj_placement_settings_box($ops){
 			return true;
 			});
 		});
-		if ('<?php echo $ops['random_ads_start_unit'] ?>' == 'paragraph') {
+		if ('<?php echo $ops['random_ads_start_mode']; ?>' != 'at' && '<?php echo $ops['random_ads_start_mode'] ?>' != 'after') {
+			document.write('<style type="text/css">.random_ads_start_unit {  opacity:0.3; filter:alpha(opacity=30)  }</style>');
+		}
+		if ('<?php echo $ops['random_ads_end_mode']; ?>' != 'at' && '<?php echo $ops['random_ads_end_mode'] ?>' != 'after') {
+			document.write('<style type="text/css">.random_ads_end_unit {  opacity:0.3; filter:alpha(opacity=30)  }</style>');
+		}
+		if ('<?php echo $ops['random_ads_start_unit']; ?>' == 'paragraph') {
 			document.write('<style type="text/css">#random_ads_start_warning { display: none; }</style>');
 		}
 		</script>		
@@ -614,27 +700,33 @@ function adinj_random_ad_limit_table(){
 	
 	foreach ($prefixes as $prefix){
 		echo '<td><div class="adinj_'.$prefix.'">';
+		echo '<div class="'.$prefix.'_max_num_random_ads_per_page">';
+		echo '<div class="'.$prefix.'_max_num_random_ads_per_post">';
 		if (!empty($prefix)) $prefix = $prefix.'_';
 		adinj_selection_box($prefix."no_random_ads_if_shorter_than", $ad_limit_settings, $unit);
-		echo '</div></td>';
+		echo '</div></div></div></td>';
 	} ?>
 	</tr>
 	<tr><td>&nbsp;|_ Max 1 ad if post shorter than:</td>
 	<?php
 	foreach ($prefixes as $prefix){
 		echo '<td><div class="adinj_'.$prefix.'">';
+		echo '<div class="'.$prefix.'_max_num_random_ads_per_page">';
+		echo '<div class="'.$prefix.'_max_num_random_ads_per_post">';
 		if (!empty($prefix)) $prefix = $prefix.'_';
 		adinj_selection_box($prefix."one_ad_if_shorter_than", $ad_limit_settings, $unit);
-		echo '</div></td>';
+		echo '</div></div></div></td>';
 	} ?>
 	</tr>
 	<tr><td>&nbsp;|_ Max 2 ads if post shorter than:</td>
 	<?php
 	foreach ($prefixes as $prefix){
 		echo '<td><div class="adinj_'.$prefix.'">';
+		echo '<div class="'.$prefix.'_max_num_random_ads_per_page">';
+		echo '<div class="'.$prefix.'_max_num_random_ads_per_post">';
 		if (!empty($prefix)) $prefix = $prefix.'_';
 		adinj_selection_box($prefix."two_ads_if_shorter_than", $ad_limit_settings, $unit);
-		echo '</div></td>';
+		echo '</div></div></div></td>';
 	}
 	?>
 	</tr>
@@ -642,9 +734,11 @@ function adinj_random_ad_limit_table(){
 	<?php
 	foreach ($prefixes as $prefix){
 		echo '<td><div class="adinj_'.$prefix.'">';
+		echo '<div class="'.$prefix.'_max_num_random_ads_per_page">';
+		echo '<div class="'.$prefix.'_max_num_random_ads_per_post">';
 		if (!empty($prefix)) $prefix = $prefix.'_';
 		adinj_selection_box($prefix."three_ads_if_shorter_than", $ad_limit_settings, $unit);
-		echo '</div></td>';
+		echo '</div></div></div></td>';
 	} ?>
 	</tr>
 	<?php

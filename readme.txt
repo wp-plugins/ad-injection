@@ -4,7 +4,7 @@ Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-w
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, widgets, sidebar, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog, ad rotation, A:B testing, split testing, WP Super Cache, W3 Total Cache, WP Cache
 Requires at least: 2.8.6
 Tested up to: 3.2.1
-Stable tag: 1.2.0.3
+Stable tag: 1.2.0.4
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
@@ -303,6 +303,8 @@ This is because you have inserted adverts that are too wide for your site's layo
 
 Google's AdSense TOS only allow allow three ad units, and three link units per page. If you have for example tried to insert four ad units on your page then Google will (probably) disable the forth one automatically. Read Google's AdSense [program policies](https://www.google.com/adsense/support/bin/answer.py?hl=en&answer=48182 "AdSense program policies") for more info.
 
+You may  find that your right sidebar ad doesn't show if you have too many ads. Google renders the ads in the order that they are in the HTML, and your right sidebar will be at the bottom of HTML. If you need your right sidebar AdSense ad you will have to limit the number of ads on the rest of the page from the 'Ad placement settings'.
+
 = How can I show different ads for different categories? =
 
 If you want to show different ads for different categories using widgets you can set up filters for the different ads from the widget UI. If you want to show different top, random, or bottom adverts on different categories you can use some very simple PHP in the ad box (this will also work for the widgets as well if you don't like the UI method).
@@ -585,6 +587,10 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 
 == Changelog ==
 
+= 1.2.0.4 =
+* New: Support for Ad Logger's AdSense click blocking feature (that is my new plugin!).
+* New: Make more parts of the ad placement settings UI fade away if they can't be used.
+
 = 1.2.0.3 =
 * New: Setting to allow priority of Ad Injection's the_content filter to be changed. This may help with some themes that are overriding the WordPress default 'wpautop' behaviour.
 * Fix: Start at paragraph setting may have been incorrectly upgraded if previously using an old version of this plugin.
@@ -798,6 +804,10 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 * First public release
 
 == Upgrade Notice ==
+
+= 1.2.0.4 =
+* New: Support for Ad Logger's AdSense click blocking feature (that is my new plugin!).
+* New: Make more parts of the ad placement settings UI fade away if they can't be used.
 
 = 1.2.0.3 =
 * New: Setting to allow priority of Ad Injection's the_content filter to be changed to help with problem themes.

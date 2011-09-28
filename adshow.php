@@ -241,6 +241,11 @@ function adshow_show_adverts(){
 	//echo 'ref:'.$_SERVER['HTTP_REFERER'];
 	//if (adinj_config_block_after_ad_click() && adshow_clicked_ad()) return "click_blocked"; //TODO
 	
+	if ($_COOKIE["adlogblocked"]==1) {
+		if (adinj_config_debug_mode()){ echo "<!--ADINJ DEBUG: no ads because adlogblocked cookie set-->\n"; }
+		return "click_blocked";
+	}
+	
 	if (adinj_config_block_ips() && adshow_blocked_ip()) return "blocked_ip";
 	
 	if ($_COOKIE["adinj"]==1) {

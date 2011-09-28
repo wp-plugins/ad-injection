@@ -342,7 +342,7 @@ function adinj_top_message_box(){
 		
 	} else if (!isset($_GET['tab'])){
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "27th September 2011: New option to allow priority of Ad Injection's priority to be changed in case your theme causes problems with it (in the Advanced tab). Plus other fixes. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
+		echo "28th September 2011: Support for my new <a href='http://wordpress.org/extend/plugins/ad-logger/' target='_new'>Ad Logger</a> plugin's AdSense click blocking feature. And make more parts of the ad placement UI fade out if other options prevent their use. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
 		echo '</strong></p></div>';
 	}
 }
@@ -410,6 +410,7 @@ function adinj_side_info_box(){
 			
 			<h4>More by this author</h4>
 			<ul>
+			<li><a href="http://wordpress.org/extend/plugins/ad-logger/" target="_new">Ad Logger plugin for WordPress</a></li>
 			<li><a href="http://www.reviewmylife.co.uk/" target="_new">www.reviewmylife.co.uk</a></li>
 			<li><a href="http://www.advancedhtml.co.uk/" target="_new">www.advancedhtml.co.uk</a></li>
 			</ul>
@@ -438,8 +439,7 @@ function adinj_add_checkbox($name, $class=NULL, $all=NULL){
 	if ($all != NULL && adinj_ticked($name)){
 	?>
 	<script type="text/javascript">
-        //document.write('<style type="text/css" media="screen">.<?php echo $class; ?> { display: none; }</style>');
-	document.write('<style type="text/css" media="screen">.<?php echo $class; ?> { opacity:0.3; filter:alpha(opacity=30)" }</style>');
+	document.write('<style type="text/css" media="screen">.<?php echo $class; ?> { opacity:0.3; filter:alpha(opacity=30) }</style>');
 	</script>
 	<?php
 	}
