@@ -61,12 +61,15 @@ function adinj_debug_information(){
 			}
 			echo "$key";
 			$main_length += sizeof($key);
-			echo "</td><td>";
 			$value = htmlspecialchars($value);
 			$main_length += sizeof($value);
-			echo "$value";
+			$default = $default_options[$key];
 			echo "</td><td>";
-			echo $default_options[$key];
+			if ($value != $default) echo '<font color="blue">';
+			echo $value;
+			if ($value != $default) echo '</font>';
+			echo "</td><td>";
+			echo $default;
 			echo "</td></tr>";
 			$count++;
 		}

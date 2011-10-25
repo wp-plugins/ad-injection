@@ -351,7 +351,10 @@ function adshow_clicked_ad(){
 if (!function_exists('adshow_eval_php')){
 function adshow_eval_php($code)	{
 	ob_start();
-	eval("?>$code<?php ");
+	$return = eval("?>$code<?php ");
+	if ($return === false && function_exists('error_get_last') && ($error = error_get_last())){
+		echo "<!--\nADINJ: Parse error in code\nType: " . $error['type'] . "\nMsg: " . $error['message'] . "\nFile: " . $error['file'] . "\nLine: " . $error['line']  . "\n-->";
+	}
 	$output = ob_get_contents();
 	ob_end_clean();
 	return $output;

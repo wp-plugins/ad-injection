@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 1.2.0.5
+Version: 1.2.0.6
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -39,7 +39,8 @@ define('ADINJ_DB_VERSION', 20);
 
 // Files
 // TODO will these paths work on windows?
-define('ADINJ_PATH', WP_PLUGIN_DIR.'/ad-injection');
+//define('ADINJ_PATH', WP_PLUGIN_DIR.'/ad-injection');
+define('ADINJ_PATH', dirname(__FILE__));
 define('ADINJ_CONFIG_FILE', WP_CONTENT_DIR . '/ad-injection-config.php');
 define('ADINJ_AD_PATH', WP_PLUGIN_DIR.'/ad-injection-data');
 
@@ -623,8 +624,7 @@ function adinj_footer_hook(){
 }
 
 function adinj_debug_on(){
-	$ops = adinj_options();
-	return $ops['debug_mode'];
+	return adinj_ticked('debug_mode');
 }
 
 function adinj_content_hook($content){
@@ -635,7 +635,7 @@ function adinj_content_hook($content){
 		return $content;
 	}
 	
-	$debug_on = $ops['debug_mode'];
+	$debug_on = adinj_debug_on();
 	$debug = "";
 	if ($debug_on) echo "<!--adinj Ad Injection debug mode on-->";
 	
@@ -662,6 +662,17 @@ function adinj_content_hook($content){
 		}
 	}
 
+	$topad = adinj_ad_code_top();
+	if (empty($topad)) { if ($debug_on) $debug .= "\nNo top ad defined in any of the ad code boxes"; }
+	$randomad = adinj_ad_code_random();
+	if (empty($randomad)) { if ($debug_on) $debug .= "\nNo random ad defined in any of the ad code boxes"; }
+	$bottomad = adinj_ad_code_bottom();
+	if (empty($bottomad)) { if ($debug_on) $debug .= "\nNo bottom ad defined in any of the ad code boxes"; }
+	
+	if (empty($topad) && empty($randomad) && empty($bottomad)){
+		return adinj($content, "None of top, random or bottom ads are defined.");
+	}
+	
 	$ad_include = "";
 	if (adinj_mfunc_mode()){
 		$ad_include = adinj_ad_code_include();
@@ -669,8 +680,8 @@ function adinj_content_hook($content){
 	
 	# Ad sandwich mode
 	if(is_page() || is_single()){
-		if(stripos($content, "<!--adsandwich-->") !== false) return adinj($ad_include.adinj_ad_code_top().$content.adinj_ad_code_bottom(), "Ads=sandwich" . $debug);
-		if(stripos($content, "<!--adfooter-->") !== false) return adinj($content.$ad_include.adinj_ad_code_bottom(), "Ads=footer" . $debug);
+		if(stripos($content, "<!--adsandwich-->") !== false) return adinj($ad_include.$topad.$content.$bottomad, "Ads=sandwich" . $debug);
+		if(stripos($content, "<!--adfooter-->") !== false) return adinj($content.$ad_include.$bottomad, "Ads=footer" . $debug);
 	}
 	
 	# Get content length for ad placement settings
@@ -700,13 +711,6 @@ function adinj_content_hook($content){
 	from the settings screen.\n
 	Try 100, or if that fails 200!";
 	}
-	
-	$topad = adinj_ad_code_top();
-	if (empty($topad)) { if ($debug_on) $debug .= "\nNo top ad defined in any of the ad code boxes"; }
-	$randomad = adinj_ad_code_random();
-	if (empty($randomad)) { if ($debug_on) $debug .= "\nNo random ad defined in any of the ad code boxes"; }
-	$bottomad = adinj_ad_code_bottom();
-	if (empty($bottomad)) { if ($debug_on) $debug .= "\nNo bottom ad defined in any of the ad code boxes"; }
 	
 	# Positions to insert ads
 	$top_ad_paragraph = -1;

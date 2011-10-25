@@ -4,7 +4,7 @@ Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-w
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, widgets, sidebar, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog, ad rotation, A:B testing, split testing, WP Super Cache, W3 Total Cache, WP Cache
 Requires at least: 2.8.6
 Tested up to: 3.2.1
-Stable tag: 1.2.0.5
+Stable tag: 1.2.0.6
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
@@ -305,6 +305,16 @@ Google's AdSense TOS only allow allow three ad units, and three link units per p
 
 You may  find that your right sidebar ad doesn't show if you have too many ads. Google renders the ads in the order that they are in the HTML, and your right sidebar will be at the bottom of HTML. If you need your right sidebar AdSense ad you will have to limit the number of ads on the rest of the page from the 'Ad placement settings'.
 
+= How can I rotate more than 10 adverts? =
+
+I am planning on making a change to allow an arbitrary number of adverts - this will probably be in 2012. Until then you have these 3 options:
+
+1. Use PHP / JavaScript in the ad boxes to handle the rotation of the extra ads.
+2. Use an ad service such as OpenX or Google Ad Manager in conjunction with Ad Injection. Ad Injection can handle the ad placement, and the ad service can manage your ad pool.
+3. Hack Ad Injection to increase the limit (but be aware that if you upgrade your changes will be overwritten).
+
+I'd recommend 1 or 2.
+
 = How can I show different ads for different categories? =
 
 If you want to show different ads for different categories using widgets you can set up filters for the different ads from the widget UI. If you want to show different top, random, or bottom adverts on different categories you can use some very simple PHP in the ad box (this will also work for the widgets as well if you don't like the UI method).
@@ -374,7 +384,7 @@ Some extra information:
 
 Expansion ideas:
 * Show a default advert if no text file exists.
-* Create multiple text files for each category and then randomly select one.
+* Create multiple text files for each category and then randomly select one - an implementation of this is shown on [advancedhtml](http://www.advancedhtml.co.uk/advert-by-wordpress-post-category/ "advancedhtml")
 * Use different code for top, random or bottom ads. e.g. you could have liverpool_top.txt and liverpool_random.txt
 
 = How can I show different ads for different post authors? =
@@ -485,13 +495,23 @@ Solution: Follow the below advice for the 'theme conflicts'.
 
 = Are there any known theme conflicts? =
 
-Ad Injection (when injection random ads) works by looking for the end paragraph tags (&lt;p&gt;&lt;/p&gt;). Some themes override the wpautop filter and set it to run after the plugins. This means that Ad Injection can't find the end paragraph tags, and so can't inject any random ads. If this happens try changing the the_content filter priority from the Advanced tab in the Ad Injection UI. Try values of 100, and if that doesn't work 200.
+Ad Injection (when injecting random ads) works by looking for the end paragraph tags (&lt;p&gt;&lt;/p&gt;). Some themes override the wpautop filter and set it to run after the plugins. This means that Ad Injection can't find the end paragraph tags, and so can't inject any random ads. If this happens try changing the the_content filter priority from the Advanced tab in the Ad Injection UI. Try values of 100, and if that doesn't work 200.
 
 Themes which I know have this issue include 'Avenue', 'TheTravelTheme' and 'Vectors'.
 
 = Will Ad Injection work with the multi-blog version of WordPress? =
 
 The multi-user version of WordPress are not supported - yet, however I have heard that some people have got it to work when using the 'direct' insertion mode. I hope to make it work properly with multi-blog versions of WordPress in the future.
+
+= Is there an easy way to copy my ad settings to a new blog? =
+
+1. Go to phpMyAdmin, either from your web hosts control panel, or by using the very convenient 'Portable phpMyAdmin' plugin for WordPress on the blog that has your Ad Injection settings configured.
+2. Open up the [yourdb]_options table.
+3. Either find the adinj_options and widget_adinj rows or use this query to help you:
+
+`SELECT * FROM [yourdb]_options WHERE option_name LIKE '%adinj%'`
+
+4. Then copy these two options to your new blogs by using phpMyAdmin on the new blogs. If you aren't using widgets then you can ignore the widget_adinj option, you need only the adinj_options value. You can use the 'Insert' tab on the new blog to do this.
 
 = Some technical details =
 
@@ -586,6 +606,12 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 5. Can choose to show the ads only to search engine visitors, or define IP addresses that ads aren't shown to.
 
 == Changelog ==
+
+= 1.2.0.6 =
+* Fix problem with debug output.
+* Reduce memory on admin side for blogs with large numbers of tags.
+* More detailed debug for PHP exec errors.
+* Colour debug table changes.
 
 = 1.2.0.5 =
 * Fix: Problem with adinjblocked cookie reading.
@@ -807,6 +833,12 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 * First public release
 
 == Upgrade Notice ==
+
+= 1.2.0.6 =
+* Fix problem with debug output.
+* Reduce memory on admin side for blogs with large numbers of tags.
+* More detailed debug for PHP exec errors.
+* Colour debug table changes.
 
 = 1.2.0.5 =
 * Fix: Problem with adinjblocked cookie reading.

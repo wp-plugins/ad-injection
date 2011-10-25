@@ -342,7 +342,7 @@ function adinj_top_message_box(){
 		
 	} else if (!isset($_GET['tab'])){
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "28th September 2011: Support for my new <a href='http://wordpress.org/extend/plugins/ad-logger/' target='_new'>Ad Logger</a> plugin's AdSense click blocking feature. And make more parts of the ad placement UI fade out if other options prevent their use. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
+		echo "26th October 2011: Minor fixes relating to debug output, memory usage when loading tags and the debug table. Support for my new <a href='http://wordpress.org/extend/plugins/ad-logger/' target='_new'>Ad Logger</a> plugin's AdSense click blocking feature. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
 		echo '</strong></p></div>';
 	}
 }
@@ -368,7 +368,13 @@ function adinj_side_donate_box(){
 <input class="omni_donate_field" type="text" name="amount" size="9" title="The amount you wish to donate" value="10">
 <select id="currency_code" name="currency_code">
 	<option value="USD">U.S. Dollars</option>
-	<option value="GBP">Pounds Sterling</option>
+<?php
+	if (strpos(home_url(), '.co.uk') !== false){
+		echo '<option value="GBP" selected="selected">Pounds Sterling</option>';
+	} else {
+		echo '<option value="GBP">Pounds Sterling</option>';
+	}
+?>
     <option value="AUD">Australian Dollars</option>
     <option value="CAD">Canadian Dollars</option>
     <option value="EUR">Euros</option>
@@ -852,7 +858,14 @@ function adinj_condition_table($name, $description, $type, $ops, $dropdown_field
 }
 
 function adinj_print_tags($quantity, $offset){
-	$tags = get_tags(array('number' => $quantity, 'offset' => $offset));
+	//$tags = get_tags(array('number' => $quantity, 'offset' => $offset));
+	global $wpdb;
+	$sql = "SELECT t.slug, tt.count FROM $wpdb->terms AS t INNER JOIN $wpdb->term_taxonomy AS tt ON t.term_id = tt.term_id WHERE tt.taxonomy IN ('post_tag') AND tt.count > 0 ORDER BY t.name ASC LIMIT $offset,$quantity";
+	$tags = $wpdb->get_results($sql);
+	if (!$tags){
+		return false;
+	}
+	
 	if (count($tags) == 0) return false;
 	$tag = NULL;
 	foreach ($tags as $tag) {
@@ -1377,7 +1390,7 @@ function adinj_upgrade_db(){
 function adinj_default_options(){
 	return array(
 		// Global settings
-		'ads_enabled' => 'off',
+		'ads_enabled' => 'on',
 		'ads_on_page_older_than' => '0',
 		'widgets_on_page_older_than' => '0',
 		'content_length_unit' => 'words',
@@ -1389,9 +1402,9 @@ function adinj_default_options(){
 		'random_ads_end_unit' => 'paragraph',
 		'random_ads_end_at' => '20',
 		'random_ads_end_direction' => 'fromstart',
-		'rnd_allow_ads_on_last_paragraph' => '',
-		'rnd_reselect_ad_per_position_in_post' => '',
-		'multiple_ads_at_same_position' => '',
+		'rnd_allow_ads_on_last_paragraph' => 'off',
+		'rnd_reselect_ad_per_position_in_post' => 'off',
+		'multiple_ads_at_same_position' => 'off',
 		// top/bottom ad position
 		'top_ad_position' => '0',
 		'top_ad_position_unit' => 'paragraph',
@@ -1603,55 +1616,55 @@ function adinj_default_options(){
 		'footer_id_condition_mode' => 'o',
 		'footer_id_condition_entries' => '',
 		// exclusion tick boxes
-		'exclude_front' => '',
-		'exclude_home' => '',
-		'exclude_page' => '',
-		'exclude_single' => '',
-		'exclude_archive' => '',
+		'exclude_front' => 'off',
+		'exclude_home' => 'off',
+		'exclude_page' => 'off',
+		'exclude_single' => 'off',
+		'exclude_archive' => 'off',
 		'exclude_search' => 'on',
 		'exclude_404' => 'on',
-		'top_exclude_front' => '',
-		'top_exclude_home' => '',
-		'top_exclude_page' => '',
-		'top_exclude_single' => '',
-		'top_exclude_archive' => '',
-		'top_exclude_search' => '',
-		'top_exclude_404' => '',
-		'random_exclude_front' => '',
-		'random_exclude_home' => '',
-		'random_exclude_page' => '',
-		'random_exclude_single' => '',
-		'random_exclude_archive' => '',
-		'random_exclude_search' => '',
-		'random_exclude_404' => '',
-		'bottom_exclude_front' => '',
-		'bottom_exclude_home' => '',
-		'bottom_exclude_page' => '',
-		'bottom_exclude_single' => '',
-		'bottom_exclude_archive' => '',
-		'bottom_exclude_search' => '',
-		'bottom_exclude_404' => '',
-		'footer_exclude_front' => '',
-		'footer_exclude_home' => '',
-		'footer_exclude_page' => '',
-		'footer_exclude_single' => '',
-		'footer_exclude_archive' => '',
-		'footer_exclude_search' => '',
-		'footer_exclude_404' => '',
-		'widget_exclude_front' => '',
-		'widget_exclude_home' => '',
-		'widget_exclude_page' => '',
-		'widget_exclude_single' => '',
-		'widget_exclude_archive' => '',
-		'widget_exclude_search' => '',
-		'widget_exclude_404' => '',
-		'template_exclude_front' => '',
-		'template_exclude_home' => '',
-		'template_exclude_page' => '',
-		'template_exclude_single' => '',
-		'template_exclude_archive' => '',
-		'template_exclude_search' => '',
-		'template_exclude_404' => '',
+		'top_exclude_front' => 'off',
+		'top_exclude_home' => 'off',
+		'top_exclude_page' => 'off',
+		'top_exclude_single' => 'off',
+		'top_exclude_archive' => 'off',
+		'top_exclude_search' => 'off',
+		'top_exclude_404' => 'off',
+		'random_exclude_front' => 'off',
+		'random_exclude_home' => 'off',
+		'random_exclude_page' => 'off',
+		'random_exclude_single' => 'off',
+		'random_exclude_archive' => 'off',
+		'random_exclude_search' => 'off',
+		'random_exclude_404' => 'off',
+		'bottom_exclude_front' => 'off',
+		'bottom_exclude_home' => 'off',
+		'bottom_exclude_page' => 'off',
+		'bottom_exclude_single' => 'off',
+		'bottom_exclude_archive' => 'off',
+		'bottom_exclude_search' => 'off',
+		'bottom_exclude_404' => 'off',
+		'footer_exclude_front' => 'off',
+		'footer_exclude_home' => 'off',
+		'footer_exclude_page' => 'off',
+		'footer_exclude_single' => 'off',
+		'footer_exclude_archive' => 'off',
+		'footer_exclude_search' => 'off',
+		'footer_exclude_404' => 'off',
+		'widget_exclude_front' => 'off',
+		'widget_exclude_home' => 'off',
+		'widget_exclude_page' => 'off',
+		'widget_exclude_single' => 'off',
+		'widget_exclude_archive' => 'off',
+		'widget_exclude_search' => 'off',
+		'widget_exclude_404' => 'off',
+		'template_exclude_front' => 'off',
+		'template_exclude_home' => 'off',
+		'template_exclude_page' => 'off',
+		'template_exclude_single' => 'off',
+		'template_exclude_archive' => 'off',
+		'template_exclude_search' => 'off',
+		'template_exclude_404' => 'off',
 		// advanced settings
 		'the_content_filter_priority' => '10', // 10 is the default for add_filter
 		// ui main tab
@@ -1679,7 +1692,7 @@ function adinj_default_options(){
 		// ui debug tab
 		'ui_debugging_hide' => 'false',
 		// debug
-		'debug_mode' => '',
+		'debug_mode' => 'off',
 		// version
 		'db_version' => ADINJ_DB_VERSION
 	);
