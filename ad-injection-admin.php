@@ -342,7 +342,7 @@ function adinj_top_message_box(){
 		
 	} else if (!isset($_GET['tab'])){
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "26th October 2011: Minor fixes relating to debug output, memory usage when loading tags and the debug table. Support for my new <a href='http://wordpress.org/extend/plugins/ad-logger/' target='_new'>Ad Logger</a> plugin's AdSense click blocking feature. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
+		echo "4th December 2011: Tested on WordPress 3.3. With support for my new <a href='http://wordpress.org/extend/plugins/ad-logger/' target='_new'>Ad Logger</a> plugin's AdSense click blocking feature. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
 		echo '</strong></p></div>';
 	}
 }
@@ -369,7 +369,7 @@ function adinj_side_donate_box(){
 <select id="currency_code" name="currency_code">
 	<option value="USD">U.S. Dollars</option>
 <?php
-	if (strpos(home_url(), '.co.uk') !== false){
+	if (1==2 && strpos(home_url(), '.co.uk') !== false){
 		echo '<option value="GBP" selected="selected">Pounds Sterling</option>';
 	} else {
 		echo '<option value="GBP">Pounds Sterling</option>';

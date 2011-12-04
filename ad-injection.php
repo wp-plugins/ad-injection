@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 1.2.0.6
+Version: 1.2.0.7
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -319,10 +319,7 @@ function adinj_ad_code_include(){
 		// files from within ABSPATH. To remove this limitation we do the include
 		// using mfunc instead.
 		return adinj_ad_code_eval("\n
-<!--Ad Injection mfunc mode ad include code-->
-<!--mfunc include_once('$plugin_dir/adshow.php') -->
-<?php include_once('$plugin_dir/adshow.php'); ?>
-<!--/mfunc-->
+<!--Ad Injection mfunc mode ad include code--><!--mfunc include_once('$plugin_dir/adshow.php') --><?php include_once('$plugin_dir/adshow.php'); ?><!--/mfunc-->
 ");
 	}
 	return "";
