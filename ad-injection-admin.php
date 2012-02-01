@@ -342,7 +342,7 @@ function adinj_top_message_box(){
 		
 	} else if (!isset($_GET['tab'])){
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "1st February 2012: <font color=red>Update 10:00 UK Time: Have had to temporarily disable the cookie setting due to a bug... looking into it now!</font> Cookie management for search engine only mode now done in PHP instead of JavaScript which should be more robust. The JavaScript file is no longer needed saving a HTTP request. If you are already using this feature you may need to clear your cache to get it to work immediately (if not it will start working again when the cached pages expire). Full filter support for template ads. Fix for category/tag filters with spaces them. With support for my new <a href='http://wordpress.org/extend/plugins/ad-logger/' target='_new'>Ad Logger</a> plugin's AdSense click blocking feature. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
+		echo "1st February 2012: Hopefully fix the unreliable cookie management code and fix any 'headers already sent' errors. Full filter support for template ads. Fix for category/tag filters with spaces them. With support for my new <a href='http://wordpress.org/extend/plugins/ad-logger/' target='_new'>Ad Logger</a> plugin's AdSense click blocking feature. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
 		echo '</strong></p></div>';
 	}
 }

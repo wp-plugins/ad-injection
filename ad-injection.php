@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 1.2.0.9
+Version: 1.2.0.10
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -99,11 +99,11 @@ function adinj_option($option){
 function adinj_addsevjs_hook(){
 	// TODO can re-enable this check once the widget ads are factored in.
 	//if (adinj_ads_completely_disabled_from_page()) return;
-	//if (!adinj_ticked('sevisitors_only') && !adinj_ticked('block_keywords')) return;
+	if (!adinj_ticked('sevisitors_only') && !adinj_ticked('block_keywords')) return;
 	// Put the search engine detection / cookie setting script in the footer
 	// TODO would be better to use plugin version, but that only seems accessible in admin
-	//$version = adinj_db_version(adinj_options());
-	//wp_enqueue_script('adinj_sev', WP_PLUGIN_URL.'/ad-injection/adinj-sev.js?v='.$version, NULL, NULL, true);
+	$version = adinj_db_version(adinj_options());
+	wp_enqueue_script('adinj_sev', WP_PLUGIN_URL.'/ad-injection/adinj-sev.js?v='.$version, NULL, NULL, false);
 }
 
 // TODO make the cookie domain from wp-config.php accessible to script
@@ -115,14 +115,23 @@ function adinj_print_referrers_hook(){
 	$sevisitors = adinj_ticked('sevisitors_only');
 	$block = adinj_ticked('block_keywords');
 	if (!$sevisitors && !$block) return;
-	//This will set any necessary cookies
-	if (adinj_mfunc_mode()){
-		echo adinj_ad_code_eval("\n
-<!--Ad Injection mfunc mode dynamic checks--><!--mfunc adshow_show_adverts() --><?php adshow_show_adverts(); ?><!--/mfunc-->
-");
-	} else {	
-		adshow_show_adverts();
-	}	
+	
+	echo <<<SCRIPT
+
+<script type="text/javascript">
+// Ad Injection plugin
+
+SCRIPT;
+
+	$ops = adinj_options();
+	$referrer_list = adinj_quote_list('ad_referrers');
+	$blocked_list = adinj_quote_list('blocked_keywords');
+	$blocked_hours = $ops['block_ads_for_hours'];
+	if ($sevisitors) echo "var adinj_referrers = new Array($referrer_list);\n";
+	if ($block) echo "var adinj_blocked_referrers = new Array($blocked_list);\n";
+	if ($block) echo "var adinj_blocked_hours = $blocked_hours;\n";
+	echo "adinj_dynamic_checks();\n";
+	echo "</script>\n";
 }
 
 function adinj_quote_list($option){
