@@ -569,6 +569,8 @@ function adinj_filters_box($ops){
 	<?php adinj_condition_tables('bottom_', 'ui_bottom_conditions_show'); ?>
 	<h4>Footer ad filters</h4>
 	<?php adinj_condition_tables('footer_', 'ui_footer_conditions_show'); ?>
+	<h4>Template ad filters</h4>
+	<?php adinj_condition_tables('template_', 'ui_template_conditions_show'); ?>
 	<?php
 	adinj_postbox_end();
 }

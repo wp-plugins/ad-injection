@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 1.2.0.7
+Version: 1.2.0.8
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -35,7 +35,8 @@ define('ADINJ_NO_CONFIG_FILE', 1);
 // 17 = block ads for days
 // 18 = 1.2.0.0 New ad insertion engine and new top/random/bottom positioning options
 // 20 = 1.2.0.3 the_content_filter_priority setting
-define('ADINJ_DB_VERSION', 20);
+// 21 = 1.2.0.8 Template conditions
+define('ADINJ_DB_VERSION', 21);
 
 // Files
 // TODO will these paths work on windows?
@@ -98,11 +99,11 @@ function adinj_option($option){
 function adinj_addsevjs_hook(){
 	// TODO can re-enable this check once the widget ads are factored in.
 	//if (adinj_ads_completely_disabled_from_page()) return;
-	if (!adinj_ticked('sevisitors_only') && !adinj_ticked('block_keywords')) return;
+	//if (!adinj_ticked('sevisitors_only') && !adinj_ticked('block_keywords')) return;
 	// Put the search engine detection / cookie setting script in the footer
 	// TODO would be better to use plugin version, but that only seems accessible in admin
-	$version = adinj_db_version(adinj_options());
-	wp_enqueue_script('adinj_sev', WP_PLUGIN_URL.'/ad-injection/adinj-sev.js?v='.$version, NULL, NULL, true);
+	//$version = adinj_db_version(adinj_options());
+	//wp_enqueue_script('adinj_sev', WP_PLUGIN_URL.'/ad-injection/adinj-sev.js?v='.$version, NULL, NULL, true);
 }
 
 // TODO make the cookie domain from wp-config.php accessible to script
@@ -114,23 +115,14 @@ function adinj_print_referrers_hook(){
 	$sevisitors = adinj_ticked('sevisitors_only');
 	$block = adinj_ticked('block_keywords');
 	if (!$sevisitors && !$block) return;
-	
-	echo <<<SCRIPT
-
-<script type="text/javascript">
-// Ad Injection plugin
-
-SCRIPT;
-
-	$ops = adinj_options();
-	$referrer_list = adinj_quote_list('ad_referrers');
-	$blocked_list = adinj_quote_list('blocked_keywords');
-	$blocked_hours = $ops['block_ads_for_hours'];
-	if ($sevisitors) echo "var adinj_referrers = new Array($referrer_list);\n";
-	if ($block) echo "var adinj_blocked_referrers = new Array($blocked_list);\n";
-	if ($block) echo "var adinj_blocked_hours = $blocked_hours;\n";
-	echo "adinj_dynamic_checks();\n";
-	echo "</script>\n";
+	//This will set any necessary cookies
+	if (adinj_mfunc_mode()){
+		echo adinj_ad_code_eval("\n
+<!--Ad Injection mfunc mode dynamic checks--><!--mfunc adshow_show_adverts() --><?php adshow_show_adverts(); ?><!--/mfunc-->
+");
+	} else {	
+		adshow_show_adverts();
+	}	
 }
 
 function adinj_quote_list($option){
@@ -179,7 +171,7 @@ function adinj_get_ad_code($adtype, $ads_db){
 	}
 	if (adinj_mfunc_mode()){
 		return adinj_ad_code_eval("\n
-<!--mfunc adshow_display_ad_file_v2(array($ads_live), array($ads_split), array($formatting), array($alt_live), array($alt_split)) -->
+<!--Ad Injection mfunc mode ad code--><!--mfunc adshow_display_ad_file_v2(array($ads_live), array($ads_split), array($formatting), array($alt_live), array($alt_split)) -->
 <?php adshow_display_ad_file_v2(array($ads_live), array($ads_split), array($formatting), array($alt_live), array($alt_split)); ?>
 <!--/mfunc-->
 ");
@@ -611,8 +603,15 @@ function adinj_author_data($data){ return $data; }
 function adinj_post_id($data){ return $data; }
 
 function adinj_split_comma_list($list){
-	return preg_split("/[\s,]+/", $list, -1, PREG_SPLIT_NO_EMPTY);
+	$list = preg_split("/[,]+/", $list, -1, PREG_SPLIT_NO_EMPTY);
+	array_walk($list, 'adinj_trim_value');
+	return $list;
 }
+
+function adinj_trim_value(&$value){ 
+    $value = trim($value); 
+}
+
 
 function adinj_footer_hook(){
 	if (is_feed()) return; // TODO feed specific ads
@@ -1242,6 +1241,8 @@ function adinj_print_ad($adname=''){
 		return;
 	}
 	if (adinj_excluded_by_tick_box('template_')) return;
+	$dummydebug = '';
+	if (adinj_ads_filtered_out('template', $dummydebug)) return;
 	if ($adname == 'random'){
 		echo adinj_ad_code_random();
 	} else if ($adname == 'top'){

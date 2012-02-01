@@ -3,8 +3,8 @@ Contributors: reviewmylife
 Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, widgets, sidebar, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog, ad rotation, A:B testing, split testing, WP Super Cache, W3 Total Cache, WP Cache
 Requires at least: 2.8.6
-Tested up to: 3.3.0
-Stable tag: 1.2.0.7
+Tested up to: 3.3.1
+Stable tag: 1.2.0.8
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
@@ -497,7 +497,7 @@ Solution: Follow the below advice for the 'theme conflicts'.
 
 Ad Injection (when injecting random ads) works by looking for the end paragraph tags (&lt;p&gt;&lt;/p&gt;). Some themes override the wpautop filter and set it to run after the plugins. This means that Ad Injection can't find the end paragraph tags, and so can't inject any random ads. If this happens try changing the the_content filter priority from the Advanced tab in the Ad Injection UI. Try values of 100, and if that doesn't work 200.
 
-Themes which I know have this issue include 'Avenue', 'TheTravelTheme' and 'Vectors'.
+Themes which I know have this issue include 'Avenue', 'TheTravelTheme', 'Exciter Magazine', and 'Vectors'.
 
 = Will Ad Injection work with the multi-blog version of WordPress? =
 
@@ -606,6 +606,11 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 5. Can choose to show the ads only to search engine visitors, or define IP addresses that ads aren't shown to.
 
 == Changelog ==
+
+= 1.2.0.8 =
+* Manage cookies in PHP instead of JavaScript to improve reliability.
+* Fix to allow categories/tags/author names which contain spaces.
+* Add category/tag/id/author filters for template ads.
 
 = 1.2.0.7 =
 * Tested on WordPress 3.3.
@@ -837,6 +842,11 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 * First public release
 
 == Upgrade Notice ==
+
+= 1.2.0.8 =
+* Manage cookies in PHP instead of JavaScript to improve reliability.
+* Fix to allow categories/tags/author names which contain spaces.
+* Add category/tag/id/author filters for template ads.
 
 = 1.2.0.7 =
 * Tested on WordPress 3.3.
