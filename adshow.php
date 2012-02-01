@@ -260,14 +260,14 @@ function adshow_show_adverts(){
 	
 	if (adinj_config_block_referrers() && adshow_blocked_referrer()) return "blocked_referrer";
 	if (adinj_config_block_referrers() && adshow_blocked_referrer()){
-		setcookie('adinjblocked', '1', time()+adinj_config_block_hours()*3600, '/'); 
+		//setcookie('adinjblocked', '1', time()+adinj_config_block_hours()*3600, '/'); 
 		return "blocked_referrer";
 	}
 	
 	if (adinj_config_allow_referrers() && !adshow_allowed_referrer()) return "not_an_allowed_referrer";
 	
 	//Set cookie
-	setcookie('adinj', '1', time()+3600, '/'); 
+	//setcookie('adinj', '1', time()+3600, '/'); 
 	return true;
 }
 }
