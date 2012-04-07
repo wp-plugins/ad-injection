@@ -8,9 +8,7 @@ http://www.reviewmylife.co.uk/
 
 if (!defined('ADINJ_NO_CONFIG_FILE')){
 $adinj_dir = dirname(__FILE__);
-if (file_exists($adinj_dir.'/ad-injection-config.php')){
-	include_once($adinj_dir.'/ad-injection-config.php');
-} else if (file_exists($adinj_dir.'/../../ad-injection-config.php')) {
+if (file_exists($adinj_dir.'/../../ad-injection-config.php')) {
 	include_once($adinj_dir.'/../../ad-injection-config.php');
 } else {
 	echo '<!--ADINJ DEBUG: ad-injection-config.php could not be found. Re-save your settings to re-generate it.-->';

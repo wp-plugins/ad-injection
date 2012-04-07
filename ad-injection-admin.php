@@ -342,7 +342,7 @@ function adinj_top_message_box(){
 		
 	} else if (!isset($_GET['tab'])){
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "1st February 2012: Hopefully fix the unreliable cookie management code and fix any 'headers already sent' errors. Full filter support for template ads. Fix for category/tag filters with spaces them. With support for my new <a href='http://wordpress.org/extend/plugins/ad-logger/' target='_new'>Ad Logger</a> plugin's AdSense click blocking feature. Please contact me ASAP if you spot any bugs, or odd behaviour via the ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>.';
+		echo "7th April 2012: Preserve special HTML character sequences such as &amp;amp; and &amp;para. With support for my new <a href='http://wordpress.org/extend/plugins/ad-logger/' target='_new'>Ad Logger</a> plugin's AdSense click blocking feature. Please contact me ASAP if you spot any bugs, or odd behaviour via the <a href='http://wordpress.org/tags/ad-injection?forum_id=10'target='_new'>Ad Injection WordPress forum</a> or my ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>. If you like the plugin please consider making a donation using the PayPal box below :)';
 		echo '</strong></p></div>';
 	}
 }

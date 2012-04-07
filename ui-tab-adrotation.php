@@ -106,8 +106,9 @@ echo <<<EOT
 	<textarea name="$name" rows="8" cols="
 EOT;
 	adinj_table_width('rotation');
+	echo '">'.htmlentities($ops[$name]);
 echo <<<EOT
-">$ops[$name]</textarea>
+</textarea>
 	</td><td>
 	<input name="$namesplit" size="7" value="$ops[$namesplit]" />
 	<br />

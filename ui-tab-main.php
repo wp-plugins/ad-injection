@@ -52,7 +52,7 @@ function adinj_placement_settings_box($ops){
 	<tr><td>Only show on posts longer than:</td><td>
 	<?php
 	$unit = adinj_counting_unit_description();
-	$ad_if_longer_settings = array('d',100,200,300,500,750,1000,1500,2000,2500,3000,5000,10000,15000,20000);
+	$ad_if_longer_settings = array('d',100,200,300,400,500,750,1000,1500,2000,2500,3000,5000,10000,15000,20000);
 	adinj_selection_box("top_ad_if_longer_than", $ad_if_longer_settings, $unit);
 	echo '</td><td><div class="adinj_home">';
 	adinj_selection_box("home_top_ad_if_longer_than", $ad_if_longer_settings, $unit);
@@ -83,7 +83,7 @@ function adinj_placement_settings_box($ops){
 		</td>
 		<td>
 		<?php
-			adinj_selection_box("top_ad_position", array(0,1,2,3,4,5,100,200,300,500,750,1000,1500,2000,3000), " ");
+			adinj_selection_box("top_ad_position", array(0,1,2,3,4,5,100,200,300,400,500,750,1000,1500,2000,3000), " ");
 		?>
 		</td></tr>
 		</table>
@@ -197,7 +197,7 @@ JQUERYOPACITY;
 			</td><td>
 				<div class="random_ads_start_unit">
 				<?php
-				adinj_selection_box("random_ads_start_at", array(1,2,3,4,5,100,200,300,500,750,1000,1500,2000,3000,4000,5000,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), " ");
+				adinj_selection_box("random_ads_start_at", array(1,2,3,4,5,100,200,300,400,500,750,1000,1500,2000,3000,4000,5000,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), " ");
 				?>
 				</div>
 			</td>
@@ -244,7 +244,7 @@ JQUERYOPACITY;
 			</td><td>
 			<div class="random_ads_end_unit">
 			<?php
-			adinj_selection_box("random_ads_end_at", array(1,2,3,4,5,100,200,300,500,750,1000,1500,2000,3000,4000,5000,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), " ");
+			adinj_selection_box("random_ads_end_at", array(1,2,3,4,5,100,200,300,400,500,750,1000,1500,2000,3000,4000,5000,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), " ");
 			?>
 			</div>
 			</td>
@@ -355,7 +355,7 @@ JQUERYOPACITY;
 		</td>
 		<td>
 		<?php
-			adinj_selection_box("bottom_ad_position", array(0,1,2,3,4,5,100,200,300,500,750,1000,1500,2000,3000), " ");
+			adinj_selection_box("bottom_ad_position", array(0,1,2,3,4,5,100,200,300,400,500,750,1000,1500,2000,3000), " ");
 		?>
 		</td>
 		<td>
@@ -390,7 +390,7 @@ function adinj_adverts_box($ops){
 	<h3><a name="topadcode"></a>Top ad (below post title - this is not a 'header' ad) [<a href="#topadplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_top'>pool</a>]--></h3>
 	<table border="0" class="adinjtable" width="98%">
 	<tr><td>
-	<textarea name="ad_code_top_1" rows="10" cols="<?php adinj_table_width('ad'); ?>"><?php echo $ops['ad_code_top_1']; ?></textarea>
+	<textarea name="ad_code_top_1" rows="10" cols="<?php adinj_table_width('ad'); ?>"><?php echo htmlentities($ops['ad_code_top_1']); ?></textarea>
 	<br />
 	<p><span style="font-size:10px;"><b>Docs:</b> Try a <a href="#468x15">468x15</a> or <a href="#336x280">336x280</a> advert.</span></p>
 	</td><td>
@@ -405,7 +405,7 @@ function adinj_adverts_box($ops){
 	<h3><a name="randomadcode"></a>Random ad (inserted randomly between paragraphs) [<a href="#randomadplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_random'>pool</a>]--></h3>
 	<table border="0" class="adinjtable" width="98%">
 	<tr><td>
-	<textarea name="ad_code_random_1" rows="10" cols="<?php adinj_table_width('ad'); ?>"><?php echo $ops['ad_code_random_1']; ?></textarea>
+	<textarea name="ad_code_random_1" rows="10" cols="<?php adinj_table_width('ad'); ?>"><?php echo htmlentities($ops['ad_code_random_1']); ?></textarea>
 	<br />
 	<p><span style="font-size:10px;"><b>Docs:</b> Try a <a href="#468x60">468x60</a> or <a href="#728x90">728x90</a> banner.</span></p>
 	</td><td>
@@ -419,7 +419,7 @@ function adinj_adverts_box($ops){
 	<h3><a name="bottomadcode"></a>Bottom ad (below the post content) [<a href="#bottomadplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_bottom'>pool</a>]--></h3>
 	<table border="0" class="adinjtable" width="98%">
 	<tr><td>
-	<textarea name="ad_code_bottom_1" rows="10" cols="<?php adinj_table_width('ad'); ?>"><?php echo $ops['ad_code_bottom_1']; ?></textarea>
+	<textarea name="ad_code_bottom_1" rows="10" cols="<?php adinj_table_width('ad'); ?>"><?php echo htmlentities($ops['ad_code_bottom_1']); ?></textarea>
 	<br />
 	<p><span style="font-size:10px;"><b>Docs:</b> Try a <a href="#336x280">336x280</a> advert.</span></p>
 	</td><td>
@@ -434,7 +434,7 @@ function adinj_adverts_box($ops){
 	<h3><a name="footeradcode"></a>Footer ad (put into 'the_footer' hook - not supported by all themes) [<a href="#footeradplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_footer'>pool</a>]--></h3>
 	<table border="0" class="adinjtable" width="98%">
 	<tr><td>
-	<textarea name="ad_code_footer_1" rows="10" cols="<?php adinj_table_width('ad'); ?>"><?php echo $ops['ad_code_footer_1']; ?></textarea>
+	<textarea name="ad_code_footer_1" rows="10" cols="<?php adinj_table_width('ad'); ?>"><?php echo htmlentities($ops['ad_code_footer_1']); ?></textarea>
 	<br />
 	Docs: footer ad information and troubleshooting
 	<?php adinj_add_show_hide_section('footer_docs_'.uniqid(''), 'ui_footer_docs_show', 'ui_footer_docs_show', $ops); ?>
@@ -698,7 +698,7 @@ function adinj_random_ad_limit_table(){
 	<?php
 	$prefixes = array("", "home", "archive");
 	$unit = adinj_counting_unit_description();
-	$ad_limit_settings = array('d',100,200,300,500,750,1000,1500,2000,2500,3000,5000,10000,15000,20000);
+	$ad_limit_settings = array('d',100,200,300,400,500,750,1000,1500,2000,2500,3000,5000,10000,15000,20000);
 	
 	foreach ($prefixes as $prefix){
 		echo '<td><div class="adinj_'.$prefix.'">';

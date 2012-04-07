@@ -4,7 +4,7 @@ Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-w
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, widgets, sidebar, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog, ad rotation, A:B testing, split testing, WP Super Cache, W3 Total Cache, WP Cache
 Requires at least: 2.8.6
 Tested up to: 3.3.1
-Stable tag: 1.2.0.10
+Stable tag: 1.2.0.11
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
@@ -272,9 +272,9 @@ Ads will only appear if your front, home or archives page if you show the full p
 
 To stop ads appearing on the contact page (or any other post/page) you have many of options. Here are 4 to choose from:
 
-1. Add the post/page id to the post/page id ad filtering box.
-2. Add (copy and paste) &lt;!--NoAds--&gt; into the content of the post/page with the contact form. Just edit the contact page and paste this in - it will be invisible to the reader.
-3. Add a disable_adverts custom field to the post/page containing the contact form and set the value to 1 (the number one as a single digit). If you can't see the custom fields click on 'Screen Options' at the top right on the post/page editing screen, and tick 'Custom Fields.
+1. Add a disable_adverts custom field to the post/page containing the contact form and set the value to 1 (the number one as a single digit). If you can't see the custom fields click on 'Screen Options' at the top right on the post/page editing screen, and tick 'Custom Fields.
+2. Add the post/page id to the post/page id ad filtering box.
+3. Add (copy and paste) &lt;!--NoAds--&gt; into the content of the post/page with the contact form. Just edit the contact page and paste this in - it will be invisible to the reader.
 4. Add a tag to the page to mean that it shouldn't have adverts, and then add that tag to the tag filtering condition in the global settings area of the plugin configuration page.
 
 = How can I put ads on category (or other archive pages)? =
@@ -497,7 +497,7 @@ Solution: Follow the below advice for the 'theme conflicts'.
 
 Ad Injection (when injecting random ads) works by looking for the end paragraph tags (&lt;p&gt;&lt;/p&gt;). Some themes override the wpautop filter and set it to run after the plugins. This means that Ad Injection can't find the end paragraph tags, and so can't inject any random ads. If this happens try changing the the_content filter priority from the Advanced tab in the Ad Injection UI. Try values of 100, and if that doesn't work 200.
 
-Themes which I know have this issue include 'Avenue', 'TheTravelTheme', 'Exciter Magazine', and 'Vectors'.
+Themes which I know have this issue include 'Avenue', 'TheTravelTheme', 'Exciter Magazine', 'Vectors', and 'Canvas' from Woothemes.
 
 = Will Ad Injection work with the multi-blog version of WordPress? =
 
@@ -606,6 +606,10 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 5. Can choose to show the ads only to search engine visitors, or define IP addresses that ads aren't shown to.
 
 == Changelog ==
+
+= 1.2.0.11 =
+* Preserve HTML entities when saving - i.e. preserve special character sequences.
+* Add '400' as an option to the numbered drop downs.
 
 = 1.2.0.10 =
 * Fix to allow categories/tags/author names which contain spaces.
@@ -842,6 +846,10 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 * First public release
 
 == Upgrade Notice ==
+
+= 1.2.0.11 =
+* Preserve HTML entities when saving - i.e. preserve special character sequences.
+* Add '400' as an option to the numbered drop downs.
 
 = 1.2.0.10 =
 * Fix to allow categories/tags/author names which contain spaces.
