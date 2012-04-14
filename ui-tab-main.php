@@ -390,7 +390,7 @@ function adinj_adverts_box($ops){
 	<h3><a name="topadcode"></a>Top ad (below post title - this is not a 'header' ad) [<a href="#topadplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_top'>pool</a>]--></h3>
 	<table border="0" class="adinjtable" width="98%">
 	<tr><td>
-	<textarea name="ad_code_top_1" rows="10" cols="<?php adinj_table_width('ad'); ?>"><?php echo htmlentities($ops['ad_code_top_1']); ?></textarea>
+	<textarea name="ad_code_top_1" rows="10" cols="<?php adinj_table_width('ad'); ?>"><?php echo adinj_process_text($ops['ad_code_top_1']); ?></textarea>
 	<br />
 	<p><span style="font-size:10px;"><b>Docs:</b> Try a <a href="#468x15">468x15</a> or <a href="#336x280">336x280</a> advert.</span></p>
 	</td><td>
@@ -405,7 +405,7 @@ function adinj_adverts_box($ops){
 	<h3><a name="randomadcode"></a>Random ad (inserted randomly between paragraphs) [<a href="#randomadplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_random'>pool</a>]--></h3>
 	<table border="0" class="adinjtable" width="98%">
 	<tr><td>
-	<textarea name="ad_code_random_1" rows="10" cols="<?php adinj_table_width('ad'); ?>"><?php echo htmlentities($ops['ad_code_random_1']); ?></textarea>
+	<textarea name="ad_code_random_1" rows="10" cols="<?php adinj_table_width('ad'); ?>"><?php echo adinj_process_text($ops['ad_code_random_1']); ?></textarea>
 	<br />
 	<p><span style="font-size:10px;"><b>Docs:</b> Try a <a href="#468x60">468x60</a> or <a href="#728x90">728x90</a> banner.</span></p>
 	</td><td>
@@ -419,7 +419,7 @@ function adinj_adverts_box($ops){
 	<h3><a name="bottomadcode"></a>Bottom ad (below the post content) [<a href="#bottomadplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_bottom'>pool</a>]--></h3>
 	<table border="0" class="adinjtable" width="98%">
 	<tr><td>
-	<textarea name="ad_code_bottom_1" rows="10" cols="<?php adinj_table_width('ad'); ?>"><?php echo htmlentities($ops['ad_code_bottom_1']); ?></textarea>
+	<textarea name="ad_code_bottom_1" rows="10" cols="<?php adinj_table_width('ad'); ?>"><?php echo adinj_process_text($ops['ad_code_bottom_1']); ?></textarea>
 	<br />
 	<p><span style="font-size:10px;"><b>Docs:</b> Try a <a href="#336x280">336x280</a> advert.</span></p>
 	</td><td>
@@ -434,7 +434,7 @@ function adinj_adverts_box($ops){
 	<h3><a name="footeradcode"></a>Footer ad (put into 'the_footer' hook - not supported by all themes) [<a href="#footeradplacement">placement</a>] <!--[<a href='?page=ad-injection&amp;tab=adrotation#multiple_footer'>pool</a>]--></h3>
 	<table border="0" class="adinjtable" width="98%">
 	<tr><td>
-	<textarea name="ad_code_footer_1" rows="10" cols="<?php adinj_table_width('ad'); ?>"><?php echo htmlentities($ops['ad_code_footer_1']); ?></textarea>
+	<textarea name="ad_code_footer_1" rows="10" cols="<?php adinj_table_width('ad'); ?>"><?php echo adinj_process_text($ops['ad_code_footer_1']); ?></textarea>
 	<br />
 	Docs: footer ad information and troubleshooting
 	<?php adinj_add_show_hide_section('footer_docs_'.uniqid(''), 'ui_footer_docs_show', 'ui_footer_docs_show', $ops); ?>

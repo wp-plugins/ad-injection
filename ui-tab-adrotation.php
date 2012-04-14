@@ -106,7 +106,7 @@ echo <<<EOT
 	<textarea name="$name" rows="8" cols="
 EOT;
 	adinj_table_width('rotation');
-	echo '">'.htmlentities($ops[$name]);
+	echo '">'.adinj_process_text($ops[$name]);
 echo <<<EOT
 </textarea>
 	</td><td>
@@ -116,7 +116,6 @@ echo <<<EOT
 	</td></tr>
 EOT;
 }
-
 
 function adinj_advanced(){
 	adinj_postbox_start(__("Advanced settings", 'adinj'), "advanced");
