@@ -140,6 +140,10 @@ function adinj_docs_tags(){
 </ul>
 
 <ul>
+<li><code>&lt;!--adinj_exclude_start--&gt;&lt;!--adinj_exclude_end--&gt;</code> - Exclude ads from specific sections of the post.</li>
+</ul>
+
+<ul>
 <li><code>&lt;!--adstart--&gt;</code> - Random ads will start from this point.</li>
 <li><code>&lt;!--adend--&gt;</code> - Random ads will not be inserted after this point.</li>
 </ul>

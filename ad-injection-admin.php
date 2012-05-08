@@ -342,7 +342,7 @@ function adinj_top_message_box(){
 		
 	} else if (!isset($_GET['tab'])){
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "14th April 2012: Fix for ads with UTF-8 characters. With support for my new <a href='http://wordpress.org/extend/plugins/ad-logger/' target='_new'>Ad Logger</a> plugin's AdSense click blocking feature. Please contact me ASAP if you spot any bugs, or odd behaviour via the <a href='http://wordpress.org/tags/ad-injection?forum_id=10'target='_new'>Ad Injection WordPress forum</a> or my ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>. If you like the plugin please consider making a donation using the PayPal box below :)';
+		echo "8th May 2012: New option to exclude ads from &lt;blockquote&gt;&lt;/blockquote&gt; and &lt;pre&gt;&lt;/pre&gt; blocks (it is in the 'Other ad placement sections' area). And new &lt;!--adinj_exclude_start--&gt;&lt;!--adinj_exclude_end--&gt; which can be used to exlude ads from custom sections. Please contact me ASAP if you spot any bugs, or odd behaviour via the <a href='http://wordpress.org/tags/ad-injection?forum_id=10'target='_new'>Ad Injection WordPress forum</a> or my ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>. If you like the plugin please consider making a donation using the PayPal box below :)'."<br/>And finally I've just released my first iPhone game called <a href='http://itunes.apple.com/us/app/solar-balls/id521551813?ls=1&mt=8' target='_new'>Solar Balls</a> - please have a look and consider playing it :)";
 		echo '</strong></p></div>';
 	}
 }
@@ -412,10 +412,11 @@ function adinj_side_info_box(){
 			<p>You are responsible for making sure the ad settings and positioning you define are in compliance with your ad provider's terms of service! Failure to do so could get you banned by them!</p>
 		
 			<h4><font color="red">Still in development</font></h4>
-			<p>I'm actively listening to your feedback and fixing problems, and will be adding new features later in 2011. Please let me know if you like the plugin too!</p>
+			<p>I'm actively listening to your feedback and fixing problems, and will be adding new features later in 2012. Please let me know if you like the plugin too!</p>
 			
 			<h4>More by this author</h4>
 			<ul>
+			<li><a href="http://www.lorisware.com/solar-balls/" target="_new">Solar Balls for iOS</a> New!</li>
 			<li><a href="http://wordpress.org/extend/plugins/ad-logger/" target="_new">Ad Logger plugin for WordPress</a></li>
 			<li><a href="http://www.reviewmylife.co.uk/" target="_new">www.reviewmylife.co.uk</a></li>
 			<li><a href="http://www.advancedhtml.co.uk/" target="_new">www.advancedhtml.co.uk</a></li>
@@ -1126,7 +1127,7 @@ function adinj_testads(){
 
 <h4>Template ad examples</h4>
 
-<p>Template ads allow any of the ads to be inserted anywhere in your theme. <b>*Don't*</b> try putting any of this code into one of the ad boxes - it is not an advert - it is code to load an advert directly your theme.</p>
+<p>Template ads allow any of the ads to be inserted anywhere in your theme. <b>*Don't*</b> try putting any of this code into one of the ad boxes - it is not an advert - it is code to load an advert directly into your theme.</p>
 
 <b>Simple examples for loading top, random, bottom or footer ads</b><br />
 
@@ -1398,6 +1399,7 @@ function adinj_default_options(){
 		'ads_on_page_older_than' => '0',
 		'widgets_on_page_older_than' => '0',
 		'content_length_unit' => 'words',
+		'exclude_ads_from_block_tags' => 'off',
 		// random ad start/end position
 		'random_ads_start_mode' => 'anywhere',
 		'random_ads_start_unit' => 'paragraph',

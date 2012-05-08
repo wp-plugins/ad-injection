@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 1.2.0.12
+Version: 1.2.0.13
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -36,7 +36,8 @@ define('ADINJ_NO_CONFIG_FILE', 1);
 // 18 = 1.2.0.0 New ad insertion engine and new top/random/bottom positioning options
 // 20 = 1.2.0.3 the_content_filter_priority setting
 // 21 = 1.2.0.8 Template conditions
-define('ADINJ_DB_VERSION', 21);
+// 22 = 1.2.0.13 exclude_ads_from_block_tags option
+define('ADINJ_DB_VERSION', 22);
 
 // Files
 // TODO will these paths work on windows?
@@ -704,7 +705,25 @@ function adinj_content_hook($content){
 	$original_paragraph_positions = array();
 	$prevpos = -1;
 	while(($prevpos = stripos($content, ADINJ_PARA, $prevpos+1)) !== false){
-		$original_paragraph_positions[] = $prevpos + strlen(ADINJ_PARA);
+		$next_blockquote_open = adinj_stripos($content, '<blockquote>', $prevpos);
+		$next_blockquote_close = adinj_stripos($content, '</blockquote>', $prevpos);
+		$next_pre_open = adinj_stripos($content, '<pre>', $prevpos);
+		$next_pre_close = adinj_stripos($content, '</pre>', $prevpos);
+		$valid = true;
+		if (adinj_ticked('exclude_ads_from_block_tags')){
+			$valid = (($next_blockquote_open == $next_blockquote_close) || 
+						($next_blockquote_open > $prevpos && $next_blockquote_open <= $next_blockquote_close)) &&
+						(($next_pre_open == $next_pre_close) || 
+						($next_pre_open > $prevpos && $next_pre_open <= $next_pre_close));
+		}
+		if($valid){
+			$next_exclude_open = adinj_stripos($content, '<!--adinj_exclude_start-->', $prevpos);
+			$next_exclude_close = adinj_stripos($content, '<!--adinj_exclude_end-->', $prevpos);
+			 if (($next_exclude_open == $next_exclude_close) || 
+					($next_exclude_open > $prevpos && $next_exclude_open <= $next_exclude_close)){
+				$original_paragraph_positions[] = $prevpos + strlen(ADINJ_PARA);
+			}
+		}
 	}
 	$paracount = count($original_paragraph_positions);
 	if ($debug_on) $debug .= "\nContent length=$length (".$ops['content_length_unit'].") Raw character length=$rawlength Paragraph count=$paracount";
@@ -802,6 +821,12 @@ function adinj_content_hook($content){
 	$content = $ad_include.$content;
 	
 	return adinj($content, "Ad Injection in-content injections complete!" . $debug);
+}
+
+function adinj_stripos($haystack, $needle, $offset=0){
+	$pos = stripos($haystack, $needle, $offset);
+	if ($pos === false) $pos = -1;
+	return $pos;
 }
 
 function adinj_insert_fixed_ad(&$content, $ad, $adname, &$counter, &$debug){
@@ -946,7 +971,7 @@ function adinj_get_paragraph_from_position($content, $offset, $original_paragrap
 	if ($position === false) return -1;
 	$position += strlen(ADINJ_PARA);
 	for ($i=0; $i<$paracount; ++$i){
-		if ($position == $original_paragraph_positions[$i]) {
+		if ($position <= $original_paragraph_positions[$i]) {
 			$paragraph = $i+$adjust;
 			return min($paragraph, $paracount);
 		}

@@ -378,6 +378,16 @@ JQUERYOPACITY;
 	</td></tr>
 	<tr><td colspan="4"><p><span style="font-size:10px;">When defining 'post longer than' / 'post shorter than' conditions; do you want to count viewable characters, all characters (which includes HTML tags), or number of words?<br />This setting does not apply to the settings for positioning the ads near a character position - these use the raw character count.</span></p></td></tr>
 
+	<tr>
+	<td>Exclude ads from &lt;blockquote&gt;&lt;/blockquote&gt; and &lt;pre&gt;&lt;/pre&gt; blocks:</td>
+	<td colspan="3">
+	<?php
+		adinj_add_checkbox('exclude_ads_from_block_tags'); 
+	?>
+	</td></tr>
+	<tr><td colspan="4"><p><span style="font-size:10px;">Exclude ads from &lt;pre&gt;&lt;/pre&gt; and &lt;blockquote&gt;&lt;/blockquote&gt; tag blocks.<br/>
+	Ad Injection also supports &lt;!--adinj_exclude_start--&gt;&lt;!--adinj_exclude_end--&gt; tags. You don't need to tick the box for these to be enabled.</span></p></td></tr>
+	
 	</table>
 	
 	

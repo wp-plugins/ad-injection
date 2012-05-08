@@ -4,7 +4,7 @@ Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-w
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, widgets, sidebar, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog, ad rotation, A:B testing, split testing, WP Super Cache, W3 Total Cache, WP Cache
 Requires at least: 2.8.6
 Tested up to: 3.3.1
-Stable tag: 1.2.0.12
+Stable tag: 1.2.0.13
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
@@ -17,6 +17,7 @@ Ad Injection from [reviewmylife](http://www.reviewmylife.co.uk/ "reviewmylife") 
 * Set the position of the top and bottom advert by paragraph or character.
 * Position the random ads to start or stop in the middle of the post.
 * Stop the random ads 2/3 of the way down a post, or at a paragraph/character position from the beginning/end of the post.
+* New options to exlude ads from blockquote and pre sections. And custom ad exlude tags.
 * Fade unused Home/Archive options instead of making them dissapear.
 * Add page age settings to status.
 * Improve debug messages.
@@ -86,6 +87,12 @@ IP addresses of people who shouldn't see your ads can be defined. These could be
 = Override ad positioning on individual posts =
 
 If you need to override the top, random, or bottom ad positions on a specific post you can use these in-content tags to manually set the ad positions: &lt;!--topad--&gt; &lt;!--randomad--&gt; &lt;!--bottomad--&gt; &lt;!--adstart--&gt; &lt;!--adend--&gt; &lt;!--noads--&gt;
+
+You can manually exclude ads from specific sections of the post using the &lt;!--adinj_exclude_start--&gt;&lt;!--adinj_exclude_end--&gt; tags.
+
+= Exclude ads from block tags =
+
+Ads can be excluded from &lt;blockquote&gt;&lt;/blockquote&gt; and &lt;pre&gt;&lt;/pre&gt; tags.
 
 = Alternate content =
 
@@ -418,6 +425,8 @@ Global advert
 
 You can download the Country Filter plugin from http://wordpress.org/extend/plugins/country-filter/
 
+You could also use the Geo IP functionality that CloudFlare offers (you can set it up for free if you are able to modify your DNS settings) http://support.cloudflare.com/kb/what-do-the-various-cloudflare-settings-do/how-does-cloudflare-ip-geolocation-work
+
 = If I restrict a widget to both a category and a tag it doesn't appear in the relevant category/tag archives. Why? =
 
 If you set an ad with a tag restriction of 'tag1' and a category restriction of 'cat1', then it will only appear on pages that have BOTH the tag1 and cat1 property.
@@ -606,6 +615,10 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 5. Can choose to show the ads only to search engine visitors, or define IP addresses that ads aren't shown to.
 
 == Changelog ==
+
+= 1.2.0.13 =
+* New option to exclude ads from blockquote and pre tags.
+* New tag to exclude ads from specific parts of posts.
 
 = 1.2.0.12 =
 * Fix for ads with UTF-8 characters
@@ -850,41 +863,16 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 
 == Upgrade Notice ==
 
+= 1.2.0.13 =
+* New option to exclude ads from blockquote and pre tags.
+* New tag to exclude ads from specific parts of posts.
+
 = 1.2.0.12 =
 * Fix for ads with UTF-8 characters
 
 = 1.2.0.11 =
 * Preserve HTML entities when saving - i.e. preserve special character sequences.
 * Add '400' as an option to the numbered drop downs.
-
-= 1.2.0.10 =
-* Fix to allow categories/tags/author names which contain spaces.
-* Add category/tag/id/author filters for template ads.
-* Hopefully fixes the 'headers already sent message that some people got with 1.2.0.8
-
-= 1.2.0.7 =
-* Tested on WordPress 3.3.
-* Put mfunc code block on one line.
-
-= 1.2.0.6 =
-* Fix problem with debug output.
-* Reduce memory on admin side for blogs with large numbers of tags.
-* More detailed debug for PHP exec errors.
-* Colour debug table changes.
-
-= 1.2.0.5 =
-* Fix: Problem with adinjblocked cookie reading.
-
-= 1.2.0.4 =
-* New: Support for Ad Logger's AdSense click blocking feature (that is my new plugin!).
-* New: Make more parts of the ad placement settings UI fade away if they can't be used.
-
-= 1.2.0.3 =
-* New: Setting to allow priority of Ad Injection's the_content filter to be changed to help with problem themes.
-* Fix: Start at paragraph setting may have been incorrectly upgraded if previously using an old version of this plugin.
-
-= 1.2.0.2 =
-* Fix: Problem with repeating bottom ads and ID filters not being properly applied to archives.
 
 = 0.8.3 =
 First public release.
