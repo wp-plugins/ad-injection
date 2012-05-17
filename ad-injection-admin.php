@@ -280,6 +280,7 @@ function adinj_options_page(){
 	case "main":
 	default:
 		require_once(ADINJ_PATH . '/ui-tab-main.php');
+		adinj_side_advert_box();
 		adinj_side_status_box();
 		adinj_side_donate_box();
 		adinj_side_info_box();
@@ -342,7 +343,7 @@ function adinj_top_message_box(){
 		
 	} else if (!isset($_GET['tab'])){
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "8th May 2012: New option to exclude ads from &lt;blockquote&gt;&lt;/blockquote&gt; and &lt;pre&gt;&lt;/pre&gt; blocks (it is in the 'Other ad placement sections' area). And new &lt;!--adinj_exclude_start--&gt;&lt;!--adinj_exclude_end--&gt; which can be used to exlude ads from custom sections. Please contact me ASAP if you spot any bugs, or odd behaviour via the <a href='http://wordpress.org/tags/ad-injection?forum_id=10'target='_new'>Ad Injection WordPress forum</a> or my ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>. If you like the plugin please consider making a donation using the PayPal box below :)'."<br/>And finally I've just released my first iPhone game called <a href='http://itunes.apple.com/us/app/solar-balls/id521551813?ls=1&mt=8' target='_new'>Solar Balls</a> - please have a look and consider playing it :)";
+		echo "17th May 2012: New numeric values in some of the pull down boxes for post length and ad start/end positions. Please contact me ASAP if you spot any bugs, or odd behaviour via the <a href='http://wordpress.org/tags/ad-injection?forum_id=10'target='_new'>Ad Injection WordPress forum</a> or my ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>. If you like the plugin please consider making a donation using the PayPal box below :)'."<br/>And finally I've just released my first iPhone game called <a href='http://itunes.apple.com/us/app/solar-balls/id521551813?ls=1&mt=8' target='_new'>Solar Balls</a> - please have a look and consider playing it :)";
 		echo '</strong></p></div>';
 	}
 }

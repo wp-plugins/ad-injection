@@ -3,8 +3,8 @@ Contributors: reviewmylife
 Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, widgets, sidebar, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog, ad rotation, A:B testing, split testing, WP Super Cache, W3 Total Cache, WP Cache
 Requires at least: 2.8.6
-Tested up to: 3.3.1
-Stable tag: 1.2.0.13
+Tested up to: 3.3.2
+Stable tag: 1.2.0.14
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
@@ -616,6 +616,9 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 
 == Changelog ==
 
+= 1.2.0.14 =
+* Add additional values to numeric pull down boxes. 6000-8000 for paragraph positions. And 7500 for post length boxes.
+
 = 1.2.0.13 =
 * New option to exclude ads from blockquote and pre tags.
 * New tag to exclude ads from specific parts of posts.
@@ -862,6 +865,9 @@ Fix 'Something badly wrong in num_rand_ads_to_insert' message that occurs on pag
 * First public release
 
 == Upgrade Notice ==
+
+= 1.2.0.14 =
+* Add additional values to numeric pull down boxes. 6000-8000 for paragraph positions. And 7500 for post length boxes.
 
 = 1.2.0.13 =
 * New option to exclude ads from blockquote and pre tags.

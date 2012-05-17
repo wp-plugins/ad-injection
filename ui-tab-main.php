@@ -52,7 +52,7 @@ function adinj_placement_settings_box($ops){
 	<tr><td>Only show on posts longer than:</td><td>
 	<?php
 	$unit = adinj_counting_unit_description();
-	$ad_if_longer_settings = array('d',100,200,300,400,500,750,1000,1500,2000,2500,3000,5000,10000,15000,20000);
+	$ad_if_longer_settings = array('d',100,200,300,400,500,750,1000,1500,2000,2500,3000,5000,7500,10000,15000,20000);
 	adinj_selection_box("top_ad_if_longer_than", $ad_if_longer_settings, $unit);
 	echo '</td><td><div class="adinj_home">';
 	adinj_selection_box("home_top_ad_if_longer_than", $ad_if_longer_settings, $unit);
@@ -197,7 +197,7 @@ JQUERYOPACITY;
 			</td><td>
 				<div class="random_ads_start_unit">
 				<?php
-				adinj_selection_box("random_ads_start_at", array(1,2,3,4,5,100,200,300,400,500,750,1000,1500,2000,3000,4000,5000,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), " ");
+				adinj_selection_box("random_ads_start_at", array(1,2,3,4,5,100,200,300,400,500,750,1000,1500,2000,3000,4000,5000,6000,7000,8000,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), " ");
 				?>
 				</div>
 			</td>
@@ -244,7 +244,7 @@ JQUERYOPACITY;
 			</td><td>
 			<div class="random_ads_end_unit">
 			<?php
-			adinj_selection_box("random_ads_end_at", array(1,2,3,4,5,100,200,300,400,500,750,1000,1500,2000,3000,4000,5000,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), " ");
+			adinj_selection_box("random_ads_end_at", array(1,2,3,4,5,100,200,300,400,500,750,1000,1500,2000,3000,4000,5000,6000,7000,8000,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), " ");
 			?>
 			</div>
 			</td>
@@ -708,7 +708,7 @@ function adinj_random_ad_limit_table(){
 	<?php
 	$prefixes = array("", "home", "archive");
 	$unit = adinj_counting_unit_description();
-	$ad_limit_settings = array('d',100,200,300,400,500,750,1000,1500,2000,2500,3000,5000,10000,15000,20000);
+	$ad_limit_settings = array('d',100,200,300,400,500,750,1000,1500,2000,2500,3000,5000,7500,10000,15000,20000);
 	
 	foreach ($prefixes as $prefix){
 		echo '<td><div class="adinj_'.$prefix.'">';
@@ -806,6 +806,32 @@ function adinj_unknown_cache_msg(){
 	</blockquote>
 	</blockquote>
 	<?php
+}
+
+function adinj_side_advert_box(){
+	$ops = adinj_options();
+	?>
+	<div class="postbox-container" style="width:258px;">
+		<div class="metabox-holder">	
+		<div class="meta-box-sortables" style="min-height:50px;">
+		<div class="postbox">
+		<h3 class="hndle"><span><?php echo adinj_get_logo(); ?> Sponsors</span></h3>
+		<div class="inside" style="margin:5px;">
+		
+		<?php
+		echo adinj_get_advert_1();
+		?>
+		
+		</div>
+	</div>
+	</div>
+	</div>
+	</div>
+<?php
+}
+
+function adinj_get_advert_1(){
+	return '<a href="http://themefuse.com/wp-themes-shop/?plugin=ad-injection" target="_blank"><img src="'. WP_PLUGIN_URL . '/ad-injection/themefuse.jpg" width="220" height="220" border="0" alt="themefuse" /></a>';
 }
 
 function adinj_side_status_box(){
