@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 1.2.0.14
+Version: 1.2.0.15
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -37,7 +37,8 @@ define('ADINJ_NO_CONFIG_FILE', 1);
 // 20 = 1.2.0.3 the_content_filter_priority setting
 // 21 = 1.2.0.8 Template conditions
 // 22 = 1.2.0.13 exclude_ads_from_block_tags option
-define('ADINJ_DB_VERSION', 22);
+// 23 = 1.2.0.15 exclude_ads_from_[div/list/form]_tags option
+define('ADINJ_DB_VERSION', 23);
 
 // Files
 // TODO will these paths work on windows?
@@ -705,17 +706,53 @@ function adinj_content_hook($content){
 	$original_paragraph_positions = array();
 	$prevpos = -1;
 	while(($prevpos = stripos($content, ADINJ_PARA, $prevpos+1)) !== false){
-		$next_blockquote_open = adinj_stripos($content, '<blockquote>', $prevpos);
-		$next_blockquote_close = adinj_stripos($content, '</blockquote>', $prevpos);
-		$next_pre_open = adinj_stripos($content, '<pre>', $prevpos);
-		$next_pre_close = adinj_stripos($content, '</pre>', $prevpos);
+		
 		$valid = true;
 		if (adinj_ticked('exclude_ads_from_block_tags')){
+			$next_blockquote_open = adinj_stripos($content, '<blockquote', $prevpos);
+			$next_blockquote_close = adinj_stripos($content, '</blockquote>', $prevpos);
+			$next_pre_open = adinj_stripos($content, '<pre', $prevpos);
+			$next_pre_close = adinj_stripos($content, '</pre>', $prevpos);
 			$valid = (($next_blockquote_open == $next_blockquote_close) || 
 						($next_blockquote_open > $prevpos && $next_blockquote_open <= $next_blockquote_close)) &&
 						(($next_pre_open == $next_pre_close) || 
 						($next_pre_open > $prevpos && $next_pre_open <= $next_pre_close));
+			if (!$valid) continue;
 		}
+		
+		if (adinj_ticked('exclude_ads_from_div_tags')){
+			$next_open = adinj_stripos($content, '<div', $prevpos);
+			$next_close = adinj_stripos($content, '</div>', $prevpos);
+			$valid = (($next_open == $next_close) || 
+						($next_open > $prevpos && $next_open <= $next_close));
+			if (!$valid) continue;
+		}
+		
+		
+		if (adinj_ticked('exclude_ads_from_list_tags')){
+			$next_open = adinj_stripos($content, '<ol', $prevpos);
+			$next_close = adinj_stripos($content, '</ol>', $prevpos);
+			$valid = (($next_open == $next_close) || 
+						($next_open > $prevpos && $next_open <= $next_close));
+			if (!$valid) continue;
+		}
+		
+		if (adinj_ticked('exclude_ads_from_list_tags')){
+			$next_open = adinj_stripos($content, '<ul', $prevpos);
+			$next_close = adinj_stripos($content, '</ul>', $prevpos);
+			$valid = (($next_open == $next_close) || 
+						($next_open > $prevpos && $next_open <= $next_close));
+			if (!$valid) continue;
+		}
+		
+		if (adinj_ticked('exclude_ads_from_form_tags')){
+			$next_open = adinj_stripos($content, '<form', $prevpos);
+			$next_close = adinj_stripos($content, '</form>', $prevpos);
+			$valid = (($next_open == $next_close) || 
+						($next_open > $prevpos && $next_open <= $next_close));
+			if (!$valid) continue;
+		}
+		
 		if($valid){
 			$next_exclude_open = adinj_stripos($content, '<!--adinj_exclude_start-->', $prevpos);
 			$next_exclude_close = adinj_stripos($content, '<!--adinj_exclude_end-->', $prevpos);
@@ -1174,22 +1211,22 @@ function adinj_num_rand_ads_to_insert($content_length, &$debug){
 
 	$length = $content_length;
 	$conditionlength = $ops[$prefix.'no_random_ads_if_shorter_than'];
-	if (adinj_true_if($length, '<', $conditionlength)){
+	if (!adinj_rule_disabled($conditionlength) && adinj_true_if($length, '<', $conditionlength)){
 		$debug .= "\nNo random ads because post length < $conditionlength";
 		return 0;
 	}
 	$conditionlength = $ops[$prefix.'one_ad_if_shorter_than'];
-	if (adinj_true_if($length, '<', $conditionlength)){
+	if (!adinj_rule_disabled($conditionlength) && adinj_true_if($length, '<', $conditionlength)){
 		$debug .= "\nOnly 1 random ad because post length < $conditionlength";
 		return 1;
 	}
 	$conditionlength = $ops[$prefix.'two_ads_if_shorter_than'];
-	if (adinj_true_if($length, '<', $conditionlength)){
+	if (!adinj_rule_disabled($conditionlength) && adinj_true_if($length, '<', $conditionlength)){
 		$debug .= "\nLimit on random ads because post length < $conditionlength";
 		return min(2, $max_num_rand_ads_to_insert);
 	}
 	$conditionlength = $ops[$prefix.'three_ads_if_shorter_than'];
-	if (adinj_true_if($length, '<', $conditionlength)){
+	if (!adinj_rule_disabled($conditionlength) && adinj_true_if($length, '<', $conditionlength)){
 		$debug .= "\nLimit on random ads because post length < $conditionlength";
 		return min(3, $max_num_rand_ads_to_insert);
 	}

@@ -343,7 +343,7 @@ function adinj_top_message_box(){
 		
 	} else if (!isset($_GET['tab'])){
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "17th May 2012: New numeric values in some of the pull down boxes for post length and ad start/end positions. Please contact me ASAP if you spot any bugs, or odd behaviour via the <a href='http://wordpress.org/tags/ad-injection?forum_id=10'target='_new'>Ad Injection WordPress forum</a> or my ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>. If you like the plugin please consider making a donation using the PayPal box below :)'."<br/>And finally I've just released my first iPhone game called <a href='http://itunes.apple.com/us/app/solar-balls/id521551813?ls=1&mt=8' target='_new'>Solar Balls</a> - please have a look and consider playing it :)";
+		echo "25th June 2012: New options to exclude ads from div, form, ol and ul tags. Fix relating to post length restrictions. Please contact me ASAP if you spot any bugs, or odd behaviour via the <a href='http://wordpress.org/tags/ad-injection?forum_id=10'target='_new'>Ad Injection WordPress forum</a> or my ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>. If you like the plugin please consider making a donation using the PayPal box below :)'."<br/>And finally I've just released my first iPhone game called <a href='http://itunes.apple.com/us/app/solar-balls/id521551813?ls=1&mt=8' target='_new'>Solar Balls</a> - please have a go if you have time :)";
 		echo '</strong></p></div>';
 	}
 }
@@ -1046,32 +1046,48 @@ function is_supported_caching_plugin_active(){
 
 //////////////////////////////////////////////////////////////////////////////
 
+function adinj_get_test_ad_link_escaped($rnd){
+	echo htmlspecialchars(adinj_get_test_ad_link($rnd));
+}
+//? >&lt;a href=&quot;http://www.reviewmylife.co.uk/&quot;&gt;www.reviewmylife.co.uk&lt;/a&gt;< ?php
+
+function adinj_get_test_ad_link($rnd){
+	if ($rnd == 0){
+?><a href="http://www.reviewmylife.co.uk/">www.reviewmylife.co.uk</a><?php
+	} else if ($rnd == 1) {
+?><a href="http://www.reviewmylife.co.uk/">reviewmylife</a><?php
+	} else {
+?><a href="http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/">Ad Injection</a><?php
+	}
+}
+
 function adinj_testads(){
 	adinj_postbox_start(__("Test Adverts and template ad examples", 'adinj'), "testads", '95%');
+	$rnd = rand(0, 2);
 	?>
 <p>You can copy and paste these adverts into the boxes above to test your ad setup before switching to your real ads.</p>
 
 <h4><a name="468x60"></a>468x60 banner</h4>
 
 <p><textarea onclick="javascript:this.focus();this.select();" style="min-height:50px;" cols="80" rows="4">&lt;div style=&quot;background-color:#ff9999; width:468px; height:60px;&quot;&gt;
-&lt;h5&gt;TEST ADVERT 468x60 - &lt;a href=&quot;http://www.reviewmylife.co.uk/&quot;&gt;www.reviewmylife.co.uk&lt;/a&gt;&lt;/h5&gt;
+&lt;h5&gt;AD INJECTION TEST ADVERT 468x60 - <?php adinj_get_test_ad_link_escaped($rnd); ?>&lt;/h5&gt;
 &lt;/div&gt;</textarea></p>
 
 <div style="background-color:#99ffff; width:468px; height:60px;">
-<h5>TEST ADVERT 468x60 - <a href="http://www.reviewmylife.co.uk/">www.reviewmylife.co.uk</a></h5>
+<h5>AD INJECTION TEST ADVERT 468x60 - <?php adinj_get_test_ad_link($rnd); ?></h5>
 </div><p></p>
 
 <h4><a name="728x90"></a>728x90 banner</h4>
 
 <p><textarea onclick="javascript:this.focus();this.select();" style="min-height:50px;" cols="80" rows="4">&lt;div style=&quot;background-color:#ff9999; width:728px; height:90px;&quot;&gt;
-&lt;h5&gt;TEST ADVERT 728x90&lt;/h5&gt;
-&lt;a href=&quot;http://www.reviewmylife.co.uk/&quot;&gt;www.reviewmylife.co.uk&lt;/a&gt;&lt;br /&gt;
+&lt;h5&gt;AD INJECTION TEST ADVERT 728x90&lt;/h5&gt;
+<?php adinj_get_test_ad_link_escaped($rnd); ?>&lt;br /&gt;
 &lt;a href=&quot;http://www.advancedhtml.co.uk/&quot;&gt;www.advancedhtml.co.uk&lt;/a&gt;
 &lt;/div&gt;</textarea></p>
 
 <div style="background-color:#ff9999; width:728px; height:90px;">
-<h5>TEST ADVERT 728x90</h5>
-<a href="http://www.reviewmylife.co.uk/">www.reviewmylife.co.uk</a><br />
+<h5>AD INJECTION TEST ADVERT 728x90</h5>
+<?php adinj_get_test_ad_link($rnd); ?><br />
 <a href="http://www.advancedhtml.co.uk/">www.advancedhtml.co.uk</a>
 </div><p></p>
 
@@ -1079,34 +1095,34 @@ function adinj_testads(){
 
 <p><textarea onclick="javascript:this.focus();this.select();" style="min-height:50px;" cols="80" rows="4">&lt;div style=&quot;background-color:#ccff99; width:160px; height:90px;&quot;&gt;
 &lt;h5&gt;TEST ADVERT 160x90&lt;/h5&gt;
-&lt;a href=&quot;http://www.reviewmylife.co.uk/&quot;&gt;reviewmylife.co.uk&lt;/a&gt;&lt;br /&gt;
+<?php adinj_get_test_ad_link_escaped($rnd); ?>&lt;br /&gt;
 &lt;a href=&quot;http://www.advancedhtml.co.uk/&quot;&gt;advancedhtml.co.uk&lt;/a&gt;
 &lt;/div&gt;</textarea></p>
 
 <div style="background-color:#ccff99; width:160px; height:90px;">
 <h5>TEST ADVERT 160x90</h5>
-<a href="http://www.reviewmylife.co.uk/">reviewmylife.co.uk</a>
+<?php adinj_get_test_ad_link($rnd); ?><br />
 <a href="http://www.advancedhtml.co.uk/">advancedhtml.co.uk</a><br />
 </div><p></p>
 
 <h4><a name="468x15"></a>468x15 link unit</h4>
 
 <p><textarea onclick="javascript:this.focus();this.select();" style="min-height:50px;" cols="80" rows="4">&lt;div style=&quot;background-color:#cccc99; width:468px; height:15px;&quot;&gt;
-&lt;font size=&quot;-2&quot;&gt;&lt;b&gt;TEST ADVERT 160x90&lt;/b&gt; &lt;a href=&quot;http://www.reviewmylife.co.uk/&quot;&gt;reviewmylife.co.uk&lt;/a&gt;&lt;/font&gt;
+&lt;font size=&quot;-2&quot;&gt;&lt;b&gt;TEST ADVERT 160x90&lt;/b&gt; <?php adinj_get_test_ad_link_escaped($rnd); ?>&lt;/font&gt;
 &lt;/div&gt;</textarea></p>
 
 <div style="background-color:#cccc99; width:468px; height:15px;">
-<font size="-2"><b>TEST ADVERT 468x15</b> <a href="http://www.reviewmylife.co.uk/">reviewmylife.co.uk</a></font>
+<font size="-2"><b>TEST ADVERT 468x15</b> <?php adinj_get_test_ad_link($rnd); ?></font>
 </div><p></p>
 
 <h4><a name="336x280"></a>336x280 large rectangle</h4>
 
 <p><textarea onclick="javascript:this.focus();this.select();" style="min-height:50px;" cols="80" rows="4">&lt;div style=&quot;background-color:#ccccff; width:336px; height:280px;&quot;&gt;
-&lt;h5&gt;TEST ADVERT 336x280 - &lt;a href=&quot;http://www.reviewmylife.co.uk/&quot;&gt;www.reviewmylife.co.uk&lt;/a&gt;&lt;/h5&gt;
+&lt;h5&gt;TEST ADVERT 336x280 - <?php adinj_get_test_ad_link_escaped($rnd); ?>&lt;/h5&gt;
 &lt;/div&gt;</textarea></p>
 
 <div style="background-color:#ccccff; width:336px; height:280px;">
-<h5>TEST ADVERT 336x280 - <a href="http://www.reviewmylife.co.uk/">www.reviewmylife.co.uk</a></h5>
+<h5>TEST ADVERT 336x280 - <?php adinj_get_test_ad_link($rnd); ?></h5>
 </div><p></p>
 
 <h4>468x60 banner with dynamic PHP</h4>
@@ -1401,6 +1417,9 @@ function adinj_default_options(){
 		'widgets_on_page_older_than' => '0',
 		'content_length_unit' => 'words',
 		'exclude_ads_from_block_tags' => 'off',
+		'exclude_ads_from_div_tags' => 'off',
+		'exclude_ads_from_list_tags' => 'off',
+		'exclude_ads_from_form_tags' => 'off',
 		// random ad start/end position
 		'random_ads_start_mode' => 'anywhere',
 		'random_ads_start_unit' => 'paragraph',
