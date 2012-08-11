@@ -343,7 +343,7 @@ function adinj_top_message_box(){
 		
 	} else if (!isset($_GET['tab'])){
 		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "25th June 2012: New options to exclude ads from div, form, ol and ul tags. Fix relating to post length restrictions. Please contact me ASAP if you spot any bugs, or odd behaviour via the <a href='http://wordpress.org/tags/ad-injection?forum_id=10'target='_new'>Ad Injection WordPress forum</a> or my ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>. If you like the plugin please consider making a donation using the PayPal box below :)'."<br/>And finally I've just released my first iPhone game called <a href='http://itunes.apple.com/us/app/solar-balls/id521551813?ls=1&mt=8' target='_new'>Solar Balls</a> - please have a go if you have time :)";
+		echo "11th August 2012: Add table exclusion option. Remove old advert - the space is now available. Please contact me ASAP if you spot any bugs, or odd behaviour via the <a href='http://wordpress.org/tags/ad-injection?forum_id=10'target='_new'>Ad Injection WordPress forum</a> or my ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>. If you like the plugin please consider making a donation using the PayPal box below :)'."<br/>And finally I've just released an app to help you try Facebook Likes, Twitter Tweets and Google +1s on your website. It is called <a href='http://www.reviewmylife.co.uk/blog/2012/07/14/web-social-stats-for-seo/' target='_new'>Web Social Stats for SEO</a>.";
 		echo '</strong></p></div>';
 	}
 }
@@ -1420,6 +1420,7 @@ function adinj_default_options(){
 		'exclude_ads_from_div_tags' => 'off',
 		'exclude_ads_from_list_tags' => 'off',
 		'exclude_ads_from_form_tags' => 'off',
+		'exclude_ads_from_table_tags' => 'off',
 		// random ad start/end position
 		'random_ads_start_mode' => 'anywhere',
 		'random_ads_start_unit' => 'paragraph',

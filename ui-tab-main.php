@@ -406,6 +406,13 @@ JQUERYOPACITY;
 		adinj_add_checkbox('exclude_ads_from_form_tags'); 
 	?>
 	</td></tr>
+	<tr>
+	<td colspan="2">Exclude ads from &lt;table&gt;&lt;/table&gt; blocks:</td>
+	<td colspan="2">
+	<?php
+		adinj_add_checkbox('exclude_ads_from_table_tags'); 
+	?>
+	</td></tr>
 	<tr><td colspan="4"><p><span style="font-size:10px;">Ad Injection also supports &lt;!--adinj_exclude_start--&gt;&lt;!--adinj_exclude_end--&gt; tags. You don't need to tick the box for these to be enabled.</span></p></td></tr>
 	
 	</table>
@@ -851,7 +858,7 @@ function adinj_side_advert_box(){
 }
 
 function adinj_get_advert_1(){
-	return '<a href="http://themefuse.com/wp-themes-shop/?plugin=ad-injection" target="_blank"><img src="'. WP_PLUGIN_URL . '/ad-injection/themefuse.jpg" width="220" height="220" border="0" alt="themefuse" /></a>';
+	return 'If you are interested in advertising here (a 220x220px would work) get <a href="http://www.reviewmylife.co.uk/contact-us/" target="_blank">in contact</a>.<!--<a href="http://www.reviewmylife.co.uk/contact-us/" target="_blank"><img src="'. WP_PLUGIN_URL . '/ad-injection/advert-1_placeholder.png" width="220" height="220" border="0" alt="Ad Injection advert" /></a>-->';
 }
 
 function adinj_side_status_box(){

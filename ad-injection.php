@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 1.2.0.15
+Version: 1.2.0.16
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -38,7 +38,8 @@ define('ADINJ_NO_CONFIG_FILE', 1);
 // 21 = 1.2.0.8 Template conditions
 // 22 = 1.2.0.13 exclude_ads_from_block_tags option
 // 23 = 1.2.0.15 exclude_ads_from_[div/list/form]_tags option
-define('ADINJ_DB_VERSION', 23);
+// 24 = 1.2.0.16 exclude_ads_from_table_tags option
+define('ADINJ_DB_VERSION', 24);
 
 // Files
 // TODO will these paths work on windows?
@@ -748,6 +749,14 @@ function adinj_content_hook($content){
 		if (adinj_ticked('exclude_ads_from_form_tags')){
 			$next_open = adinj_stripos($content, '<form', $prevpos);
 			$next_close = adinj_stripos($content, '</form>', $prevpos);
+			$valid = (($next_open == $next_close) || 
+						($next_open > $prevpos && $next_open <= $next_close));
+			if (!$valid) continue;
+		}
+		
+		if (adinj_ticked('exclude_ads_from_table_tags')){
+			$next_open = adinj_stripos($content, '<table', $prevpos);
+			$next_close = adinj_stripos($content, '</table>', $prevpos);
 			$valid = (($next_open == $next_close) || 
 						($next_open > $prevpos && $next_open <= $next_close));
 			if (!$valid) continue;
