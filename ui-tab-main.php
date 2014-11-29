@@ -616,7 +616,9 @@ function adinj_insertion_mode_box($ops){
 	adinj_postbox_start(__("Ad insertion mode and dynamic ad display restrictions", 'adinj'), 'restrictions'); ?>
 	<h4>Ad insertion mode</h4>
 	<blockquote>
-	<input type="radio" name="ad_insertion_mode" value="mfunc" <?php if (adinj_mfunc_mode()) echo 'checked="checked"'; ?> /> <b>mfunc: Insert ads using cache compatible mfunc tags</b> - Dynamic features will work with WP Super Cache, W3 Total Cache and WP Cache. Only select this mode if you are using one of those caching plugins and want to use dynamic features (IP / referrer restriction, alt content and ad roatation). If you aren't using dynamic features select direct mode.
+	<input type="radio" name="ad_insertion_mode" value="direct" <?php if (adinj_direct_mode()) echo 'checked="checked"'; ?> /> <b>direct: Direct ad code insertion <font color="green">(recommended)</font></b> - Adds are directly inserted into the page. Note that dynamic features (the ones in this section) will not work if you are using a caching plugin as dynamic features require that the page is dynamically generated each time a user views it.<br />
+	
+	<input type="radio" name="ad_insertion_mode" value="mfunc" <?php if (adinj_mfunc_mode()) echo 'checked="checked"'; ?> /> <b>mfunc: Insert ads using cache compatible mfunc tags <font color="red">(not recommended)</font></b> - unless you are 100% certain you understand mfunc mode and know what you are doing!<br />
 	
 	<?php if (!adinj_mfunc_mode()) { ?>
 	<script type="text/javascript">
@@ -626,6 +628,7 @@ function adinj_insertion_mode_box($ops){
 	<br />
 	
 	<div id="caching_plugin_msg" class="caching_plugin_msg">
+	Dynamic features may work with older versions of WP Super Cache, W3 Total Cache and WP Cache. Only select this mode if you are using an older version of one of those caching plugins that you know supports mfunc and want to use dynamic features (IP / referrer restriction, alt content and ad roatation). If you aren't using dynamic features or don't understand what mfunc is then select direct mode. This mode is left in for people who know exactly what mfunc mode is and understand the risks of using it. If you have to ask then use direct mode.
 	<?php if (!is_supported_caching_plugin_active()) {
 		echo '<p><b><span style="font-size:10px;color:red;">Note: A supported caching plugin does not appear to be active. If you are not using WP Super Cache / W3 Total Cache / WP Cache you should use one of the direct insertion modes below.</span></b></p>';		
 	} ?>
@@ -643,7 +646,7 @@ function adinj_insertion_mode_box($ops){
 	
 	<br />
 	
-	<input type="radio" name="ad_insertion_mode" value="direct" <?php if (adinj_direct_mode()) echo 'checked="checked"'; ?> /> <b>direct: Direct ad code insertion</b> - Select this if you are not using an mfunc compatible caching plugin OR if you are not using the dynamic features.<br />
+	
 	</blockquote>
 
 	<p></p>
@@ -838,7 +841,7 @@ function adinj_unknown_cache_msg(){
 function adinj_side_advert_box(){
 	$ops = adinj_options();
 	?>
-	<div class="postbox-container" style="width:258px;">
+	<!--<div class="postbox-container" style="width:258px;">
 		<div class="metabox-holder">	
 		<div class="meta-box-sortables" style="min-height:50px;">
 		<div class="postbox">
@@ -846,7 +849,7 @@ function adinj_side_advert_box(){
 		<div class="inside" style="margin:5px;">
 		
 		<?php
-		echo adinj_get_advert_1();
+		//echo adinj_get_advert_1();
 		?>
 		
 		</div>
@@ -854,6 +857,7 @@ function adinj_side_advert_box(){
 	</div>
 	</div>
 	</div>
+	//-->
 <?php
 }
 

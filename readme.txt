@@ -3,14 +3,14 @@ Contributors: reviewmylife
 Donate link: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Tags: ad injection, adsense, advert injection, advert, ad, injection, advertising, affiliate, inject, injection, insert, widget, widgets, sidebar, monetize, monetise, banner, Amazon, ClickBank, TradeDoubler, Google, adBrite, post, WordPress, automatically, plugin, Adsense Injection, free, blog, ad rotation, A:B testing, split testing, WP Super Cache, W3 Total Cache, WP Cache
 Requires at least: 2.8.6
-Tested up to: 3.4.1
-Stable tag: 1.2.0.16
+Tested up to: 4.0.1
+Stable tag: 1.2.0.17
 
 Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
 
 == Description ==
 
-Ad Injection from [reviewmylife](http://www.reviewmylife.co.uk/ "reviewmylife") injects any kind of advert or other content (e.g. Google AdSense, Amazon Associates, ClickBank, TradeDoubler, etc) into the existing content of your WordPress posts and pages. You can control the number of adverts based on the post length, and it can restrict who sees adverts by post age, visitor referrer and IP address. Adverts can be configured in the post (random, top, and bottom positions) or in any widget/sidebar area. There's support for A:B split testing / ad rotation. And the dynamic restrictions (by IP and referrer) work with WP Super Cache, W3 Total Cache and WP Cache.
+Ad Injection from [reviewmylife](http://www.reviewmylife.co.uk/ "reviewmylife") injects any kind of advert or other content (e.g. Google AdSense, Amazon Associates, ClickBank, TradeDoubler, etc) into the existing content of your WordPress posts and pages. You can control the number of adverts based on the post length, and it can restrict who sees adverts by post age, visitor referrer and IP address. Adverts can be configured in the post (random, top, and bottom positions) or in any widget/sidebar area. There's support for A:B split testing / ad rotation. And support for dynamic restrictions (by IP address and referrer).
 
 **New Features 1.2.x.x**
 
@@ -229,13 +229,19 @@ Using a second browser in 'privacy mode' is also a good way of testing your site
 
 = Do I need to have WP Super Cache (or anther caching plugin) installed? =
 
+Note: mfunc mode is now deprecated - only use if you really understand what it does!
+
 No! All the features of this plugin will work with no caching plugin installed. But if you do have WP Super Cache the dynamic features (ad rotation and enabling ads based on IP address and referrer) will still work. And your blog will (probably) run a lot faster than with no caching plugin. Usually caching plugin prevent dynamic plugin features from working - but I've spent a lot of time creating a framework to allow this plugin's dynamic features to work with some of the most common caching plugins. Just make sure you choose the mfunc dynamic insertion mode from the Ad Injection settings screen.
 
 = Will the dynamic features work with other caching plugins? =
 
+Note: mfunc mode is now deprecated - only use if you really understand what it does!
+
 The dynamic features will work with any caching program that supports the mfunc tag. At the moment that is WP Super Cache, W3 Total Cache, and WP Cache.
 
 = Which caching plugin is best? =
+
+Note: mfunc mode is now deprecated - only use if you really understand what it does!
 
 Both WP Super Cache and W3 Total Cache are likely to be faster than WP Cache.
 
@@ -492,6 +498,8 @@ If you are using a 3rd party ad provider (e.g. AdSense) then statistics such as 
 
 Problem: No ads appear when using mfunc mode.
 
+Note: mfunc mode is now deprecated - only use if you really understand what it does!
+
 If you use WP Minify and a caching plugin in combination with Ad Injection, you'll need to turn off the HTML minification in WP Minify. This is because HTML minification strips out the mfunc tags that Ad Injection uses. You can leave the CSS and JavaScript minification on if you already use them.
 
 **FeedWordPress**
@@ -536,7 +544,7 @@ The multi-user version of WordPress are not supported - yet, however I have hear
 * Uninstall support is provided to delete this option if you uninstall the plugin.
 * Admin code is separated into a separate file so it is not loaded when your visitors view your pages.
 * When used with a compatible caching plugin Ad Injection loads its dynamic settings from a static PHP file, and the ads from disk so no extra MySQL database queries are required.
-* When mfunc mode is used the ads are saved as text files into the plugin folder. The plugin will therefore need write access to the plugins folder.
+* When mfunc mode (deprecated) is used the ads are saved as text files into the plugin folder. The plugin will therefore need write access to the plugins folder.
 * The JavaScript for setting the referrer cookie is inserted using wp_enqueue_scripts.
 * If there is anything I can do better please let me know - this is my first plugin so I still have a lot to learn!
 
@@ -577,6 +585,8 @@ Ad Injection does not currently have support for inserting adverts into snippets
 
 = If you are using a caching plugin =
 
+Note that mfunc mode is now deprecated and so you use it at your own risk. I recommend using direct insertion mode. This does mean that if you use a caching plugin the dynamic features won't work.
+
 1. Have you enabled Ad Injection's 'mfunc' mode? (in the Ad insertion mode and dynamic ad display restrictions pane)
 2. If you use a version of WP Super Cache prior to 0.9.9.8  it must be configured in 'Legacy' mode for the dynamic features to work. If you use WP Super Cache 0.9.9.8 or above you can use any of the caching modes (mod_rewrite and PHP are faster than legacy).
 3. If you are using WP Minify as well then turn off the HTML minification as this strips out the mfunc tags that Ad Injection uses to check if the adverts should be inserted.
@@ -591,6 +601,8 @@ Ad Injection does not currently have support for inserting adverts into snippets
 You are probably running out of memory. View the HTML source of the settings page (usually right click and View Source) and see if there is an out of memory message. You might have to delete/deactivate some other plugins, or search Google for advise specific to your web host.
 
 = If you are getting errors when using mfunc mode check the following =
+
+Note: mfunc mode is now deprecated - only use if you really understand what it does!
 
 1. Are there ad data directories in the plugin directory? The path will be: 
 
@@ -623,6 +635,9 @@ If you do get any errors please use the 'Report a bug or give feedback' link on 
 5. Can choose to show the ads only to search engine visitors, or define IP addresses that ads aren't shown to.
 
 == Changelog ==
+
+= 1.2.0.17 =
+* A few cleanups to make it clear that direct ad insertion mode is the recommended mode. mfunc mode is left in for people who know what they are doing.
 
 = 1.2.0.16 =
 * New options to exclude ads from table tags.
