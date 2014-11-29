@@ -6,7 +6,7 @@ Requires at least: 2.8.6
 Tested up to: 4.0.1
 Stable tag: 1.2.0.17
 
-Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP. Cache compatible.
+Injects any adverts (e.g. AdSense) into the WordPress posts or widget area. Restrict who sees ads by post length/age/referrer or IP.
 
 == Description ==
 
