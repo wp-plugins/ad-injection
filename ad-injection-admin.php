@@ -261,8 +261,8 @@ function adinj_options_page(){
 	switch( $_GET[ 'tab' ] ) {
 	case "adrotation":
 		require_once(ADINJ_PATH . '/ui-tab-adrotation.php');
-		adinj_side_donate_box();
 		adinj_side_info_box();
+		adinj_side_donate_box();
 		echo '</div>';
 		echo '<form name="adinjform" method="post" action="">';
 		wp_nonce_field('_adinj_form');
@@ -270,8 +270,8 @@ function adinj_options_page(){
 		break;
 	case "debug":
 		require_once(ADINJ_PATH . '/ui-tab-debug.php');
-		adinj_side_donate_box();
 		adinj_side_info_box();
+		adinj_side_donate_box();
 		echo '</div>';
 		echo '<form name="adinjform" method="post" action="">';
 		wp_nonce_field('_adinj_form');
@@ -282,8 +282,8 @@ function adinj_options_page(){
 		require_once(ADINJ_PATH . '/ui-tab-main.php');
 		adinj_side_advert_box();
 		adinj_side_status_box();
-		adinj_side_donate_box();
 		adinj_side_info_box();
+		adinj_side_donate_box();
 		echo '</div>';
 		echo '<form name="adinjform" method="post" action="">';
 		wp_nonce_field('_adinj_form');
@@ -342,9 +342,9 @@ function adinj_top_message_box(){
 		echo '</p></div>';
 		
 	} else if (!isset($_GET['tab'])){
-		echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
-		echo "11th August 2012: Add table exclusion option. Remove old advert - the space is now available. Please contact me ASAP if you spot any bugs, or odd behaviour via the <a href='http://wordpress.org/tags/ad-injection?forum_id=10'target='_new'>Ad Injection WordPress forum</a> or my ".'<a href="'.adinj_feedback_url().'" target="_new">quick feedback form</a>. If you like the plugin please consider making a donation using the PayPal box below :)'."<br/>And finally I've just released an app to help you try Facebook Likes, Twitter Tweets and Google +1s on your website. It is called <a href='http://www.reviewmylife.co.uk/blog/2012/07/14/web-social-stats-for-seo/' target='_new'>Web Social Stats for SEO</a>.";
-		echo '</strong></p></div>';
+		//echo '<div id="message" class="updated below-h2"><p style="line-height:140%"><strong>';
+		//echo "19th November 2014: Minor updates to make it clear that 'direct' insertion mode is recommended.";
+		//echo '</strong></p></div>';
 	}
 }
 
@@ -356,7 +356,7 @@ function adinj_side_donate_box(){
 		<div class="postbox">
 		<h3 class="hndle"><span><?php echo adinj_get_logo(); ?> Donate $10, $20 or $50!</span></h3>
 		<div class="inside" style="margin:5px;">
-		I have spent many hundreds of hours creating this plugin. If it helps you to make money please consider making a donation. Thank you!
+		I have spent many hundreds of hours creating this plugin. If you would like to leave a donation you can use Paypal. Thank you!
 
 <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
 <input type="hidden" name="cmd" value="_donations">
@@ -412,8 +412,8 @@ function adinj_side_info_box(){
 			<h4><font color="red">Important!</font></h4>
 			<p>You are responsible for making sure the ad settings and positioning you define are in compliance with your ad provider's terms of service! Failure to do so could get you banned by them!</p>
 		
-			<h4><font color="red">Still in development</font></h4>
-			<p>I'm actively listening to your feedback and fixing problems, and will be adding new features later in 2012. Please let me know if you like the plugin too!</p>
+			<h4><font color="red">Plugin status: parked</font></h4>
+			<p>I'm not expecting to make regular changes to this plugin, so it is released on an as-is basis. You are welcome to send me feedback but it is not likely that I'll have time to act on it. If this plugin works for you then do use it, if not then try a different plugin.</p>
 			
 			<h4>More by this author</h4>
 			<ul>
@@ -1088,7 +1088,7 @@ function adinj_testads(){
 <div style="background-color:#ff9999; width:728px; height:90px;">
 <h5>AD INJECTION TEST ADVERT 728x90</h5>
 <?php adinj_get_test_ad_link($rnd); ?><br />
-<a href="http://www.advancedhtml.co.uk/">www.advancedhtml.co.uk</a>
+<a href="http://www.reviewmylife.co.uk/">www.reviewmylife.co.uk</a>
 </div><p></p>
 
 <h4>160x90 link unit</h4>
@@ -1096,13 +1096,13 @@ function adinj_testads(){
 <p><textarea onclick="javascript:this.focus();this.select();" style="min-height:50px;" cols="80" rows="4">&lt;div style=&quot;background-color:#ccff99; width:160px; height:90px;&quot;&gt;
 &lt;h5&gt;TEST ADVERT 160x90&lt;/h5&gt;
 <?php adinj_get_test_ad_link_escaped($rnd); ?>&lt;br /&gt;
-&lt;a href=&quot;http://www.advancedhtml.co.uk/&quot;&gt;advancedhtml.co.uk&lt;/a&gt;
+&lt;a href=&quot;http://www.reviewmylife.co.uk/&quot;&gt;reviewmylife.co.uk&lt;/a&gt;
 &lt;/div&gt;</textarea></p>
 
 <div style="background-color:#ccff99; width:160px; height:90px;">
 <h5>TEST ADVERT 160x90</h5>
 <?php adinj_get_test_ad_link($rnd); ?><br />
-<a href="http://www.advancedhtml.co.uk/">advancedhtml.co.uk</a><br />
+<a href="http://www.reviewmylife.co.uk/">reviewmylife.co.uk</a><br />
 </div><p></p>
 
 <h4><a name="468x15"></a>468x15 link unit</h4>
@@ -1127,18 +1127,18 @@ function adinj_testads(){
 
 <h4>468x60 banner with dynamic PHP</h4>
 
-<p>The PHP will execute if you use a mfunc compatible caching plugin which is correctly configured, or if you don't use any caching plugin at all.</p>
+<p>The PHP will execute if you use as long as you don't use an caching plugin.</p>
 
 <p><textarea onclick="javascript:this.focus();this.select();" style="min-height:50px;" cols="80" rows="5">&lt;div style=&quot;background-color:#ffff99; width:468px; height:60px;&quot;&gt;
 &lt;b&gt;TEST ADVERT 468x60 with date() and rand()&lt;/b&gt;&lt;br /&gt;
 &lt;?php echo &quot;date=&quot;.date(&quot;Y-m-d H:i:s&quot;) .&quot; rand=&quot;.rand(); ?&gt;&lt;br /&gt;
-&lt;a href=&quot;http://www.advancedhtml.co.uk/&quot;&gt;www.advancedhtml.co.uk&lt;/a&gt;
+&lt;a href=&quot;http://www.reviewmylife.co.uk/&quot;&gt;www.reviewmylife.co.uk&lt;/a&gt;
 &lt;/div&gt;</textarea></p>
 
 <div style="background-color:#ffff99; width:468px; height:60px;">
 <b>TEST ADVERT 468x60 with date() and rand()</b><br />
 <?php echo "date=".date("Y-m-d H:i:s") ." rand=".rand(); ?><br />
-<a href="http://www.advancedhtml.co.uk/">www.advancedhtml.co.uk</a>
+<a href="http://www.reviewmylife.co.uk/">www.reviewmylife.co.uk</a>
 </div><p></p>
 
 
@@ -1148,7 +1148,7 @@ function adinj_testads(){
 
 <b>Simple examples for loading top, random, bottom or footer ads</b><br />
 
-<p>If you are using mfunc mode (for caching plugins) you may need to include the ad framework loading code snippet below. You would have to include this snippet above the ad display code.</p>
+<p>If you are using mfunc mode (for selected caching plugins) you may need to include the ad framework loading code snippet below. You would have to include this snippet above the ad display code.</p>
 
 <p><textarea onclick="javascript:this.focus();this.select();" style="min-height:50px;" cols="80" rows="1">
 &lt;?php if (function_exists('adinj_print_ad')){ adinj_print_ad('top'); } ?&gt;</textarea></p>
@@ -1160,7 +1160,7 @@ function adinj_testads(){
 
 <p>Or you can load ads stored as text files in the ad-injection-data directory (<?php echo ADINJ_AD_PATH; ?>/)</p>
 
-<b>Ad framework loading code for mfunc mode with caching plugins + 1 random ad</b><br />
+<b>Ad framework loading code for mfunc mode with caching plugins + 1 random ad <font color="red">(mfunc mode not recommended unless you really know what it is for!</font></b><br />
 
 <p><textarea onclick="javascript:this.focus();this.select();" style="min-height:50px;" cols="110" rows="5">&lt;!--mfunc include_once('<?php echo ADINJ_PATH; ?>/adshow.php') --&gt;
 &lt;?php include_once('<?php echo ADINJ_PATH; ?>/adshow.php'); ?&gt;
@@ -1568,7 +1568,7 @@ function adinj_default_options(){
 		'ad_code_footer_alt_1_split' => '100',
 		'ad_code_footer_alt_2_split' => '100',
 		// dynamic features
-		'ad_insertion_mode' => 'mfunc',
+		'ad_insertion_mode' => 'direct',
 		'sevisitors_only' => 'off',
 		'ad_referrers' => '.google., .bing., .yahoo., .ask., search?, search.',
 		'block_keywords' => 'off',
