@@ -239,19 +239,22 @@ function adshow_show_adverts(){
 	//echo 'ref:'.$_SERVER['HTTP_REFERER'];
 	//if (adinj_config_block_after_ad_click() && adshow_clicked_ad()) return "click_blocked"; //TODO
 	
-	if ($_COOKIE["adlogblocked"]==1) {
+	$adlogblocked_cookie = isset($_COOKIE["adlogblocked"]) ? $_COOKIE["adlogblocked"] : 0;
+	if ($adlogblocked_cookie==1) {
 		if (adinj_config_debug_mode()){ echo "<!--ADINJ DEBUG: no ads because adlogblocked cookie set-->\n"; }
 		return "click_blocked";
 	}
 	
 	if (adinj_config_block_ips() && adshow_blocked_ip()) return "blocked_ip";
 	
-	if ($_COOKIE["adinj"]==1) {
+	$adinj_cookie = isset($_COOKIE["adinj"]) ? $_COOKIE["adinj"] : 0;
+	if ($adinj_cookie==1) {
 		if (adinj_config_debug_mode()){ echo "<!--ADINJ DEBUG: blocked check ignored because adinj cookie set-->\n"; }
 		return true;
 	}
 	
-	if ($_COOKIE["adinjblocked"]==1) {
+	$adinjblocked_cookie = isset($_COOKIE["adinjblocked"]) ? $_COOKIE["adinjblocked"] : 0;
+	if ($adinjblocked_cookie==1) {
 		if (adinj_config_debug_mode()){ echo "<!--ADINJ DEBUG: no ads because adinjblocked cookie set-->\n"; }
 		return "blocked_referrer";
 	}

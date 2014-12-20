@@ -258,7 +258,9 @@ function adinj_options_page(){
 	
 	echo '<div style="width:258px; float:right;">';
 	
-	switch( $_GET[ 'tab' ] ) {
+	$tab = isset($_GET[ 'tab' ]) ? $_GET[ 'tab' ] : "";
+	
+	switch( $tab ) {
 	case "adrotation":
 		require_once(ADINJ_PATH . '/ui-tab-adrotation.php');
 		adinj_side_info_box();
@@ -280,7 +282,6 @@ function adinj_options_page(){
 	case "main":
 	default:
 		require_once(ADINJ_PATH . '/ui-tab-main.php');
-		adinj_side_advert_box();
 		adinj_side_status_box();
 		adinj_side_info_box();
 		adinj_side_donate_box();
@@ -413,7 +414,7 @@ function adinj_side_info_box(){
 			<p>You are responsible for making sure the ad settings and positioning you define are in compliance with your ad provider's terms of service! Failure to do so could get you banned by them!</p>
 		
 			<h4><font color="red">Plugin status: parked</font></h4>
-			<p>I'm not expecting to make regular changes to this plugin, so it is released on an as-is basis. You are welcome to send me feedback but it is not likely that I'll have time to act on it. If this plugin works for you then do use it, if not then try a different plugin.</p>
+			<p>I'm not expecting to make major changes to this plugin, so it is released on an as-is basis. You are welcome to send me feedback and that feedback may be used in the future. If this plugin works for you then do use it :) If not then perhaps try a different plugin.</p>
 			
 			<h4>More by this author</h4>
 			<ul>
@@ -1049,7 +1050,6 @@ function is_supported_caching_plugin_active(){
 function adinj_get_test_ad_link_escaped($rnd){
 	echo htmlspecialchars(adinj_get_test_ad_link($rnd));
 }
-//? >&lt;a href=&quot;http://www.reviewmylife.co.uk/&quot;&gt;www.reviewmylife.co.uk&lt;/a&gt;< ?php
 
 function adinj_get_test_ad_link($rnd){
 	if ($rnd == 0){

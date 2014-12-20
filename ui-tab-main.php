@@ -83,7 +83,7 @@ function adinj_placement_settings_box($ops){
 		</td>
 		<td>
 		<?php
-			adinj_selection_box("top_ad_position", array(0,1,2,3,4,5,100,200,300,400,500,750,1000,1500,2000,3000), " ");
+			adinj_selection_box("top_ad_position", array(0,1,2,3,4,5,10,20,30,50,75,100,200,300,400,500,750,1000,1500,2000,3000), " ");
 		?>
 		</td></tr>
 		</table>
@@ -197,7 +197,7 @@ JQUERYOPACITY;
 			</td><td>
 				<div class="random_ads_start_unit">
 				<?php
-				adinj_selection_box("random_ads_start_at", array(1,2,3,4,5,100,200,300,400,500,750,1000,1500,2000,3000,4000,5000,6000,7000,8000,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), " ");
+				adinj_selection_box("random_ads_start_at", array(1,2,3,4,5,10,20,30,50,75,100,200,300,400,500,750,1000,1500,2000,3000,4000,5000,6000,7000,8000,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), " ");
 				?>
 				</div>
 			</td>
@@ -244,7 +244,7 @@ JQUERYOPACITY;
 			</td><td>
 			<div class="random_ads_end_unit">
 			<?php
-			adinj_selection_box("random_ads_end_at", array(1,2,3,4,5,100,200,300,400,500,750,1000,1500,2000,3000,4000,5000,6000,7000,8000,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), " ");
+			adinj_selection_box("random_ads_end_at", array(1,2,3,4,5,10,20,30,50,75,100,200,300,400,500,750,1000,1500,2000,3000,4000,5000,6000,7000,8000,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), " ");
 			?>
 			</div>
 			</td>
@@ -355,7 +355,7 @@ JQUERYOPACITY;
 		</td>
 		<td>
 		<?php
-			adinj_selection_box("bottom_ad_position", array(0,1,2,3,4,5,100,200,300,400,500,750,1000,1500,2000,3000), " ");
+			adinj_selection_box("bottom_ad_position", array(0,1,2,3,4,5,10,20,30,50,75,100,200,300,400,500,750,1000,1500,2000,3000), " ");
 		?>
 		</td>
 		<td>
@@ -838,33 +838,6 @@ function adinj_unknown_cache_msg(){
 	<?php
 }
 
-function adinj_side_advert_box(){
-	$ops = adinj_options();
-	?>
-	<!--<div class="postbox-container" style="width:258px;">
-		<div class="metabox-holder">	
-		<div class="meta-box-sortables" style="min-height:50px;">
-		<div class="postbox">
-		<h3 class="hndle"><span><?php echo adinj_get_logo(); ?> Sponsors</span></h3>
-		<div class="inside" style="margin:5px;">
-		
-		<?php
-		//echo adinj_get_advert_1();
-		?>
-		
-		</div>
-	</div>
-	</div>
-	</div>
-	</div>
-	//-->
-<?php
-}
-
-function adinj_get_advert_1(){
-	return 'If you are interested in advertising here (a 220x220px would work) get <a href="http://www.reviewmylife.co.uk/contact-us/" target="_blank">in contact</a>.<!--<a href="http://www.reviewmylife.co.uk/contact-us/" target="_blank"><img src="'. WP_PLUGIN_URL . '/ad-injection/advert-1_placeholder.png" width="220" height="220" border="0" alt="Ad Injection advert" /></a>-->';
-}
-
 function adinj_side_status_box(){
 	$ops = adinj_options();
 	?>
@@ -1032,7 +1005,7 @@ function adinj_docs(){
 
 <p>3. Make sure ads are enabled for the page types you want them to be enabled for. [<a href="#global">Goto global settings</a>]</p>
 
-<p>4. Check the ad insertion mode. You will probably want 'direct' mode unless you are 1) using a caching plugin AND 2) are using the dynamic features (dynamic restrictions or ad rotation). [<a href="#restrictions">Goto 'Ad insertion mode and dynamic ad display restriction'</a>]</p>
+<p>4. Check the ad insertion mode. You will probably want 'direct' mode unless you are 1) an advanced user who understands what mfunc is, 2) using a compatible caching plugin and 3) are using the dynamic features (dynamic restrictions or ad rotation). [<a href="#restrictions">Goto 'Ad insertion mode and dynamic ad display restriction'</a>]</p>
 
 <p>5. Enable your ads by selecting the 'on' option at the top. [<a href="#global">Goto global settings</a>]</p>
 

@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 1.2.0.17
+Version: 1.2.0.18
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -282,8 +282,8 @@ function adinj_formatting_options($adtype, $ops, $output_type="string"){
 	if ($adtype == 'footer') $prefix = 'footer_';
 	//widgets have no prefix
 
-	$align = $ops[$prefix.'align'];
-	$clear = $ops[$prefix.'clear'];
+	$align = isset($ops[$prefix.'align']) ? $ops[$prefix.'align'] : "";
+	$clear = isset($ops[$prefix.'clear']) ? $ops[$prefix.'clear'] : "";
 	$margin_top = $ops[$prefix.'margin_top'];
 	$margin_bottom = $ops[$prefix.'margin_bottom'];
 	$padding_top = $ops[$prefix.'padding_top'];
@@ -402,6 +402,13 @@ function adinj($content, $message){
 		$postdate = get_the_time('U');
 		$currentday = $currentdate / 24 / 60 / 60;
 		$postday = $postdate / 24 / 60 / 60;
+	}
+	else
+	{
+		$currentdate = "";
+		$postdate = "";
+		$currentday = "";
+		$postday = "";
 	}
 	return $content."
 <!--
@@ -592,7 +599,8 @@ function adinj_allowed_in_author($scope, $ops){
 }
 
 function adinj_allowed_in_id($scope, $ops){
-	$conditions = adinj_split_comma_list($ops[$scope.'_id_condition_entries']);
+	$condition_entries = isset($ops[$scope.'_id_condition_entries']) ? $ops[$scope.'_id_condition_entries'] : "";
+	$conditions = adinj_split_comma_list($condition_entries);
 	if (empty($conditions)) return true;
 	
 	$postid = -1;
@@ -1244,6 +1252,7 @@ function adinj_num_rand_ads_to_insert($content_length, &$debug){
 
 function adinj_num_footer_ads_to_insert(){
 	if (adinj_excluded_by_tick_box('footer_')) return 0;
+	if (!isset($content)) $content = "";
 	$reason = adinj_ads_completely_disabled_from_page('footer', $content);
 	if ($reason !== false){
 		return 0;
