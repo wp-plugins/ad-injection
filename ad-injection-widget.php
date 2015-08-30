@@ -15,7 +15,7 @@ http://www.reviewmylife.co.uk/
 define('ADINJ_WIDGET_DB_VERSION', 8);
 
 class Ad_Injection_Widget extends WP_Widget {
-	function Ad_Injection_Widget() {
+	function __construct() {
 		$widget_ops = array( 'classname' => 'adinjwidget', 'description' => 'Insert Ad Injection adverts into your sidebars/widget areas.' );
 		$control_ops = array( 'width' => 500, 'height' => 300, 'id_base' => 'adinj' );
 		$this->WP_Widget( 'adinj', 'Ad Injection', $widget_ops, $control_ops );

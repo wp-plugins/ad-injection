@@ -3,7 +3,7 @@
 Plugin Name: Ad Injection
 Plugin URI: http://www.reviewmylife.co.uk/blog/2010/12/06/ad-injection-plugin-wordpress/
 Description: Injects any advert (e.g. AdSense) into your WordPress posts or widget area. Restrict who sees the ads by post length, age, referrer or IP. Cache compatible.
-Version: 1.2.0.18
+Version: 1.2.0.19
 Author: reviewmylife
 Author URI: http://www.reviewmylife.co.uk/
 License: GPLv2
@@ -1072,6 +1072,8 @@ function adinj_get_random_ad_start_end_paragraph($content, $original_paragraph_p
 // Returns -1 if paragraph can't be located
 function adinj_get_random_ad_paragraph($content, $original_paragraph_positions, $opname, $default, &$debug){
 	$ops = adinj_options();
+	$debug_on = adinj_debug_on();
+	
 	$mode = $ops['random_ads_'.$opname.'_mode'];
 	$paracount = count($original_paragraph_positions);
 	$rawlength = strlen($content);
