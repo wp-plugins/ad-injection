@@ -118,14 +118,6 @@ Although this plugin is usually used for injecting adverts it can in fact be use
 
 Easy positioning options are provided for left, right, center, float left, and float right (or a random variant of these). Extra spacing can be set above and below the ad using the CSS margin and padding boxes. Or if that isn't flexible enough, you can write your own positioning code using HTML and CSS. And you can select which paragraph random ads should start from.
 
-= Works with WP Super Cache, W3 Total Cache and WP Cache =
-
-The dynamic features that require code to be executed for each page view (i.e. ad rotation, search engine visitors only, and ad blocking based on IP address) work with WP Super Cache, W3 Total Cache and WP Cache.
-
-This plugin will automatically use the dynamic mfunc tag to ensure that the dynamic ad features still work when caching is on. 
-
-If you use WP Super Cache in mod_rewrite mode displaying the adverts (even with the dynamic restrictions) whilst caching requires no MySQL database access. For W3 Total Cache and WP Cache Ad Injection will not require any extra MySQL database access for cached pages other than what these plugin already use.
-
 = Inject PHP and JavaScript =
 
 As the plugin will inject whatever content you like into the page you can write your own ad rotation or a/b split testing code for the ads you inject. PHP code can be automatically executed, even when using WP Super Cache.
